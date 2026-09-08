@@ -1,0 +1,24 @@
+[
+  {
+    "finding_id": "SEO-TECH-001",
+    "title": "robots.txt / robots metadata not detected",
+    "severity": 8,
+    "quadrant": "Q1",
+    "source_files": [
+      "app"
+    ],
+    "detail": "No Next.js robots metadata/file was detected in the conventional app/pages locations.",
+    "status": "open"
+  },
+  {
+    "finding_id": "SEO-TECH-002",
+    "title": "XML sitemap not detected",
+    "severity": 8,
+    "quadrant": "Q1",
+    "source_files": [
+      "app"
+    ],
+    "detail": "No sitemap implementation was detected in the conventional locations.",
+    "status": "open"
+  }
+]
