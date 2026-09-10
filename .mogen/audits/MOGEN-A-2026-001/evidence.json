@@ -1,0 +1,16 @@
+[
+  {
+    "finding_id": "SEO-TECH-001",
+    "source_files": [
+      "app"
+    ],
+    "evidence": "No Next.js robots metadata/file was detected in the conventional app/pages locations."
+  },
+  {
+    "finding_id": "SEO-TECH-002",
+    "source_files": [
+      "app"
+    ],
+    "evidence": "No sitemap implementation was detected in the conventional locations."
+  }
+]
