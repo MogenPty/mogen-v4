@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import MagneticButton from "./magnet-button";
+import ThemeToggle from "./theme-toggle";
 
 const SERVICES_SUB = [
   { label: "Web Development", href: "/services/web-development" },
@@ -104,7 +105,8 @@ export default function Nav() {
           </Link>
         </div>
 
-        <div className="hidden lg:block">
+        <div className="hidden items-center gap-4 lg:flex">
+          <ThemeToggle />
           <MagneticButton
             as="a"
             href="/#audit"

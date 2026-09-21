@@ -1,11 +1,15 @@
 "use client";
 
-import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { SubmitEvent, useState } from "react";
 // import { base44 } from "@/api/base44Client";
 import MagneticButton from "./magnet-button";
 
-export default function ServiceQuoteForm({ serviceName }) {
+interface Props {
+  serviceName: string;
+}
+
+export default function ServiceQuoteForm({ serviceName }: Readonly<Props>) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -17,7 +21,7 @@ export default function ServiceQuoteForm({ serviceName }) {
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
-  const submit = async (e) => {
+  const submit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.email) {
       setError("Name and email are required.");
@@ -33,7 +37,7 @@ export default function ServiceQuoteForm({ serviceName }) {
       // });
       setSaving(false);
       setDone(true);
-    } catch (err) {
+    } catch {
       setSaving(false);
       setError(
         "Something went wrong. Please try again or email hello@mogen.co.za.",
@@ -64,37 +68,40 @@ export default function ServiceQuoteForm({ serviceName }) {
         Request a {serviceName} quote
       </h3>
       <p className="mt-2 text-sm text-ink/60">
-        Tell us about your project. We'll send a tailored proposal within 24
-        hours.
+        Tell us about your project. We&apos;ll send a tailored proposal within
+        24 hours.
       </p>
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field
           label="Name"
           value={form.name}
-          onChange={(v) => setForm({ ...form, name: v })}
+          onChange={(v: string) => setForm({ ...form, name: v })}
           required
         />
         <Field
           label="Email"
           type="email"
           value={form.email}
-          onChange={(v) => setForm({ ...form, email: v })}
+          onChange={(v: string) => setForm({ ...form, email: v })}
           required
         />
         <Field
           label="Phone"
           value={form.phone}
-          onChange={(v) => setForm({ ...form, phone: v })}
+          onChange={(v: string) => setForm({ ...form, phone: v })}
         />
         <Field
           label="Business"
           value={form.business_name}
-          onChange={(v) => setForm({ ...form, business_name: v })}
+          onChange={(v: string) => setForm({ ...form, business_name: v })}
         />
       </div>
       <div className="mt-3">
-        <label className="small-caps text-ink/60">Project details</label>
+        <label htmlFor="project_details" className="small-caps text-ink/60">
+          Project details
+        </label>
         <textarea
+          name="project_details"
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
           rows={3}
@@ -117,7 +124,21 @@ export default function ServiceQuoteForm({ serviceName }) {
   );
 }
 
-function Field({ label, value, onChange, type = "text", required }) {
+interface FieldProps {
+  label: string;
+  value: string;
+  onChange: FunctionStringCallback;
+  type?: string;
+  required?: boolean;
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  required,
+}: Readonly<FieldProps>) {
   return (
     <div>
       <label htmlFor={value} className="small-caps text-ink/60">

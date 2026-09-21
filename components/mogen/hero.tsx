@@ -12,14 +12,23 @@ const KEYWORDS = [
   "Growth on Google",
 ];
 
-function useTypewriter(words, { type = 90, erase = 45, hold = 1600 } = {}) {
+interface TypeWriterOptions {
+  type?: number;
+  erase?: number;
+  hold?: number;
+}
+
+function useTypewriter(
+  words: string[],
+  { type = 90, erase = 45, hold = 1600 }: TypeWriterOptions = {},
+) {
   const [text, setText] = useState("");
   const [i, setI] = useState(0);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const current = words[i % words.length];
-    let t;
+    let t: NodeJS.Timeout;
     if (!deleting && text === current) {
       t = setTimeout(() => setDeleting(true), hold);
     } else if (deleting && text === "") {
@@ -165,9 +174,9 @@ function DriftingMetrics() {
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
       aria-hidden="true"
     >
-      {items.map((it, idx) => (
+      {items.map((it) => (
         <span
-          key={idx}
+          key={it.t.slice(0, 15)}
           className={`absolute font-display font-black text-ink/4 ${it.size}`}
           style={{
             top: it.top,

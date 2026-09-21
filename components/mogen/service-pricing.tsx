@@ -2,8 +2,17 @@
 
 import { Check } from "lucide-react";
 import MagneticButton from "./magnet-button";
+import { Pricing } from "@/data/services";
 
-export default function ServicePricing({ pricing, serviceSlug }) {
+interface Props {
+  pricing: Pricing[];
+  serviceSlug: string;
+}
+
+export default function ServicePricing({
+  pricing,
+  serviceSlug,
+}: Readonly<Props>) {
   return (
     <div className="grid grid-cols-1 gap-px bg-ink/10 lg:grid-cols-3">
       {pricing.map((t) => (

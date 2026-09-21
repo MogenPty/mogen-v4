@@ -60,7 +60,7 @@ const COLS: Column[] = [
 
 export default function Footer() {
   return (
-    <footer className="bg-ink text-bone">
+    <footer className="bg-bone text-foreground">
       <div className="mx-auto max-w-[1600px] px-6 py-16 lg:px-10">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1.5fr]">
           <div>
@@ -74,7 +74,7 @@ export default function Footer() {
               </span>
               <span className="h-2 w-2 bg-catalyst" aria-hidden="true" />
             </Link>
-            <p className="mt-4 max-w-xs text-sm text-bone/60">
+            <p className="mt-4 max-w-xs text-sm text-forground/60">
               Stunning websites, killer brands and rank-winning SEO for local
               businesses in Pretoria, Maboloka, Soshanguve & across Gauteng.
             </p>
@@ -82,7 +82,7 @@ export default function Footer() {
 
           {COLS.map((c) => (
             <div key={c.title}>
-              <h3 className="small-caps text-bone/50">{c.title}</h3>
+              <h3 className="small-caps text-foreground/50">{c.title}</h3>
               <ul className="mt-4 space-y-2">
                 {c.links.map((l) => (
                   <li key={l.label}>
@@ -90,7 +90,7 @@ export default function Footer() {
                       href={l.href}
                       target={l.external ? "_blank" : undefined}
                       rel={l.external ? "noopener noreferrer" : undefined}
-                      className="flex items-center gap-1 text-sm text-bone/80 hover:text-catalyst"
+                      className="flex items-center gap-1 text-sm text-foreground/80 hover:text-catalyst"
                     >
                       {l.label}
                       {l.external && (
@@ -104,8 +104,8 @@ export default function Footer() {
           ))}
 
           <div>
-            <h3 className="small-caps text-bone/50">Contact</h3>
-            <ul className="mt-4 space-y-3 text-sm text-bone/80">
+            <h3 className="small-caps text-foreground/50">Contact</h3>
+            <ul className="mt-4 space-y-3 text-sm text-foreground/80">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-catalyst" aria-hidden="true" />
                 <a
@@ -130,19 +130,19 @@ export default function Footer() {
         </div>
 
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-bone/10 pt-6 sm:flex-row sm:items-center">
-          <p className="small-caps text-bone/40">
+          <p className="small-caps text-foreground/40">
             © {new Date().getFullYear()} Mogen. All rights reserved.
           </p>
           <div className="flex gap-6">
             <a
               href="/privacy-policy"
-              className="small-caps text-bone/60 hover:text-catalyst"
+              className="small-caps text-foreground/60 hover:text-catalyst"
             >
               Privacy
             </a>
             <a
               href="/terms-of-service"
-              className="small-caps text-bone/60 hover:text-catalyst"
+              className="small-caps text-foreground/60 hover:text-catalyst"
             >
               Terms
             </a>
