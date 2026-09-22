@@ -1,51 +1,41 @@
 "use client";
 
-import { Code2, FileText, Megaphone, Search } from "lucide-react";
+import { SERVICES } from "@/data/services";
 import { useEqualHeight } from "@/hooks/use-equal-height";
 import { getBlankCount } from "@/lib/grid-utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 import ServiceCard from "./service-card";
 
-const SERVICES = [
-  {
-    icon: Code2,
-    name: "Web Development",
-    slug: "web-development",
-    desc: "Custom websites that work perfectly on all devices. Fast, secure, and built to convert visitors into customers.",
-    deliverables: ["Responsive build", "Core Web Vitals", "Conversion UX"],
-    featured: true,
-  },
-  {
-    icon: FileText,
-    name: "Business Documentation",
-    slug: "business-documentation",
-    desc: "Professional business documents — policies, procedures, forms and templates structured for clarity and consistency.",
-    deliverables: [
-      "Policies & procedures",
-      "Forms & templates",
-      "Professional formatting",
-    ],
-  },
-  {
-    icon: Megaphone,
-    name: "Digital Marketing",
-    slug: "digital-marketing",
-    desc: "Get found online with social media and content that actually brings in new customers.",
-    deliverables: ["Content strategy", "Social campaigns", "Lead nurture"],
-  },
-  {
-    icon: Search,
-    name: "SEO Services",
-    slug: "seo-services",
-    desc: "Local SEO that gets you found on Google — Google Business Profile, on-page optimisation and content that brings real enquiries from nearby customers.",
-    deliverables: ["Local SEO", "GBP optimisation", "On-page SEO"],
-  },
-];
+// Grid display order per spec: Web Development → SEO → Digital Marketing → Business Documentation
+const GRID_ORDER = [
+  "web-development",
+  "seo",
+  "digital-marketing",
+  "business-documentation",
+] as const;
 
-export default function Services() {
-  const blankCount = getBlankCount(SERVICES.length);
-  const gridRef = useEqualHeight<HTMLDivElement>([SERVICES.length], {
+const GRID_SERVICES = GRID_ORDER.map((slug) => {
+  const svc = SERVICES.find((s) => s.slug === slug);
+  if (!svc) throw new Error(`Missing service for grid: ${slug}`);
+  return svc;
+}).map((svc) => ({
+  icon: svc.icon,
+  name: svc.name,
+  slug: svc.slug,
+  desc: svc.tagline,
+  // Use first 3 deliverables as the grid summary — authoritative, not duplicated
+  deliverables: (svc.deliverables ?? []).slice(0, 3),
+  featured: svc.slug === "web-development",
+}));
+
+interface Props {
+  auditHref?: string;
+}
+
+export default function Services({ auditHref = "/#audit" }: Readonly<Props>) {
+  const blankCount = getBlankCount(GRID_SERVICES.length);
+  const gridRef = useEqualHeight<HTMLDivElement>([GRID_SERVICES.length], {
     cssVar: "--grid-cell-height",
     selector: ".item, .blank, .cta",
   });
@@ -73,7 +63,7 @@ export default function Services() {
           id={"serviceGrid"}
           className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-3"
         >
-          {SERVICES.map((s) => (
+          {GRID_SERVICES.map((s) => (
             <ServiceCard
               key={s.name}
               name={s.name}
@@ -90,7 +80,7 @@ export default function Services() {
             <article
               // biome-ignore lint/suspicious/noArrayIndexKey: Items are only identified as indexed.
               key={`blank-${i}`}
-              className="flex flex-col justify-center invisible blank"
+              className="hidden md:flex flex-col justify-center invisible blank"
               aria-hidden="true"
             />
           ))}
@@ -106,9 +96,9 @@ export default function Services() {
             </p>
             <MagneticButton
               as="a"
-              href="#audit"
+              href={auditHref}
               variant="catalyst"
-              className="mt-8"
+              className="mt-8 hover:bg-secondary hover:text-secondary-foreground"
             >
               Get Free Audit
             </MagneticButton>

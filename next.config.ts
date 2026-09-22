@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/services/seo-services",
+        destination: "/services/seo",
+        permanent: true,
+      },
+      {
         source: "/services/mobile-development",
         destination: "/services",
         permanent: false,

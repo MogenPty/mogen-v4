@@ -2,7 +2,7 @@ import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 
 export default function WhatMogenDoes() {
   return (
-    <BlueprintGrid id="what-mogen-does" className="bg-bone py-24 lg:py-32">
+    <BlueprintGrid id={"what-mogen-does"} className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
         <SectionLabel index="// 01 — About" title="What Mogen Does" />
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.1fr_1.9fr] lg:gap-16">

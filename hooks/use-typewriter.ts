@@ -22,8 +22,13 @@ export function useTypewriter(
     if (!deleting && text === current) {
       t = setTimeout(() => setDeleting(true), hold);
     } else if (deleting && text === "") {
-      setDeleting(false);
-      setI((v) => v + 1);
+      // Defer synchronous setState to avoid cascading render
+      // (react-hooks/set-state-in-effect). Scheduling via timeout
+      // makes this an event-driven update, not a sync effect body update.
+      t = setTimeout(() => {
+        setDeleting(false);
+        setI((v) => v + 1);
+      }, 0);
     } else {
       t = setTimeout(
         () => {
