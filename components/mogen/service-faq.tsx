@@ -4,15 +4,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import type { Faq } from "@/data/services";
 
-export default function ServiceFAQ({ faq }) {
+export default function ServiceFAQ({ faq }: { faq: Faq[] }) {
   return (
     <Accordion
       type="single"
       collapsible
       className="border border-ink/10 bg-bone"
     >
-      {faq.map((item, i) => (
+      {faq.map((item: Faq, i: number) => (
         <AccordionItem
           key={i}
           value={`item-${i}`}

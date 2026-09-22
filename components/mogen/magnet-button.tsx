@@ -1,6 +1,6 @@
 "use client";
 
-import { type JSX, MouseEvent, type ReactNode, useRef, useState } from "react";
+import { type MouseEvent, type ReactNode, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface MagneticButtonProps {
@@ -27,10 +27,10 @@ export default function MagneticButton({
   variant = "solid",
   ...props
 }: Readonly<MagneticButtonProps>) {
-  const ref = useRef<HTMLAnchorElement | HTMLButtonElement | null>(null);
+  const ref = useRef<HTMLElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  const handleMove = (e: MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+  const handleMove = (e: MouseEvent<HTMLElement>) => {
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -65,13 +65,13 @@ export default function MagneticButton({
   if (As === "a" || href) {
     return (
       <a
-        ref={ref}
+        ref={ref as React.RefObject<HTMLAnchorElement>}
         href={href}
         onMouseMove={handleMove}
         onMouseLeave={reset}
         className={cn(base, variants[variant], className)}
         style={style}
-        {...props}
+        {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
       >
         {children}
       </a>
@@ -80,12 +80,12 @@ export default function MagneticButton({
 
   return (
     <button
-      ref={ref}
+      ref={ref as React.RefObject<HTMLButtonElement>}
       onMouseMove={handleMove}
       onMouseLeave={reset}
       className={cn(base, variants[variant], className)}
       style={style}
-      {...props}
+      {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
     >
       {children}
     </button>
