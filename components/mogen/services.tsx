@@ -1,6 +1,6 @@
 "use client";
 
-import { Code2, Megaphone, Palette, Search, Smartphone } from "lucide-react";
+import { Code2, FileText, Megaphone, Search } from "lucide-react";
 import Link from "next/link";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
@@ -14,18 +14,11 @@ const SERVICES = [
     deliverables: ["Responsive build", "Core Web Vitals", "Conversion UX"],
   },
   {
-    icon: Smartphone,
-    name: "Mobile Development",
-    slug: "mobile-development",
-    desc: "Custom mobile apps that feel native on any device — fast, secure and built to engage.",
-    deliverables: ["iOS & Android", "Native feel", "App store ready"],
-  },
-  {
-    icon: Palette,
-    name: "Brand Identity",
-    slug: "brand-identity",
-    desc: "Logos, colours and visual systems that make your business unforgettable. Stand out from the competition.",
-    deliverables: ["Logo & marks", "Colour system", "Brand guidelines"],
+    icon: FileText,
+    name: "Business Documentation",
+    slug: "business-documentation",
+    desc: "Professional business documents — policies, procedures, forms and templates structured for clarity and consistency.",
+    deliverables: ["Policies & procedures", "Forms & templates", "Professional formatting"],
   },
   {
     icon: Megaphone,
@@ -114,8 +107,8 @@ export default function Services() {
               Need the full stack?
             </h3>
             <p className="mt-3 text-sm text-bone/70">
-              Bundle web, brand and SEO into one growth package — engineered to
-              compound.
+              Bundle web, documentation and SEO into one growth package —
+              engineered to compound.
             </p>
             <MagneticButton
               as="a"

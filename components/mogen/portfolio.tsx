@@ -16,24 +16,24 @@ import MagneticButton from "./magnet-button";
 const PROJECTS = [
   {
     name: "Molefe Plumbing",
-    category: "Local Business",
-    desc: "Modern website with WhatsApp booking and customer testimonials.",
+    category: "Demonstration · Local Business",
+    desc: "Demonstration website featuring WhatsApp booking and service layout.",
     img: "https://media.base44.com/images/public/6a9593f32823a9ba2917bec0/d15ea8711_generated_a33e55cb.jpg",
     image: "/images/d15ea8711_generated_a33e55cb.jpg",
     tags: ["Web Design", "WhatsApp Booking", "Local SEO"],
   },
   {
     name: "Lighters of the World",
-    category: "NGO",
-    desc: "Warm, inviting site with donation system and volunteer portal.",
+    category: "Mogen Subsidiary Project",
+    desc: "Website demonstration developed within the Mogen ecosystem.",
     img: "https://media.base44.com/images/public/6a9593f32823a9ba2917bec0/545dd9c3f_generated_e75836b5.jpg",
     image: "/images/545dd9c3f_generated_e75836b5.jpg",
-    tags: ["Web Development", "Donations", "Brand Identity"],
+    tags: ["Web Development", "Donations", "Business Documentation"],
   },
   {
     name: "TechStart SA",
-    category: "Startup",
-    desc: "Bold landing page with lead capture and analytics integration.",
+    category: "Demonstration · Startup",
+    desc: "Demonstration landing page with lead capture and analytics setup.",
     img: "https://media.base44.com/images/public/6a9593f32823a9ba2917bec0/23760dfef_generated_d82b3c44.jpg",
     image: "/images/23760dfef_generated_d82b3c44.jpg",
     tags: ["Landing Page", "Lead Capture", "Analytics"],
@@ -48,13 +48,13 @@ export default function Portfolio() {
 
         <div className="mb-14 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">
-            Projects that
+            Selected work
             <br />
-            <span className="text-catalyst">make impact.</span>
+            <span className="text-catalyst">and demonstrations.</span>
           </h2>
           <p className="max-w-md text-lg text-ink/70">
-            Real results for real businesses. See how we&apos;ve helped local
-            companies grow online.
+            Selected work and demonstrations from the Mogen ecosystem —
+            illustrating how we structure websites for clarity and discovery.
           </p>
         </div>
 

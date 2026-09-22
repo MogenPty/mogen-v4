@@ -9,7 +9,7 @@ import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 import PageShell from "./page-shell";
 
-const CATEGORIES = ["All", "Article", "Case Study", "Growth Advice"];
+const CATEGORIES = ["All", "Article", "Growth Advice"];
 
 export default function BlogBlock() {
   const [filter, setFilter] = useState("All");
@@ -30,7 +30,7 @@ export default function BlogBlock() {
           {POSTS.length}
         </>
       }
-      intro="Industry articles, real case studies and practical growth advice — built for local South African businesses that want to rank, convert and grow."
+      intro="Industry articles and practical growth advice — built for local South African businesses that want to rank, convert and grow."
     >
       {/* Featured */}
       <BlueprintGrid id={"featured_post"} className="bg-bone pb-16">

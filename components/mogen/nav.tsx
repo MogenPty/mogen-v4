@@ -10,8 +10,7 @@ import ThemeToggle from "./theme-toggle";
 
 const SERVICES_SUB = [
   { label: "Web Development", href: "/services/web-development" },
-  { label: "Mobile Development", href: "/services/mobile-development" },
-  { label: "Brand Identity", href: "/services/brand-identity" },
+  { label: "Business Documentation", href: "/services/business-documentation" },
   { label: "Digital Marketing", href: "/services/digital-marketing" },
   { label: "SEO Services", href: "/services/seo-services" },
 ];

@@ -16,9 +16,8 @@ export default function CallToAction() {
               digital?
             </h2>
             <p className="mt-6 max-w-md text-lg text-white/80">
-              Join 50+ local businesses who&apos;ve transformed their online
-              presence with Mogen. Start with a free Growth Audit — no
-              obligation, just a blueprint to grow.
+              Start with a free Growth Audit — no obligation, just a practical
+              blueprint to improve your visibility and enquiries.
             </p>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row lg:justify-end">

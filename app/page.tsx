@@ -8,7 +8,6 @@ import Nav from "@/components/mogen/nav";
 import Portfolio from "@/components/mogen/portfolio";
 import Pricing from "@/components/mogen/pricing";
 import Services from "@/components/mogen/services";
-import Testimonials from "@/components/mogen/testimonials";
 
 export default function Home() {
   return (
@@ -19,7 +18,6 @@ export default function Home() {
         <Services />
         <GrowthAudit />
         <Portfolio />
-        <Testimonials />
         <Pricing />
         <CallToAction />
       </main>
