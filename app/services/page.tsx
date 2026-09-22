@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Services from "@/components/mogen/services";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import Nav from "@/components/mogen/nav";
+import Services from "@/components/mogen/services";
 
 export const metadata: Metadata = {
   title: "Services — Mogen",
@@ -15,7 +15,10 @@ export default function ServicesIndexPage() {
     <div className="bg-bone">
       <Nav />
       <main>
-        <Services />
+        <Services
+          auditHref="/#audit
+        "
+        />
       </main>
       <Footer />
       <ConversionBar />

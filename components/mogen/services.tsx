@@ -1,8 +1,8 @@
 "use client";
 
+import { SERVICES } from "@/data/services";
 import { useEqualHeight } from "@/hooks/use-equal-height";
 import { getBlankCount } from "@/lib/grid-utils";
-import { SERVICES } from "@/data/services";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 import ServiceCard from "./service-card";
@@ -29,7 +29,11 @@ const GRID_SERVICES = GRID_ORDER.map((slug) => {
   featured: svc.slug === "web-development",
 }));
 
-export default function Services() {
+interface Props {
+  auditHref?: string;
+}
+
+export default function Services({ auditHref = "/#audit" }: Readonly<Props>) {
   const blankCount = getBlankCount(GRID_SERVICES.length);
   const gridRef = useEqualHeight<HTMLDivElement>([GRID_SERVICES.length], {
     cssVar: "--grid-cell-height",
@@ -92,9 +96,9 @@ export default function Services() {
             </p>
             <MagneticButton
               as="a"
-              href="#audit"
+              href={auditHref}
               variant="catalyst"
-              className="mt-8"
+              className="mt-8 hover:bg-secondary hover:text-secondary-foreground"
             >
               Get Free Audit
             </MagneticButton>
