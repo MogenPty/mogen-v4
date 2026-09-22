@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import MagneticButton from "./magnet-button";
+import ThemeToggle from "./theme-toggle";
 
 const SERVICES_SUB = [
   { label: "Web Development", href: "/services/web-development" },
-  { label: "Mobile Development", href: "/services/mobile-development" },
-  { label: "Brand Identity", href: "/services/brand-identity" },
+  { label: "Business Documentation", href: "/services/business-documentation" },
   { label: "Digital Marketing", href: "/services/digital-marketing" },
   { label: "SEO Services", href: "/services/seo-services" },
 ];
@@ -19,7 +19,7 @@ const NAV = [
   { label: "Services", href: "/#services", children: SERVICES_SUB },
   { label: "Growth Audit", href: "/#audit" },
   { label: "Work", href: "/#work" },
-  { label: "Pricing", href: "/#pricing" },
+  { label: "Articles", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -104,7 +104,8 @@ export default function Nav() {
           </Link>
         </div>
 
-        <div className="hidden lg:block">
+        <div className="hidden items-center gap-4 lg:flex">
+          <ThemeToggle />
           <MagneticButton
             as="a"
             href="/#audit"

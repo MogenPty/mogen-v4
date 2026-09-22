@@ -8,7 +8,7 @@ const SECTIONS = [
   },
   {
     h: "2. Our services",
-    p: 'Mogen provides website design and development, brand identity, search engine optimisation, digital marketing and related growth services. The specific scope, deliverables and pricing for any engagement are set out in a separate proposal or agreement agreed between us and you (the "Client").',
+    p: 'Mogen provides website design and development, business documentation, search engine optimisation, digital marketing and related growth services. Where specialist brand or graphic design is required, we coordinate with trusted external providers. The specific scope, deliverables and pricing for any engagement are set out in a separate proposal or agreement agreed between us and you (the "Client").',
   },
   {
     h: "3. Engagements and fees",

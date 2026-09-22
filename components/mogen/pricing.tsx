@@ -49,7 +49,7 @@ const TIERS = [
     features: [
       "Everything in Grow",
       "Full 37-step SEO framework",
-      "Brand identity refresh",
+      "Business documentation support",
       "Social & digital marketing",
       "Competitor backlink infiltration",
       "Bi-weekly strategy review",

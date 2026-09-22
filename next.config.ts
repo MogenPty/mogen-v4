@@ -11,6 +11,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/services/brand-identity",
+        destination: "/services/business-documentation",
+        permanent: true,
+      },
+      {
+        source: "/services/mobile-development",
+        destination: "/services",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

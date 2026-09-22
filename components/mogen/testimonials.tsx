@@ -1,28 +1,10 @@
 "use client";
 
-import { Star } from "lucide-react";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 
-const QUOTES = [
-  {
-    quote:
-      "Mogen built us an amazing website that brings in new customers every week. Professional, fast, and affordable!",
-    name: "Thabo Molefe",
-    role: "Molefe Plumbing Services",
-  },
-  {
-    quote:
-      "They understood our mission and created a website that perfectly represents our work. Donations have increased significantly.",
-    name: "Nomsa Dlamini",
-    role: "Community Care NGO",
-  },
-  {
-    quote:
-      "The team delivered exactly what we needed — a modern, professional site that converts visitors into leads.",
-    name: "Sipho Nkosi",
-    role: "InnovateSA Startup",
-  },
-];
+// Testimonials removed — verified client testimonials not currently available.
+// Component retained for potential future use with verified content.
+const QUOTES: Array<{ quote: string; name: string; role: string }> = [];
 
 export default function Testimonials() {
   return (
@@ -37,17 +19,8 @@ export default function Testimonials() {
             <span className="text-catalyst">clients say.</span>
           </h2>
           <div className="flex items-center gap-3">
-            <div className="flex">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className="h-5 w-5 fill-catalyst text-catalyst"
-                  aria-hidden="true"
-                />
-              ))}
-            </div>
             <span className="small-caps text-muted-foreground">
-              4.9 / 5 · 50+ reviews
+              Verified client feedback will appear here when available
             </span>
           </div>
         </div>

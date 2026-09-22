@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   /* shadcn-style semantic colors */
   --color-background: hsl(var(--background));
@@ -82,6 +84,35 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+.dark {
+    --background: 240 5% 9%;
+    --foreground: 60 8% 94%;
+    --card: 240 5% 12%;
+    --card-foreground: 60 8% 94%;
+    --popover: 240 5% 12%;
+    --popover-foreground: 60 8% 94%;
+    --primary: 60 8% 94%;
+    --primary-foreground: 240 5% 9%;
+    --secondary: 240 5% 16%;
+    --secondary-foreground: 60 8% 94%;
+    --muted: 240 5% 16%;
+    --muted-foreground: 60 5% 65%;
+    --accent: 73 100% 50%;
+    --accent-foreground: 240 5% 9%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 60 8% 94%;
+    --border: 240 5% 20%;
+    --input: 240 5% 20%;
+    --ring: 73 100% 50%;
+
+    /* Mogen brand tokens — dark: bone↔ink invert, catalyst → volt green */
+    --bone: 240 5% 11%;
+    --ink: 60 8% 94%;
+    --catalyst: 22 100% 50%;
+    --store: 0 0% 70%;
+    --seo: 240 5% 22%;
+  }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -132,6 +163,12 @@
 
   .hairline {
     background: hsl(var(--ink) / 0.12);
+  }
+
+  .item,
+  .blank,
+  .cta {
+    height: var(--grid-cell-height, auto);
   }
 }
 

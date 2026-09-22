@@ -10,8 +10,18 @@ import {
 // import { useNavigate } from "react-router-dom";
 // import { Image } from "@/components/ui/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
+import { type SubmitEvent, useState } from "react";
+import { SERVICES } from "@/data/services";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 
 const STEPS = ["URL", "Scan", "Report", "Unlock"];
@@ -46,7 +56,7 @@ export default function GrowthAudit() {
     }, 2200);
   };
 
-  const submit = async (e) => {
+  const submit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.email) {
       setError("Name and email are required to unlock your report.");
@@ -75,14 +85,17 @@ export default function GrowthAudit() {
       setSaving(false);
       setStep(3);
       setDone(true);
-    } catch (err) {
+    } catch {
       setSaving(false);
       setError("Something went wrong. Please try again or email us directly.");
     }
   };
 
   return (
-    <BlueprintGrid id={"audit"} className="bg-ink py-24 text-bone lg:py-32">
+    <BlueprintGrid
+      id={"audit"}
+      className="bg-ink dark:bg-secondary py-24 text-bone dark:text-secondary-foreground lg:py-32"
+    >
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
         <div className="mb-10 flex items-center gap-4">
           <span className="small-caps text-catalyst">
@@ -149,7 +162,7 @@ export default function GrowthAudit() {
           </div>
 
           {/* RIGHT — interactive schematic */}
-          <div className="relative border border-bone/15 bg-bone/3 p-6 lg:p-8">
+          <div className="relative border border-text-foreground/15 bg-bone/3 p-6 lg:p-8">
             <div
               className="absolute left-0 top-0 h-6 w-px bg-catalyst"
               aria-hidden="true"
@@ -182,6 +195,7 @@ export default function GrowthAudit() {
                   </div>
                   <MagneticButton
                     variant="catalyst"
+                    className="hover:text-secondary hover:bg-ink"
                     onClick={runScan}
                     aria-label="Run growth audit scan"
                   >
@@ -212,8 +226,11 @@ export default function GrowthAudit() {
                   />
                   <div className="grid grid-cols-8 gap-1 p-3 opacity-40">
                     {Array.from({ length: 64 }).map((_, i) => (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: We need a key
-                      <span key={i} className="h-3 w-full bg-bone/20" />
+                      <span
+                        // biome-ignore lint/suspicious/noArrayIndexKey: We need a key
+                        key={i}
+                        className="h-3 w-full bg-bone/20"
+                      />
                     ))}
                   </div>
                   <div className="absolute bottom-3 left-3 right-3 space-y-1.5 text-xs text-bone/50">
@@ -305,18 +322,28 @@ export default function GrowthAudit() {
                       }
                       className="mt-2 w-full border border-bone/20 bg-bone/5 px-4 py-3 text-bone focus:outline-none"
                     >
-                      {[
-                        "Web Development",
-                        "Brand Identity",
-                        "SEO Services",
-                        "Digital Marketing",
-                        "Full Growth Package",
-                      ].map((o) => (
-                        <option key={o} value={o} className="bg-ink">
-                          {o}
+                      {SERVICES.map((s) => (
+                        <option key={s.name} value={s.slug}>
+                          {s.name}
                         </option>
                       ))}
                     </select>
+                    <Select>
+                      <SelectTrigger className="mt-2 w-full border border-bone/20 bg-bone/5 px-4 py-3 text-bone focus:outline-none ">
+                        <SelectValue placeholder="Service interest" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Service Interest</SelectLabel>
+                          <SelectItem value="1">Test</SelectItem>
+                          {SERVICES.map((s) => (
+                            <SelectItem key={s.name} value={s.slug}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                   {error && <p className="text-sm text-catalyst">{error}</p>}
                   <MagneticButton
@@ -343,7 +370,7 @@ export default function GrowthAudit() {
                 <h3 className="mt-6 font-display text-3xl font-black">
                   Report unlocked.
                 </h3>
-                <p className="mt-3 max-w-sm text-bone/70">
+                <p className="mt-3 max-w-sm text-text-foreground/70">
                   Thanks{form.name ? `, ${form.name.split(" ")[0]}` : ""}. Your
                   full Growth Audit blueprint is on its way to{" "}
                   <span className="text-catalyst">{form.email}</span>. A Mogen
@@ -358,11 +385,11 @@ export default function GrowthAudit() {
                 </MagneticButton>
                 <MagneticButton
                   as="a"
-                  href="#pricing"
+                  href="#services"
                   variant="outline"
-                  className="mt-3 w-full border-bone/40 text-bone hover:bg-bone hover:text-ink"
+                  className="mt-3 w-full border-text-foreground/40 text-text-foreground hover:bg-text-foreground hover:text-ink"
                 >
-                  See packages
+                  View services
                 </MagneticButton>
               </div>
             )}
@@ -388,7 +415,7 @@ function Field({
 }: Readonly<FieldProps>) {
   return (
     <div>
-      <label htmlFor={value} className="small-caps text-bone/60">
+      <label htmlFor={value} className="small-caps text-text-foreground/60">
         {label}
       </label>
       <input
@@ -396,7 +423,7 @@ function Field({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full border border-bone/20 bg-bone/5 px-4 py-3 text-bone placeholder:text-bone/30 focus:outline-none"
+        className="mt-2 w-full border border-text-foreground/20 bg-text-foreground/5 px-4 py-3 text-text-foreground placeholder:text-text-foreground/30 focus:outline-none"
       />
     </div>
   );

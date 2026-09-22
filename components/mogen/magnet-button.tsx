@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  type JSX,
-  type MouseEventHandler,
-  type ReactNode,
-  useRef,
-  useState,
-} from "react";
+import { type MouseEvent, type ReactNode, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface MagneticButtonProps {
@@ -14,7 +8,7 @@ interface MagneticButtonProps {
   className?: string;
   children: ReactNode;
   variant?: string;
-  as?: JSX.Element | ReactNode | string;
+  as?: ReactNode | string;
   type?: string;
   disabled?: boolean;
   target?: string;
@@ -33,10 +27,10 @@ export default function MagneticButton({
   variant = "solid",
   ...props
 }: Readonly<MagneticButtonProps>) {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  const handleMove = (e: unknown) => {
+  const handleMove = (e: MouseEvent<HTMLElement>) => {
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -58,7 +52,7 @@ export default function MagneticButton({
 
   const base =
     "group relative inline-flex items-center justify-center gap-2 px-7 py-4 font-display font-bold uppercase tracking-wider text-sm transition-transform duration-200 ease-out will-change-transform";
-  const variants = {
+  const variants: Record<string, string> = {
     solid: "bg-ink text-bone hover:bg-catalyst",
     catalyst: "bg-catalyst text-white hover:bg-ink",
     volt: "bg-volt text-obsidian hover:bg-ink hover:text-volt",
@@ -71,13 +65,13 @@ export default function MagneticButton({
   if (As === "a" || href) {
     return (
       <a
-        ref={ref}
+        ref={ref as React.RefObject<HTMLAnchorElement>}
         href={href}
         onMouseMove={handleMove}
         onMouseLeave={reset}
         className={cn(base, variants[variant], className)}
         style={style}
-        {...props}
+        {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
       >
         {children}
       </a>
@@ -85,15 +79,15 @@ export default function MagneticButton({
   }
 
   return (
-    <As
-      ref={ref}
+    <button
+      ref={ref as React.RefObject<HTMLButtonElement>}
       onMouseMove={handleMove}
       onMouseLeave={reset}
       className={cn(base, variants[variant], className)}
       style={style}
-      {...props}
+      {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
     >
       {children}
-    </As>
+    </button>
   );
 }

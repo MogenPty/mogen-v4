@@ -54,29 +54,33 @@ CLS measures visual stability. Keep it under 0.1. Always set width and height on
 A lean, well-built site wins all three. We build every Mogen site to pass Core Web Vitals by default — fast hosting, optimised assets, and zero layout shift.`,
   },
   {
-    slug: "case-study-maboloka-restaurant",
-    title: "How a Maboloka Restaurant Tripled Bookings in 90 Days",
-    category: "Case Study",
+    slug: "restaurant-website-bookings-guide",
+    title: "How Restaurants Can Use a Website to Generate More Bookings",
+    category: "Growth Advice",
     excerpt:
-      "A family restaurant in Maboloka went from invisible on Google to fully booked weekends — with a new site and local SEO.",
+      "A practical guide for restaurants on structuring a website, menu and booking path to support local discovery.",
     date: "2026-07-22",
     readTime: "5 min read",
     author: "Mogen Growth Team",
-    body: `When the owners came to us, their restaurant had a Facebook page and a phone number. Bookings came from word of mouth — and empty weekdays.
+    body: `Many restaurants rely on social profiles and word of mouth. A well-structured website makes it easier for new customers to find the menu, understand the offering, and make a booking.
 
-### The problem
+### Make the menu easy to find
 
-They didn't appear on Google Maps. Their menu wasn't online. Tourists and new locals had no way to find them.
+Publish a complete, mobile-friendly menu with clear categories, pricing and photos. Customers who can quickly review the menu are more likely to enquire or book.
 
-### What we did
+### Structure the booking path
 
-We built a fast, mobile-first website with their full menu, a one-tap booking form, and photos of the food. Then we optimised their Google Business Profile, added them to local directories, and started a review campaign with regulars.
+Place a clear booking or contact action near the top of the page. A one-tap WhatsApp link or short form reduces friction compared to asking customers to search for a phone number.
 
-### The result
+### Support local discovery
 
-Within 90 days, they ranked in the Maboloka map pack for "restaurant near me", organic traffic grew 180%, and weekend bookings tripled. Weekday bookings doubled after we added a midweek specials page.
+Complete the Google Business Profile, keep hours and contact details accurate, and ensure the name, address and phone number are consistent across directories. Add locally relevant content, such as the areas served.
 
-> "We used to wait for customers. Now they find us." — Owner`,
+### Collect and respond to reviews
+
+Request reviews systematically and respond to each one. Reviews help prospective customers evaluate the business and reinforce visibility.
+
+A fast, mobile-first site that combines these elements supports both conversion and local search without relying on unverified outcome claims.`,
   },
   {
     slug: "landing-page-conversion",
@@ -149,29 +153,33 @@ Businesses with 100+ photos get significantly more direction requests and calls.
 GBP Insights tells you exactly how people found you and what they did next. It's a free conversion report — use it.`,
   },
   {
-    slug: "case-study-soshanguve-clinic",
-    title: "Soshanguve Dental Clinic: From Page 3 to Map Pack",
-    category: "Case Study",
+    slug: "local-seo-clinic-guide",
+    title: "How Clinics Can Improve Local Visibility on Google",
+    category: "Growth Advice",
     excerpt:
-      "A dental clinic buried on page 3 of Google now ranks in the map pack for high-intent local searches.",
+      "An educational guide for clinics on improving local search foundations — from profile optimisation to content.",
     date: "2026-06-15",
     readTime: "5 min read",
     author: "Mogen Growth Team",
-    body: `A dental clinic in Soshanguve had a website nobody could find. They were on page three for "dentist near me" and getting almost no online enquiries.
+    body: `Clinics depend on local discovery. Patients typically search for a nearby provider and choose from the top results.
 
-### The audit
+### Complete the Google Business Profile
 
-Our Growth Audit scored them 41/100. The problems were clear: no Google Business Profile optimisation, a slow outdated site, and no local content.
+Select accurate primary and secondary categories, list services clearly, and keep hours, contact details and service areas up to date. Add recent photos of the practice.
 
-### The plan
+### Address technical foundations
 
-We rebuilt their site for speed and mobile, optimised their GBP with accurate categories and service lists, cleaned up citations across directories, and published local content answering the questions patients actually ask.
+Ensure the site is fast, mobile-friendly and crawlable. Consistent name, address and phone information across directories supports local relevance.
 
-### The result
+### Create patient-centred content
 
-In four months they moved from page 3 to the map pack for their top keywords. Online appointment requests grew 160%, and they now rank #1 for "dentist in Soshanguve."
+Publish content that answers common patient questions — services offered, what to expect at an appointment, and areas served. Locally relevant content supports both ranking and trust.
 
-> "We finally show up where patients are looking." — Practice Manager`,
+### Strengthen enquiry paths
+
+Make appointment requests simple: a visible contact form or click-to-call, clear service pages, and confirmation that enquiries are received.
+
+These steps form a practical local SEO foundation for clinics without relying on specific ranking or business outcome claims.`,
   },
 ];
 

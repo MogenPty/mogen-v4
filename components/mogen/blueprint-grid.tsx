@@ -1,11 +1,10 @@
-import type { JSX, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface BlueprintGridProps {
   className?: string;
   id?: string;
   children: ReactNode;
-  as?: JSX.Element | ReactNode | string;
 }
 
 /**
@@ -17,10 +16,9 @@ export default function BlueprintGrid({
   children,
   className,
   id,
-  as: As = "section",
 }: Readonly<BlueprintGridProps>) {
   return (
-    <As id={id} className={cn("relative", className)}>
+    <section id={id} className={cn("relative", className)}>
       {/* hairline frame */}
       <div
         className="pointer-events-none absolute inset-0 z-0 blueprint-grid opacity-60"
@@ -60,7 +58,7 @@ export default function BlueprintGrid({
         aria-hidden="true"
       />
       <div className="relative z-10">{children}</div>
-    </As>
+    </section>
   );
 }
 

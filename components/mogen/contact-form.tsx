@@ -1,13 +1,12 @@
 "use client";
 
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import MagneticButton from "./magnet-button";
 
 const SERVICES = [
   "Web Development",
-  "Mobile Development",
-  "Brand Identity",
+  "Business Documentation",
   "SEO Services",
   "Digital Marketing",
   "Full Growth Package",
@@ -26,7 +25,7 @@ export default function ContactForm() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
-  const submit = async (e) => {
+  const submit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.email) {
       setError("Name and email are required.");
@@ -38,7 +37,7 @@ export default function ContactForm() {
       // await base44.entities.Lead.create({ ...form, status: "new" });
       setSaving(false);
       setDone(true);
-    } catch (err) {
+    } catch {
       setSaving(false);
       setError(
         "Something went wrong. Please try again or email hello@mogen.co.za.",
