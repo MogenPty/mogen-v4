@@ -26,14 +26,23 @@ const VALUES = [
   },
 ];
 
-const TEAM = [
-  { name: "Solly Motsoane", role: "Founder & Lead Developer", initials: "SM" },
-  { name: "Valencia Mabika", role: "Search Intelligence", initials: "VM" },
-  { name: "Neo Li", role: "Content & Local SEO", initials: "NL" },
-  { name: "Aazelliah Johns", role: "Brand & Design", initials: "AJ" },
-  { name: "Theophilus Leruo", role: "SEO Technical", initials: "TL" },
-  { name: "Tshepiso Rorisang", role: "SEO Authority", initials: "TR" },
-  { name: "Prosper Lebeko", role: "Growth Strategist", initials: "PL" },
+const APPROACH = [
+  {
+    title: "Engineering-led",
+    desc: "We build fast, secure, well-structured websites with clean code and strong technical foundations.",
+  },
+  {
+    title: "Local expertise",
+    desc: "We focus on how local customers search and decide — from Google Business Profile to local content.",
+  },
+  {
+    title: "Practical process",
+    desc: "Clear scopes, transparent pricing, and a defined process from discovery through launch and growth.",
+  },
+  {
+    title: "Specialist partners",
+    desc: "Where a project needs specialist input, we work with trusted external partners and keep you informed throughout.",
+  },
 ];
 
 export default function About() {
@@ -47,7 +56,7 @@ export default function About() {
           <span className="text-catalyst">local business.</span>
         </>
       }
-      intro="Mogen is a Pretoria-based growth agency. We build stunning websites, killer brands and rank-winning SEO for local businesses across Gauteng."
+      intro="Mogen is a Pretoria-based growth agency. We build websites, business documentation and SEO for local businesses across Gauteng — with specialist partners where needed."
     >
       {/* Origin story */}
       <BlueprintGrid className="bg-bone pb-24">
@@ -76,8 +85,8 @@ export default function About() {
               </p>
               <p>
                 Today we serve businesses across Pretoria, Maboloka, Soshanguve
-                and greater Gauteng, and we&apos;ve helped over 50 local brands
-                get found, look stunning and grow.
+                and greater Gauteng — helping local businesses get found and
+                present themselves professionally online.
               </p>
             </div>
           </div>
@@ -122,25 +131,21 @@ export default function About() {
         </div>
       </BlueprintGrid>
 
-      {/* Team */}
+      {/* How we work */}
       <BlueprintGrid className="bg-bone pb-24">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <h2 className="mb-12 font-display text-3xl font-black text-ink lg:text-4xl">
-            The experts behind the work
+            How Mogen works
           </h2>
-          <div className="grid grid-cols-2 gap-px bg-ink/10 md:grid-cols-3 lg:grid-cols-6">
-            {TEAM.map((m) => (
-              <div
-                key={m.name}
-                className="flex flex-col items-center bg-bone p-6 text-center"
-              >
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-ink font-display text-xl font-black text-catalyst">
-                  {m.initials}
-                </div>
-                <h3 className="mt-4 font-display text-base font-black text-ink">
-                  {m.name}
+          <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
+            {APPROACH.map((a) => (
+              <div key={a.title} className="bg-bone p-8">
+                <h3 className="font-display text-xl font-black text-ink">
+                  {a.title}
                 </h3>
-                <p className="mt-1 small-caps text-ink/60">{m.role}</p>
+                <p className="mt-3 text-sm leading-relaxed text-ink/70">
+                  {a.desc}
+                </p>
               </div>
             ))}
           </div>

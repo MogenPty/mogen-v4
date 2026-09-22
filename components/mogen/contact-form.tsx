@@ -6,8 +6,7 @@ import MagneticButton from "./magnet-button";
 
 const SERVICES = [
   "Web Development",
-  "Mobile Development",
-  "Brand Identity",
+  "Business Documentation",
   "SEO Services",
   "Digital Marketing",
   "Full Growth Package",

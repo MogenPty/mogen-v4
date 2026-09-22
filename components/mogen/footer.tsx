@@ -51,7 +51,7 @@ const COLS: Column[] = [
     title: "Services",
     links: [
       { label: "Web Development", href: "/services/web-development" },
-      { label: "Brand Identity", href: "/services/brand-identity" },
+      { label: "Business Documentation", href: "/services/business-documentation" },
       { label: "SEO Services", href: "/services/seo-services" },
       { label: "Digital Marketing", href: "/services/digital-marketing" },
     ],
@@ -75,8 +75,8 @@ export default function Footer() {
               <span className="h-2 w-2 bg-catalyst" aria-hidden="true" />
             </Link>
             <p className="mt-4 max-w-xs text-sm text-forground/60">
-              Stunning websites, killer brands and rank-winning SEO for local
-              businesses in Pretoria, Maboloka, Soshanguve & across Gauteng.
+              Websites, business documentation and SEO for local businesses in
+              Pretoria, Maboloka, Soshanguve & across Gauteng.
             </p>
           </div>
 

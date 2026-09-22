@@ -15,7 +15,7 @@ const PHASES = [
     icon: PenTool,
     no: "02",
     title: "Architect",
-    desc: "We design the blueprint: site structure, brand system, content strategy and the SEO framework that will drive rankings. Every decision maps back to your growth goals.",
+    desc: "We design the blueprint: site structure, documentation system, content strategy and the SEO framework that will drive rankings. Every decision maps back to your growth goals.",
     steps: [
       "Information architecture",
       "Brand & design system",
