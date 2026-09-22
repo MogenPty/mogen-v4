@@ -95,12 +95,17 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return
-    onSelect(api)
+    // Initial sync must not be a synchronous setState in the effect body
+    // (react-hooks/set-state-in-effect). Defer it so it runs as an
+    // event, and keep subsequent updates event-driven via embla events.
+    const id = requestAnimationFrame(() => onSelect(api))
     api.on("reInit", onSelect)
     api.on("select", onSelect)
 
     return () => {
+      cancelAnimationFrame(id)
       api?.off("select", onSelect)
+      api?.off("reInit", onSelect)
     }
   }, [api, onSelect])
 

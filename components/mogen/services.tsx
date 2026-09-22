@@ -90,7 +90,7 @@ export default function Services() {
             <article
               // biome-ignore lint/suspicious/noArrayIndexKey: Items are only identified as indexed.
               key={`blank-${i}`}
-              className="flex flex-col justify-center invisible blank"
+              className="hidden md:flex flex-col justify-center invisible blank"
               aria-hidden="true"
             />
           ))}
