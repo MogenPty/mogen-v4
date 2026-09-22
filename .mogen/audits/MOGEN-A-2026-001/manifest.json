@@ -1,0 +1,19 @@
+{
+  "auditId": "MOGEN-A-2026-001",
+  "createdAt": "2026-09-08T17:00:05.163Z",
+  "status": "COMPLETED",
+  "domain": "",
+  "discovery": {
+    "framework": "Next.js 16.3.3",
+    "language": "TypeScript",
+    "packageManager": "pnpm",
+    "router": "App Router",
+    "css": "Tailwind"
+  },
+  "availability": {
+    "maxWorkingDays": 5,
+    "hoursPerWeek": 40,
+    "startDay": 0
+  },
+  "sourceRoot": "C:\\Projects\\mogen-v4"
+}

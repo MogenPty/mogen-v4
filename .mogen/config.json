@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "mogen-v4",
+    "domain": "",
+    "availability": {
+      "maxWorkingDays": 5,
+      "hoursPerWeek": 40,
+      "startDay": 0
+    }
+  },
+  "discovery": {
+    "framework": "Next.js 16.3.3",
+    "language": "TypeScript",
+    "packageManager": "pnpm",
+    "router": "App Router",
+    "css": "Tailwind"
+  },
+  "git": {
+    "fixStrategy": "branch",
+    "branch": {
+      "enabled": true,
+      "prefix": "seo/",
+      "nameTemplate": "seo/mogen-fix-{year}-{sequence}"
+    },
+    "worktree": {
+      "enabled": false,
+      "directory": "../.mogen-worktrees"
+    },
+    "commit": {
+      "enabled": false,
+      "messageTemplate": "SEO Fix: {fixSessionId}"
+    }
+  },
+  "audit": {
+    "latestCompletedAuditId": "MOGEN-A-2026-002"
+  }
+}

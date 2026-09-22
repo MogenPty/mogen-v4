@@ -1,0 +1,18 @@
+{
+  "fixSessionId": "MOGEN-F-2026-001",
+  "auditId": "MOGEN-A-2026-002",
+  "findings": [
+    "SEO-TECH-001",
+    "SEO-TECH-002"
+  ],
+  "strategy": "no-branch",
+  "branch": "main",
+  "createdAt": "2026-09-08T17:02:22.863Z",
+  "filesModified": [],
+  "validation": {
+    "status": "PENDING"
+  },
+  "commit": {
+    "status": "NOT_CREATED"
+  }
+}
