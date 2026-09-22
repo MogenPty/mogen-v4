@@ -21,7 +21,7 @@ const COLS: Column[] = [
       { label: "Services", href: "/#services" },
       { label: "Growth Audit", href: "/#audit" },
       { label: "Our Work", href: "/#work" },
-      { label: "Pricing", href: "/#pricing" },
+      { label: "Articles", href: "/blog" },
       { label: "Contact", href: "/contact" },
     ],
   },

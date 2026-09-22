@@ -19,7 +19,7 @@ const NAV = [
   { label: "Services", href: "/#services", children: SERVICES_SUB },
   { label: "Growth Audit", href: "/#audit" },
   { label: "Work", href: "/#work" },
-  { label: "Pricing", href: "/#pricing" },
+  { label: "Articles", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
 

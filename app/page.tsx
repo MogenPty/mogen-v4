@@ -1,13 +1,17 @@
 import React from "react";
+import ArticlesPreview from "@/components/mogen/articles-preview";
 import ConversionBar from "@/components/mogen/conversation-bar";
-import CallToAction from "@/components/mogen/cta";
+import FinalCTA from "@/components/mogen/final-cta";
 import Footer from "@/components/mogen/footer";
 import GrowthAudit from "@/components/mogen/growth-audit";
 import Hero from "@/components/mogen/hero";
+import LocationsPreview from "@/components/mogen/locations-preview";
 import Nav from "@/components/mogen/nav";
 import Portfolio from "@/components/mogen/portfolio";
-import Pricing from "@/components/mogen/pricing";
+import Promotion from "@/components/mogen/promotion";
 import Services from "@/components/mogen/services";
+import WhatMogenDoes from "@/components/mogen/what-mogen-does";
+import WhyMogen from "@/components/mogen/why-mogen";
 
 export default function Home() {
   return (
@@ -15,11 +19,15 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
+        <WhatMogenDoes />
         <Services />
+        <WhyMogen />
         <GrowthAudit />
+        <Promotion />
         <Portfolio />
-        <Pricing />
-        <CallToAction />
+        <ArticlesPreview />
+        <LocationsPreview />
+        <FinalCTA />
       </main>
       <Footer />
       <ConversionBar />

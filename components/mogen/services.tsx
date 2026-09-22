@@ -1,9 +1,11 @@
 "use client";
 
 import { Code2, FileText, Megaphone, Search } from "lucide-react";
-import Link from "next/link";
+import { useEqualHeight } from "@/hooks/use-equal-height";
+import { getBlankCount } from "@/lib/grid-utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
+import ServiceCard from "./service-card";
 
 const SERVICES = [
   {
@@ -12,13 +14,18 @@ const SERVICES = [
     slug: "web-development",
     desc: "Custom websites that work perfectly on all devices. Fast, secure, and built to convert visitors into customers.",
     deliverables: ["Responsive build", "Core Web Vitals", "Conversion UX"],
+    featured: true,
   },
   {
     icon: FileText,
     name: "Business Documentation",
     slug: "business-documentation",
     desc: "Professional business documents — policies, procedures, forms and templates structured for clarity and consistency.",
-    deliverables: ["Policies & procedures", "Forms & templates", "Professional formatting"],
+    deliverables: [
+      "Policies & procedures",
+      "Forms & templates",
+      "Professional formatting",
+    ],
   },
   {
     icon: Megaphone,
@@ -33,90 +40,78 @@ const SERVICES = [
     slug: "seo-services",
     desc: "Local SEO that gets you found on Google — Google Business Profile, on-page optimisation and content that brings real enquiries from nearby customers.",
     deliverables: ["Local SEO", "GBP optimisation", "On-page SEO"],
-    featured: true,
   },
 ];
 
 export default function Services() {
+  const ServiceList = SERVICES.slice(1);
+  const blankCount = getBlankCount(ServiceList.length);
+  const gridRef = useEqualHeight<HTMLDivElement>([ServiceList.length], {
+    cssVar: "--grid-cell-height",
+    selector: ".item, .blank, .cta",
+  });
+
   return (
-    <BlueprintGrid id="services" className="bg-bone py-24 lg:py-32">
+    <BlueprintGrid id={"services"} className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 01 — Capabilities" title="What We Do" />
+        <SectionLabel index="// 02 — Services" title="Current Services" />
 
         <div className="mb-14 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">
-            Services that
+            Four services,
             <br />
-            <span className="text-catalyst">get results.</span>
+            <span className="text-catalyst">clearly scoped.</span>
           </h2>
           <p className="max-w-md text-lg text-ink/70">
-            We don't just build websites. We create digital experiences that
-            drive business growth — engineered on a technical grid, optimised
-            for Google.
+            Websites, online visibility, marketing and documentation — each a
+            distinct service so you know what you are paying for. No bundled
+            jargon or hidden extras.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-3">
-          {SERVICES.map((s) => {
-            const Icon = s.icon;
-            return (
-              <article
-                key={s.name}
-                className="group relative bg-bone p-8 transition-colors hover:bg-ink hover:text-bone"
-              >
-                {s.featured && (
-                  <span className="absolute right-6 top-6 small-caps text-catalyst">
-                    Core
-                  </span>
-                )}
-                <Icon
-                  className="h-8 w-8 text-catalyst"
-                  strokeWidth={1.5}
-                  aria-hidden="true"
-                />
-                <h3 className="mt-6 font-display text-2xl font-black">
-                  {s.name}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed opacity-80">
-                  {s.desc}
-                </p>
-                <ul className="mt-6 space-y-2">
-                  {s.deliverables.map((d) => (
-                    <li key={d} className="flex items-center gap-2 text-sm">
-                      <span
-                        className="h-1 w-1 bg-catalyst"
-                        aria-hidden="true"
-                      />
-                      {d}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={`/services/${s.slug}`}
-                  className="mt-8 inline-flex items-center gap-2 text-sm small-caps text-current group-hover:text-catalyst"
-                >
-                  Learn more →
-                </Link>
-              </article>
-            );
-          })}
+        <div
+          ref={gridRef}
+          id={"serviceGrid"}
+          className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {ServiceList.map((s) => (
+            <ServiceCard
+              key={s.name}
+              name={s.name}
+              slug={s.slug}
+              desc={s.desc}
+              deliverables={s.deliverables}
+              icon={s.icon}
+              featured={s.featured}
+              className="item"
+            />
+          ))}
+
+          {Array.from({ length: blankCount }).map((_, i) => (
+            <article
+              // biome-ignore lint/suspicious/noArrayIndexKey: Items are only identified as indexed.
+              key={`blank-${i}`}
+              className="flex flex-col justify-center invisible blank"
+              aria-hidden="true"
+            />
+          ))}
 
           {/* CTA tile */}
-          <article className="flex flex-col justify-between bg-ink p-8 text-bone">
+          <article className="flex flex-col justify-between bg-ink p-8 text-bone cta">
             <h3 className="font-display text-2xl font-black">
-              Need the full stack?
+              Not sure where to start?
             </h3>
             <p className="mt-3 text-sm text-bone/70">
-              Bundle web, documentation and SEO into one growth package —
-              engineered to compound.
+              Start with a free Growth Audit — a practical review of your
+              current visibility and a clear next step.
             </p>
             <MagneticButton
               as="a"
-              href="#pricing"
+              href="#audit"
               variant="catalyst"
               className="mt-8"
             >
-              View Packages
+              Get Free Audit
             </MagneticButton>
           </article>
         </div>

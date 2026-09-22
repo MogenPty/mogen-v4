@@ -1,55 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useTypewriter } from "@/hooks/use-typewriter";
+import DriftingMetrics from "./drifting-metrics";
 import MagneticButton from "./magnet-button";
 
 const KEYWORDS = [
-  "Web Design in Pretoria",
-  "Local SEO that Ranks",
-  "Websites that Convert",
-  "Documentation that Works",
-  "Growth on Google",
+  "Web Development",
+  "SEO",
+  "Digital Marketing",
+  "Business Documentation",
 ];
-
-interface TypeWriterOptions {
-  type?: number;
-  erase?: number;
-  hold?: number;
-}
-
-function useTypewriter(
-  words: string[],
-  { type = 90, erase = 45, hold = 1600 }: TypeWriterOptions = {},
-) {
-  const [text, setText] = useState("");
-  const [i, setI] = useState(0);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    const current = words[i % words.length];
-    let t: NodeJS.Timeout;
-    if (!deleting && text === current) {
-      t = setTimeout(() => setDeleting(true), hold);
-    } else if (deleting && text === "") {
-      setDeleting(false);
-      setI((v) => v + 1);
-    } else {
-      t = setTimeout(
-        () => {
-          setText((prev) =>
-            deleting
-              ? current.slice(0, prev.length - 1)
-              : current.slice(0, prev.length + 1),
-          );
-        },
-        deleting ? erase : type,
-      );
-    }
-    return () => clearTimeout(t);
-  }, [text, deleting, i, words, type, erase, hold]);
-
-  return text;
-}
 
 export default function Hero() {
   const typed = useTypewriter(KEYWORDS);
@@ -59,6 +19,9 @@ export default function Hero() {
       id={"top"}
       className="relative min-h-screen w-full overflow-hidden bg-bone pt-24"
     >
+      {/* parallax drifting metric numbers */}
+      <DriftingMetrics />
+
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-6rem)] max-w-[1600px] flex-col justify-center px-6 py-12 lg:px-12 lg:py-20">
         <div className="mx-auto w-full max-w-4xl">
           <div className="mb-6 flex items-center gap-3">
@@ -67,42 +30,48 @@ export default function Hero() {
               aria-hidden="true"
             />
             <span className="small-caps text-muted-foreground">
-              Pretoria · Gauteng · ZA
+              Maboloka · South Africa · Digital Services
             </span>
           </div>
 
-          <h1 className="font-display text-[13vw] leading-[0.95] font-black tracking-tight text-ink lg:text-[5.2vw]">
-            We engineer
+          <h1 className="font-display text-[11vw] leading-[0.95] font-black tracking-tight text-ink lg:text-[5vw]">
+            Digital services
+            <br />
+            for businesses
             <br />
             <span className="text-catalyst">{typed}</span>
             <span
               className="ml-1 inline-block h-[0.8em] w-[0.08em] translate-y-[0.05em] bg-ink animate-pulse"
               aria-hidden="true"
             />
+            <span className="block text-[6vw] lg:text-[2.2vw] font-black text-ink/90 mt-2">
+              that are ready to grow.
+            </span>
           </h1>
 
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink/80">
-            Mogen builds websites and SEO for local businesses across Pretoria,
-            Maboloka, Soshanguve and beyond — turning passive visitors into
-            active enquiries.
+            Mogen is a South African digital services business based in
+            Maboloka. We help businesses with practical services — websites,
+            online visibility, digital marketing and business documentation —
+            appropriate to their needs.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <MagneticButton
               as="a"
-              href="#audit"
+              href="#services"
               variant="catalyst"
-              aria-label="Get your free Mogen Growth Audit"
+              aria-label="Explore Mogen services"
             >
-              Get Free Growth Audit
+              Explore Services
             </MagneticButton>
             <MagneticButton
               as="a"
-              href="#work"
+              href="#audit"
               variant="outline"
-              aria-label="View our work"
+              aria-label="Get your free Mogen Growth Audit"
             >
-              View Work
+              Free Growth Audit
             </MagneticButton>
           </div>
         </div>

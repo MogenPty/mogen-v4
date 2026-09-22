@@ -385,11 +385,11 @@ export default function GrowthAudit() {
                 </MagneticButton>
                 <MagneticButton
                   as="a"
-                  href="#pricing"
+                  href="#services"
                   variant="outline"
                   className="mt-3 w-full border-text-foreground/40 text-text-foreground hover:bg-text-foreground hover:text-ink"
                 >
-                  See packages
+                  View services
                 </MagneticButton>
               </div>
             )}

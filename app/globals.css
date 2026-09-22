@@ -164,6 +164,12 @@
   .hairline {
     background: hsl(var(--ink) / 0.12);
   }
+
+  .item,
+  .blank,
+  .cta {
+    height: var(--grid-cell-height, auto);
+  }
 }
 
 @layer utilities {
