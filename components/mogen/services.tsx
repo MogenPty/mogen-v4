@@ -44,9 +44,8 @@ const SERVICES = [
 ];
 
 export default function Services() {
-  const ServiceList = SERVICES.slice(1);
-  const blankCount = getBlankCount(ServiceList.length);
-  const gridRef = useEqualHeight<HTMLDivElement>([ServiceList.length], {
+  const blankCount = getBlankCount(SERVICES.length);
+  const gridRef = useEqualHeight<HTMLDivElement>([SERVICES.length], {
     cssVar: "--grid-cell-height",
     selector: ".item, .blank, .cta",
   });
@@ -74,7 +73,7 @@ export default function Services() {
           id={"serviceGrid"}
           className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-3"
         >
-          {ServiceList.map((s) => (
+          {SERVICES.map((s) => (
             <ServiceCard
               key={s.name}
               name={s.name}
