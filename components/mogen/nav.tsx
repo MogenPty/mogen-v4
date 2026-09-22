@@ -12,7 +12,7 @@ const SERVICES_SUB = [
   { label: "Web Development", href: "/services/web-development" },
   { label: "Business Documentation", href: "/services/business-documentation" },
   { label: "Digital Marketing", href: "/services/digital-marketing" },
-  { label: "SEO Services", href: "/services/seo-services" },
+  { label: "SEO", href: "/services/seo" },
 ];
 
 const NAV = [

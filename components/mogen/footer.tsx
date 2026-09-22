@@ -52,8 +52,8 @@ const COLS: Column[] = [
     links: [
       { label: "Web Development", href: "/services/web-development" },
       { label: "Business Documentation", href: "/services/business-documentation" },
-      { label: "SEO Services", href: "/services/seo-services" },
       { label: "Digital Marketing", href: "/services/digital-marketing" },
+      { label: "SEO", href: "/services/seo" },
     ],
   },
 ];

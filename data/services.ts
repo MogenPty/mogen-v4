@@ -156,7 +156,7 @@ export const SERVICES: Service[] = [
       },
       {
         q: "Is SEO included?",
-        a: "Every site ships with on-page SEO foundations and Google Search Console setup. For ongoing ranking work, see our SEO Services.",
+        a: "Every site ships with on-page SEO foundations and Google Search Console setup. For ongoing ranking work, see our SEO service.",
       },
       {
         q: "Will my site work on mobile?",
@@ -422,8 +422,8 @@ export const SERVICES: Service[] = [
     ],
   },
   {
-    slug: "seo-services",
-    name: "SEO Services",
+    slug: "seo",
+    name: "SEO",
     icon: Search,
     tagline:
       "Local SEO that gets you found on Google — and brings real enquiries from nearby customers.",
