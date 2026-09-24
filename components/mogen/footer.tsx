@@ -2,6 +2,7 @@
 
 import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
+import { siteConfig } from "@/lib/site";
 
 interface ColumnLink {
   label: string;
@@ -51,7 +52,10 @@ const COLS: Column[] = [
     title: "Services",
     links: [
       { label: "Web Development", href: "/services/web-development" },
-      { label: "Business Documentation", href: "/services/business-documentation" },
+      {
+        label: "Business Documentation",
+        href: "/services/business-documentation",
+      },
       { label: "Digital Marketing", href: "/services/digital-marketing" },
       { label: "SEO", href: "/services/seo" },
     ],
@@ -109,21 +113,24 @@ export default function Footer() {
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-catalyst" aria-hidden="true" />
                 <a
-                  href="mailto:hello@mogen.co.za"
+                  href={`mailto:${siteConfig.email}`}
                   className="hover:text-catalyst"
                 >
-                  hello@mogen.co.za
+                  {siteConfig.email}
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-catalyst" aria-hidden="true" />
-                <a href="tel:+27000000000" className="hover:text-catalyst">
-                  Pretoria, Gauteng
+                <a
+                  href={`tel:${siteConfig.telephone.replace("+27", "27")}`}
+                  className="hover:text-catalyst"
+                >
+                  {siteConfig.telephoneDisplay}
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-catalyst" aria-hidden="true" />
-                <span>Serving Gauteng & beyond, ZA</span>
+                <span>Serving North West & beyond, ZA</span>
               </li>
             </ul>
           </div>
