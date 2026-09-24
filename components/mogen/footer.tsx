@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
-import { siteConfig } from "@/lib/site";
+import { siteConfig } from "@/data/site";
 
 interface ColumnLink {
   label: string;
@@ -122,7 +122,7 @@ export default function Footer() {
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-catalyst" aria-hidden="true" />
                 <a
-                  href={`tel:${siteConfig.telephone.replace("+27", "27")}`}
+                  href={`tel:${siteConfig.telephone}`}
                   className="hover:text-catalyst"
                 >
                   {siteConfig.telephoneDisplay}

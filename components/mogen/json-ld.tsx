@@ -1,4 +1,4 @@
-import { siteConfig } from "@/lib/site";
+import { siteConfig } from "@/data/site";
 
 /**
  * Minimal, type-safe JSON-LD graph for the homepage.

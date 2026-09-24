@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import JsonLd from "@/components/mogen/json-ld";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { siteConfig } from "@/lib/site";
+import { siteConfig } from "@/data/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

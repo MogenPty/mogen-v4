@@ -19,8 +19,11 @@ export const siteConfig = {
   // Language tag for Next.js html lang
   lang: "en",
   email: "info@mogen.co.za",
+  legacyEmail: "hello@mogen.co.za",
   telephone: "+27718631884",
   telephoneDisplay: "+27 (0)71 863 1884",
+  alternativeTelephone: "+27765207876",
+  whatsappNumber: "+27718631884",
   // Address — only city/region/country verified, no street invented
   address: {
     addressLocality: "Brits",
