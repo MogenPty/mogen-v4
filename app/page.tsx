@@ -13,9 +13,15 @@ import Promotion from "@/components/mogen/promotion";
 import Services from "@/components/mogen/services";
 import WhatMogenDoes from "@/components/mogen/what-mogen-does";
 import WhyMogen from "@/components/mogen/why-mogen";
+import { getActivePromotion } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
 
 export default function Home() {
+  const promotion = getActivePromotion();
+  // The promotion slot sits at 05. When no promotion is active the section is
+  // not rendered, so every section after it shifts up one to stay consecutive.
+  const afterPromotion = promotion ? 6 : 5;
+
   return (
     <div className="bg-bone">
       <link rel="canonical" href={`${siteConfig.url}/`} />
@@ -28,11 +34,11 @@ export default function Home() {
         <Services numbering={2} auditHref="#audit" />
         <WhyMogen numbering={3} />
         <GrowthAudit numbering={4} />
-        <Promotion numbering={5} />
-        <Portfolio numbering={6} />
-        <ArticlesPreview numbering={7} />
-        <LocationsPreview numbering={8} />
-        <FinalCTA numbering={9} />
+        {promotion && <Promotion numbering={5} />}
+        <Portfolio numbering={afterPromotion} />
+        <ArticlesPreview numbering={afterPromotion + 1} />
+        <LocationsPreview numbering={afterPromotion + 2} />
+        <FinalCTA numbering={afterPromotion + 3} />
       </main>
       <Footer />
       <ConversionBar auditHref="#audit" />
