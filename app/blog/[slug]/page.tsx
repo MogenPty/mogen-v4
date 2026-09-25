@@ -7,7 +7,7 @@ interface Props {
 
 export default async function BlogPost({ params }: Readonly<Props>) {
   const { slug } = await params;
-  if (!slug) return <ArticleNotFound />;
+  if (!slug) return <ArticleNotFound numbering={9} />;
 
-  return <BlogPostBlock slug={slug} />;
+  return <BlogPostBlock slug={slug} numbering={9} />;
 }

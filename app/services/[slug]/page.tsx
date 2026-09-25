@@ -7,5 +7,5 @@ interface Props {
 export default async function ServiceDetailPage({ params }: Readonly<Props>) {
   const { slug } = await params;
 
-  return <ServiceDetail serviceSlug={slug} />;
+  return <ServiceDetail serviceSlug={slug} numbering={1} />;
 }

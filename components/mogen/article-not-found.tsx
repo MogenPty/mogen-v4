@@ -1,14 +1,19 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 import PageShell from "./page-shell";
 
-export default function ArticleNotFound() {
+interface Props {
+  numbering?: number;
+}
+
+export default function ArticleNotFound({ numbering = 1 }: Readonly<Props>) {
   return (
     <PageShell
-      index="// 09 — Insights"
+      index={`// ${formatNumber(numbering)} — Insights`}
       label="Blog"
       title={
         <>

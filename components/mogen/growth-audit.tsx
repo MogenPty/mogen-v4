@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { type SubmitEvent, useState } from "react";
 import { SERVICES } from "@/data/services";
+import { formatNumber } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -26,7 +27,11 @@ import MagneticButton from "./magnet-button";
 
 const STEPS = ["URL", "Scan", "Report", "Unlock"];
 
-export default function GrowthAudit() {
+interface Props {
+  numbering?: number;
+}
+
+export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
   const [step, setStep] = useState(0);
   const [url, setUrl] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -94,18 +99,18 @@ export default function GrowthAudit() {
   return (
     <BlueprintGrid
       id={"audit"}
-      className="bg-ink dark:bg-secondary py-24 text-bone dark:text-secondary-foreground lg:py-32"
+      className="bg-ink dark:bg-secondary py-24 text-white dark:text-secondary-foreground lg:py-32"
     >
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
         <div className="mb-10 flex items-center gap-4">
           <span className="small-caps text-catalyst">
-            {"// 02 — Lead Generation"}
+            {`// ${formatNumber(numbering)} — Lead Generation`}
           </span>
           <span
-            className="h-px flex-1 max-w-30 bg-bone/30"
+            className="h-px flex-1 max-w-30 bg-white/30 dark:bg-secondary-foreground/30"
             aria-hidden="true"
           />
-          <span className="small-caps text-bone/50">Mogen Growth Audit</span>
+          <span className="small-caps text-white/70 dark:text-secondary-foreground/70">Mogen Growth Audit</span>
         </div>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
@@ -116,7 +121,7 @@ export default function GrowthAudit() {
               <br />
               <span className="text-catalyst">Growth Audit.</span>
             </h2>
-            <p className="mt-6 max-w-md text-lg text-bone/70">
+            <p className="mt-6 max-w-md text-lg text-white/70 dark:text-secondary-foreground/70">
               Enter your website URL. We scan it against the Mogen 37-step
               framework — scoring SEO, speed, conversions and local visibility —
               then send you a prioritised blueprint to rank and grow.
@@ -129,7 +134,7 @@ export default function GrowthAudit() {
                 "Local SEO & Google Business Profile",
                 "Conversion path & lead capture",
               ].map((f) => (
-                <div key={f} className="flex items-center gap-3 text-bone/80">
+                <div key={f} className="flex items-center gap-3 text-white/80 dark:text-secondary-foreground/80">
                   <CheckCircle2
                     className="h-5 w-5 text-catalyst"
                     aria-hidden="true"
@@ -140,21 +145,21 @@ export default function GrowthAudit() {
             </div>
 
             {/* progress steps */}
-            <div className="mt-12 flex items-center gap-2">
+            <div className="mt-12 flex flex-wrap items-center gap-2">
               {STEPS.map((s, i) => (
                 <div key={s} className="flex items-center gap-2">
                   <span
                     className={
                       "flex h-7 items-center justify-center rounded-full px-3 small-caps transition-colors " +
                       (i <= step
-                        ? "bg-catalyst text-white"
-                        : "bg-bone/10 text-bone/50")
+                        ? "bg-catalyst text-black"
+                        : "bg-white/10 dark:bg-secondary-foreground/10 text-white/70 dark:text-secondary-foreground/70")
                     }
                   >
                     {s}
                   </span>
                   {i < STEPS.length - 1 && (
-                    <span className="h-px w-6 bg-bone/20" aria-hidden="true" />
+                    <span className="h-px w-6 bg-white/20 dark:bg-secondary-foreground/20" aria-hidden="true" />
                   )}
                 </div>
               ))}
@@ -162,7 +167,7 @@ export default function GrowthAudit() {
           </div>
 
           {/* RIGHT — interactive schematic */}
-          <div className="relative border border-text-foreground/15 bg-bone/3 p-6 lg:p-8">
+          <div className="relative border border-white/30 bg-white/5 p-6 dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 lg:p-8">
             <div
               className="absolute left-0 top-0 h-6 w-px bg-catalyst"
               aria-hidden="true"
@@ -175,13 +180,13 @@ export default function GrowthAudit() {
             {/* STEP 0 — URL */}
             {step === 0 && (
               <div>
-                <label htmlFor="audit-url" className="small-caps text-bone/60">
+                <label htmlFor="audit-url" className="small-caps text-white/70 dark:text-secondary-foreground/70">
                   Enter your website URL
                 </label>
                 <div className="mt-4 flex gap-3">
-                  <div className="flex flex-1 items-center gap-2 border border-bone/20 bg-bone/5 px-4">
+                  <div className="flex flex-1 items-center gap-2 border border-white/30 dark:border-secondary-foreground/40 bg-white/5 dark:bg-secondary-foreground/10 px-4">
                     <Search
-                      className="h-5 w-5 text-bone/40"
+                      className="h-5 w-5 text-white/70 dark:text-secondary-foreground/70"
                       aria-hidden="true"
                     />
                     <input
@@ -190,19 +195,19 @@ export default function GrowthAudit() {
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       placeholder="yourbusiness.co.za"
-                      className="w-full bg-transparent py-4 text-bone placeholder:text-bone/30 focus:outline-none"
+                      className="w-full bg-transparent py-4 text-white placeholder:text-white/60 focus:outline-none dark:text-secondary-foreground dark:placeholder:text-secondary-foreground/60"
                     />
                   </div>
                   <MagneticButton
                     variant="catalyst"
-                    className="hover:text-secondary hover:bg-ink"
+                    className="text-black hover:bg-ink hover:text-white dark:hover:text-secondary-foreground"
                     onClick={runScan}
                     aria-label="Run growth audit scan"
                   >
                     Scan
                   </MagneticButton>
                 </div>
-                <p className="mt-4 text-xs text-bone/40">
+                <p className="mt-4 text-xs text-white/70 dark:text-secondary-foreground/70">
                   No signup required for the scan. Unlock the full report with
                   your details.
                 </p>
@@ -212,14 +217,14 @@ export default function GrowthAudit() {
             {/* STEP 1 — scanning */}
             {step === 1 && (
               <div className="relative min-h-70">
-                <div className="flex items-center gap-3 text-bone/70">
+                <div className="flex items-center gap-3 text-white/70 dark:text-secondary-foreground/70">
                   <Loader2
                     className="h-5 w-5 animate-spin text-catalyst"
                     aria-hidden="true"
                   />
                   <span className="small-caps">Scanning {url}</span>
                 </div>
-                <div className="relative mt-6 h-55 overflow-hidden border border-bone/10">
+                <div className="relative mt-6 h-55 overflow-hidden border border-white/30 dark:border-secondary-foreground/40">
                   <div
                     className="absolute inset-x-0 h-0.5 bg-catalyst shadow-[0_0_12px_2px_hsl(var(--catalyst))] animate-scan"
                     aria-hidden="true"
@@ -229,11 +234,11 @@ export default function GrowthAudit() {
                       <span
                         // biome-ignore lint/suspicious/noArrayIndexKey: We need a key
                         key={i}
-                        className="h-3 w-full bg-bone/20"
+                        className="h-3 w-full bg-white/20 dark:bg-secondary-foreground/20"
                       />
                     ))}
                   </div>
-                  <div className="absolute bottom-3 left-3 right-3 space-y-1.5 text-xs text-bone/50">
+                  <div className="absolute bottom-3 left-3 right-3 space-y-1.5 text-xs text-white/70 dark:text-secondary-foreground/70">
                     <div className="animate-pulse">
                       › analysing crawl budget…
                     </div>
@@ -264,22 +269,22 @@ export default function GrowthAudit() {
             {step === 2 && (
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="small-caps text-bone/60">Growth Score</span>
-                  <span className="small-caps text-bone/40">{url}</span>
+                  <span className="small-caps text-white/70 dark:text-secondary-foreground/70">Growth Score</span>
+                  <span className="small-caps text-white/70 dark:text-secondary-foreground/70">{url}</span>
                 </div>
                 <div className="mt-4 flex items-end gap-4">
                   <span className="font-display text-7xl font-black text-catalyst">
                     {score}
                   </span>
-                  <span className="mb-3 text-bone/50">/ 100</span>
+                  <span className="mb-3 text-white/70 dark:text-secondary-foreground/70">/ 100</span>
                 </div>
-                <div className="mt-3 h-2 w-full bg-bone/10">
+                <div className="mt-3 h-2 w-full bg-white/10 dark:bg-secondary-foreground/10">
                   <div
                     className="h-full bg-catalyst transition-all duration-1000"
                     style={{ width: `${score}%` }}
                   />
                 </div>
-                <p className="mt-4 text-sm text-bone/70">
+                <p className="mt-4 text-sm text-white/70 dark:text-secondary-foreground/70">
                   Your site has clear growth headroom. Unlock the full
                   prioritised blueprint — enter your details below.
                 </p>
@@ -311,7 +316,7 @@ export default function GrowthAudit() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="svc" className="small-caps text-bone/60">
+                    <label htmlFor="svc" className="small-caps text-white/70 dark:text-secondary-foreground/70">
                       Service interest
                     </label>
                     <select
@@ -320,7 +325,7 @@ export default function GrowthAudit() {
                       onChange={(e) =>
                         setForm({ ...form, service_interest: e.target.value })
                       }
-                      className="mt-2 w-full border border-bone/20 bg-bone/5 px-4 py-3 text-bone focus:outline-none"
+                      className="mt-2 w-full border border-white/30 bg-white/5 px-4 py-3 text-white focus:outline-none dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 dark:text-secondary-foreground"
                     >
                       {SERVICES.map((s) => (
                         <option key={s.name} value={s.slug}>
@@ -329,7 +334,7 @@ export default function GrowthAudit() {
                       ))}
                     </select>
                     <Select>
-                      <SelectTrigger className="mt-2 w-full border border-bone/20 bg-bone/5 px-4 py-3 text-bone focus:outline-none ">
+                      <SelectTrigger className="mt-2 w-full border border-white/30 bg-white/5 px-4 py-3 text-white focus:outline-none dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 dark:text-secondary-foreground">
                         <SelectValue placeholder="Service interest" />
                       </SelectTrigger>
                       <SelectContent>
@@ -349,7 +354,7 @@ export default function GrowthAudit() {
                   <MagneticButton
                     type="submit"
                     variant="catalyst"
-                    className="w-full"
+                    className="w-full text-black hover:bg-ink hover:text-white dark:hover:text-secondary-foreground"
                     disabled={saving}
                     aria-label="Unlock full growth report"
                   >
@@ -370,7 +375,7 @@ export default function GrowthAudit() {
                 <h3 className="mt-6 font-display text-3xl font-black">
                   Report unlocked.
                 </h3>
-                <p className="mt-3 max-w-sm text-text-foreground/70">
+                <p className="mt-3 max-w-sm text-white/70 dark:text-secondary-foreground/70">
                   Thanks{form.name ? `, ${form.name.split(" ")[0]}` : ""}. Your
                   full Growth Audit blueprint is on its way to{" "}
                   <span className="text-catalyst">{form.email}</span>. A Mogen
@@ -379,7 +384,7 @@ export default function GrowthAudit() {
                 <MagneticButton
                   onClick={() => router.push("/growth-audit-results")}
                   variant="catalyst"
-                  className="mt-8 w-full"
+                  className="mt-8 w-full text-black hover:bg-ink hover:text-white dark:hover:text-secondary-foreground"
                 >
                   View Full Results <ArrowRight className="h-4 w-4" />
                 </MagneticButton>
@@ -387,7 +392,7 @@ export default function GrowthAudit() {
                   as="a"
                   href="#services"
                   variant="outline"
-                  className="mt-3 w-full border-text-foreground/40 text-text-foreground hover:bg-text-foreground hover:text-ink"
+                  className="mt-3 w-full border-white/40 text-white hover:bg-white hover:text-ink dark:border-secondary-foreground/40 dark:text-secondary-foreground dark:hover:bg-secondary-foreground dark:hover:text-secondary"
                 >
                   View services
                 </MagneticButton>
@@ -415,7 +420,7 @@ function Field({
 }: Readonly<FieldProps>) {
   return (
     <div>
-      <label htmlFor={value} className="small-caps text-text-foreground/60">
+      <label htmlFor={value} className="small-caps text-white/70 dark:text-secondary-foreground/70">
         {label}
       </label>
       <input
@@ -423,7 +428,7 @@ function Field({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full border border-text-foreground/20 bg-text-foreground/5 px-4 py-3 text-text-foreground placeholder:text-text-foreground/30 focus:outline-none"
+        className="mt-2 w-full border border-white/30 bg-white/5 px-4 py-3 text-white placeholder:text-white/60 focus:outline-none dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 dark:text-secondary-foreground dark:placeholder:text-secondary-foreground/60"
       />
     </div>
   );

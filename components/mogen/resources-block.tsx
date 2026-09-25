@@ -10,6 +10,7 @@ import {
   Search,
 } from "lucide-react";
 import { useState } from "react";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 import PageShell from "./page-shell";
@@ -41,7 +42,11 @@ const RESOURCES = [
   },
 ];
 
-export default function ResourcesBlock() {
+interface Props {
+  numbering?: number;
+}
+
+export default function ResourcesBlock({ numbering = 1 }: Readonly<Props>) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -79,7 +84,7 @@ export default function ResourcesBlock() {
 
   return (
     <PageShell
-      index="// 16 — Resources"
+      index={`// ${formatNumber(numbering)} — Resources`}
       label="Resource Library"
       title={
         <>

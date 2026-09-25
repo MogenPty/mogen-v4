@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { getActivePromotion } from "@/data/promotions";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
-import { getActivePromotion } from "@/data/promotions";
 
-export default function Promotion() {
+interface Props {
+  numbering?: number;
+}
+
+export default function Promotion({ numbering = 1 }: Readonly<Props>) {
   const promo = getActivePromotion();
   if (!promo) return null;
 
@@ -15,7 +20,10 @@ export default function Promotion() {
   return (
     <BlueprintGrid id="promotion" className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 05 — Promotion" title="Current Offer" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Promotion`}
+          title="Current Offer"
+        />
         <div className="grid grid-cols-1 gap-px bg-ink/10 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="bg-bone p-8 lg:p-12">
             <span className="small-caps text-catalyst">Featured</span>

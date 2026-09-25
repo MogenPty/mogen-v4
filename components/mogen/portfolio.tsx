@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { formatNumber } from "@/lib/utils";
 // import * as image2 from "@/assets/545dd9c3f_generated_e75836b5.jpg";
 // import * as image3 from "@/assets/23760dfef_generated_d82b3c44.jpg";
 // import * as image1 from "@/assets/d15ea8711_generated_a33e55cb.jpg";
@@ -40,11 +41,18 @@ const PROJECTS = [
   },
 ];
 
-export default function Portfolio() {
+interface Props {
+  numbering?: number;
+}
+
+export default function Portfolio({ numbering = 1 }: Readonly<Props>) {
   return (
     <BlueprintGrid id={"work"} className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 03 — Proof" title="Our Work" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Proof`}
+          title="Our Work"
+        />
 
         <div className="mb-14 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">

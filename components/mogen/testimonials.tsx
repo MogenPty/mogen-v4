@@ -1,16 +1,24 @@
 "use client";
 
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 
 // Testimonials removed — verified client testimonials not currently available.
 // Component retained for potential future use with verified content.
 const QUOTES: Array<{ quote: string; name: string; role: string }> = [];
 
-export default function Testimonials() {
+interface Props {
+  numbering?: number;
+}
+
+export default function Testimonials({ numbering = 1 }: Readonly<Props>) {
   return (
     <BlueprintGrid className="bg-secondary py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 04 — Trust" title="Client Love" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Trust`}
+          title="Client Love"
+        />
 
         <div className="mb-14 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">

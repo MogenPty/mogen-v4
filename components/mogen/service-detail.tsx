@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
+import { formatNumber } from "@/lib/utils";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import MagneticButton from "@/components/mogen/magnet-button";
@@ -15,9 +16,13 @@ import { getService, SERVICES } from "@/data/services";
 
 interface Props {
   serviceSlug: string;
+  numbering?: number;
 }
 
-export default function ServiceDetail({ serviceSlug }: Readonly<Props>) {
+export default function ServiceDetail({
+  serviceSlug,
+  numbering = 1,
+}: Readonly<Props>) {
   const service = getService(serviceSlug);
 
   useEffect(() => {
@@ -112,7 +117,10 @@ export default function ServiceDetail({ serviceSlug }: Readonly<Props>) {
         {service.deliverables && (
           <BlueprintGrid className="bg-bone py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-              <SectionLabel index="// 01 — Included" title="What you get" />
+              <SectionLabel
+                index={`// ${formatNumber(numbering)} — Included`}
+                title="What you get"
+              />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
                 {service.deliverables.map((d) => (
                   <div key={d} className="flex items-center gap-3 bg-bone p-6">
@@ -132,7 +140,10 @@ export default function ServiceDetail({ serviceSlug }: Readonly<Props>) {
         {service.process && (
           <BlueprintGrid className="bg-secondary py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-              <SectionLabel index="// 02 — Process" title="How we work" />
+              <SectionLabel
+                index={`// ${formatNumber(numbering + 1)} — Process`}
+                title="How we work"
+              />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
                 {service.process.map((p) => (
                   <div key={p.n} className="bg-bone p-8">
@@ -154,7 +165,10 @@ export default function ServiceDetail({ serviceSlug }: Readonly<Props>) {
         {service.pricing && (
           <BlueprintGrid id={"pricing"} className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-              <SectionLabel index="// 03 — Investment" title="Pricing" />
+              <SectionLabel
+                index={`// ${formatNumber(numbering + 2)} — Investment`}
+                title="Pricing"
+              />
               <div className="mb-12 max-w-2xl">
                 <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
                   {service.name} packages
@@ -176,7 +190,10 @@ export default function ServiceDetail({ serviceSlug }: Readonly<Props>) {
         {service.addons && service.addons.length > 0 && (
           <BlueprintGrid className="bg-secondary py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-              <SectionLabel index="// 04 — Optional" title="Add-ons" />
+              <SectionLabel
+                index={`// ${formatNumber(numbering + 3)} — Optional`}
+                title="Add-ons"
+              />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
                 {service.addons.map((a) => (
                   <div key={a.name} className="bg-bone p-6">
@@ -200,7 +217,10 @@ export default function ServiceDetail({ serviceSlug }: Readonly<Props>) {
         {service.faq && (
           <BlueprintGrid className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-225 px-6 lg:px-10">
-              <SectionLabel index="// 05 — Questions" title="FAQ" />
+              <SectionLabel
+                index={`// ${formatNumber(numbering + 4)} — Questions`}
+                title="FAQ"
+              />
               <h2 className="mb-10 font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
                 Frequently asked questions
               </h2>
@@ -215,7 +235,7 @@ export default function ServiceDetail({ serviceSlug }: Readonly<Props>) {
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
               <div>
                 <span className="small-caps text-catalyst">
-                  {"// 06 — Start"}
+                  {`// ${formatNumber(numbering + 5)} — Start`}
                 </span>
                 <h2 className="mt-6 font-display text-4xl font-black leading-[1.05] lg:text-6xl text-balance">
                   Let&apos;s build your
@@ -237,7 +257,10 @@ export default function ServiceDetail({ serviceSlug }: Readonly<Props>) {
         {/* RELATED */}
         <BlueprintGrid className="bg-bone py-20">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-            <SectionLabel index="// 07 — More" title="Other services" />
+            <SectionLabel
+              index={`// ${formatNumber(numbering + 6)} — More`}
+              title="Other services"
+            />
             <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
               {related.map((s) => {
                 const RIcon = s.icon;

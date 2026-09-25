@@ -1,14 +1,22 @@
 import { MapPin } from "lucide-react";
 import Link from "next/link";
 import { LOCATIONS } from "@/data/locations";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 
-export default function LocationsPreview() {
+interface Props {
+  numbering?: number;
+}
+
+export default function LocationsPreview({ numbering = 1 }: Readonly<Props>) {
   return (
     <BlueprintGrid id="locations" className="bg-secondary py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 08 — Locations" title="Where We Work" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Locations`}
+          title="Where We Work"
+        />
         <div className="mb-14 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">
             Rooted in Maboloka,

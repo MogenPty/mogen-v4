@@ -15,10 +15,7 @@ export default function ServicesIndexPage() {
     <div className="bg-bone">
       <Nav />
       <main>
-        <Services
-          auditHref="/#audit
-        "
-        />
+        <Services numbering={2} auditHref="/#audit" />
       </main>
       <Footer />
       <ConversionBar />

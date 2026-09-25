@@ -1,10 +1,15 @@
 import { ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { POSTS } from "@/data/blog";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 
-export default function ArticlesPreview() {
+interface Props {
+  numbering?: number;
+}
+
+export default function ArticlesPreview({ numbering = 1 }: Readonly<Props>) {
   // Select 3 factual educational articles — exclude any unsupported claim articles
   // Current data is clean; pick most recent 3
   const preview = POSTS.slice(0, 3);
@@ -12,7 +17,10 @@ export default function ArticlesPreview() {
   return (
     <BlueprintGrid id="articles" className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 07 — Insights" title="Articles & Insights" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Insights`}
+          title="Articles & Insights"
+        />
         <div className="mb-14 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">
             Learn how to

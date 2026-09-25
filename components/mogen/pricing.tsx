@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 
@@ -59,11 +60,18 @@ const TIERS = [
   },
 ];
 
-export default function Pricing() {
+interface Props {
+  numbering?: number;
+}
+
+export default function Pricing({ numbering = 1 }: Readonly<Props>) {
   return (
     <BlueprintGrid id={"pricing"} className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 06 — Investment" title="Packages" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Investment`}
+          title="Packages"
+        />
 
         <div className="mb-14 max-w-2xl">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">

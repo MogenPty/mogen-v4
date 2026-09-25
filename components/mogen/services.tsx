@@ -3,6 +3,7 @@
 import { SERVICES } from "@/data/services";
 import { useEqualHeight } from "@/hooks/use-equal-height";
 import { getBlankCount } from "@/lib/grid-utils";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 import ServiceCard from "./service-card";
@@ -30,10 +31,14 @@ const GRID_SERVICES = GRID_ORDER.map((slug) => {
 }));
 
 interface Props {
+  numbering?: number;
   auditHref?: string;
 }
 
-export default function Services({ auditHref = "/#audit" }: Readonly<Props>) {
+export default function Services({
+  numbering = 1,
+  auditHref = "/#audit",
+}: Readonly<Props>) {
   const blankCount = getBlankCount(GRID_SERVICES.length);
   const gridRef = useEqualHeight<HTMLDivElement>([GRID_SERVICES.length], {
     cssVar: "--grid-cell-height",
@@ -43,7 +48,10 @@ export default function Services({ auditHref = "/#audit" }: Readonly<Props>) {
   return (
     <BlueprintGrid id={"services"} className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 02 — Services" title="Current Services" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Services`}
+          title="Current Services"
+        />
 
         <div className="mb-14 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">

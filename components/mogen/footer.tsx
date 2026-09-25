@@ -3,6 +3,7 @@
 import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 import { siteConfig } from "@/data/site";
+import { useAnchorHref } from "@/lib/use-anchor-href";
 
 interface ColumnLink {
   label: string;
@@ -63,6 +64,8 @@ const COLS: Column[] = [
 ];
 
 export default function Footer() {
+  const anchorHref = useAnchorHref();
+
   return (
     <footer className="bg-bone text-foreground">
       <div className="mx-auto max-w-[1600px] px-6 py-16 lg:px-10">
@@ -91,7 +94,7 @@ export default function Footer() {
                 {c.links.map((l) => (
                   <li key={l.label}>
                     <Link
-                      href={l.href}
+                      href={anchorHref(l.href)}
                       target={l.external ? "_blank" : undefined}
                       rel={l.external ? "noopener noreferrer" : undefined}
                       className="flex items-center gap-1 text-sm text-foreground/80 hover:text-catalyst"
@@ -153,7 +156,10 @@ export default function Footer() {
             >
               Terms
             </a>
-            <Link href="/#audit" className="small-caps text-catalyst">
+            <Link
+              href={anchorHref("/#audit")}
+              className="small-caps text-catalyst"
+            >
               Get Audit →
             </Link>
           </div>

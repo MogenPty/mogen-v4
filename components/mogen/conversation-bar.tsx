@@ -8,7 +8,14 @@ import { cn } from "@/lib/utils";
  * ConversionBar — floating quick-action bar that tracks the visitor's
  * "Conversion Readiness" as they scroll deeper into the funnel.
  */
-export default function ConversionBar() {
+type ConversionBarProps = {
+  /** Destination for the audit CTA. Defaults to the cross-route homepage anchor. */
+  auditHref?: string;
+};
+
+export default function ConversionBar({
+  auditHref = "/#audit",
+}: Readonly<ConversionBarProps>) {
   const [ready, setReady] = useState(0);
   const [visible, setVisible] = useState(false);
 
@@ -52,7 +59,7 @@ export default function ConversionBar() {
             </span>
           </div>
           <Link
-            href="/#audit"
+            href={auditHref}
             className="small-caps bg-catalyst px-5 py-2 text-white transition-colors hover:bg-ink"
             aria-label="Get your free growth audit now"
           >
