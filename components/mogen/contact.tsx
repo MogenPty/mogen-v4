@@ -3,13 +3,18 @@
 import { Clock, type LucideProps, Mail, MapPin } from "lucide-react";
 import type React from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
+import { formatNumber } from "@/lib/utils";
 import ContactForm from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import Nav from "@/components/mogen/nav";
 import ContactExternalLink from "./contact-external-link";
 
-export default function Contact() {
+interface Props {
+  numbering?: number;
+}
+
+export default function Contact({ numbering = 1 }: Readonly<Props>) {
   return (
     <div className="bg-bone">
       <Nav />
@@ -17,7 +22,7 @@ export default function Contact() {
         <BlueprintGrid className="bg-bone pt-32 pb-20 lg:pt-40 lg:pb-28">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
             <SectionLabel
-              index="// 08 — Contact"
+              index={`// ${formatNumber(numbering)} — Contact`}
               title="Start a Conversation"
             />
 

@@ -7,21 +7,26 @@ import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
 import { getPost, POSTS } from "@/data/blog";
+import { formatNumber } from "@/lib/utils";
 import ArticleNotFound from "./article-not-found";
 
 interface Props {
   slug: string;
+  numbering?: number;
 }
 
-export default function BlogPostBlock({ slug }: Readonly<Props>) {
+export default function BlogPostBlock({
+  slug,
+  numbering = 1,
+}: Readonly<Props>) {
   const post = getPost(slug);
-  if (!post) return <ArticleNotFound />;
+  if (!post) return <ArticleNotFound numbering={numbering} />;
 
   const related = POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
 
   return (
     <PageShell
-      index="// 09 — Insights"
+      index={`// ${formatNumber(numbering)} — Insights`}
       label={post.category}
       title={post.title}
       intro={`${post.author} · ${post.date} · ${post.readTime}`}

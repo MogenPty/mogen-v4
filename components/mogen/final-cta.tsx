@@ -1,13 +1,18 @@
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 
-export default function FinalCTA() {
+interface Props {
+  numbering?: number;
+}
+
+export default function FinalCTA({ numbering = 1 }: Readonly<Props>) {
   return (
     <BlueprintGrid id="final-cta" className="bg-catalyst py-24 text-white lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <div>
-            <span className="small-caps text-white/70">{"// 09 — Next Step"}</span>
+            <span className="small-caps text-white/70">{`// ${formatNumber(numbering)} — Next Step`}</span>
             <h2 className="mt-6 font-display text-4xl font-black leading-[1.02] lg:text-6xl text-balance">
               Ready to improve
               <br />

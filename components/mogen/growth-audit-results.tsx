@@ -12,18 +12,23 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
+import { formatNumber } from "@/lib/utils";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
 
 const clamp = (n: number) => Math.max(5, Math.min(98, Math.round(n)));
 
-export default function GrowthAuditResults() {
+interface Props {
+  numbering?: number;
+}
+
+export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
   const [data] = useStateSafe();
 
   if (!data) {
     return (
       <PageShell
-        index="// 11 — Audit Results"
+        index={`// ${formatNumber(numbering)} — Audit Results`}
         label="Growth Audit Results"
         title={
           <>
@@ -117,7 +122,7 @@ export default function GrowthAuditResults() {
 
   return (
     <PageShell
-      index="// 11 — Audit Results"
+      index={`// ${formatNumber(numbering)} — Audit Results`}
       label="Your Growth Audit Results"
       title={
         <>

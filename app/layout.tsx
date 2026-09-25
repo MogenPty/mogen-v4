@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import JsonLd from "@/components/mogen/json-ld";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { siteConfig } from "@/data/site";
 
@@ -23,9 +22,6 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  alternates: {
-    canonical: "/",
-  },
   // Production canonical is www.mogen.co.za; Vercel host is never canonical.
   // Robots: allow indexing (canonical prevents duplication). Staging isolation handled via canonical signal.
   robots: {
@@ -42,7 +38,6 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: siteConfig.locale,
-    url: `${siteConfig.url}/`,
     siteName: siteConfig.name,
     title: siteConfig.title,
     description: siteConfig.description,
@@ -84,7 +79,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
-        <JsonLd />
       </body>
     </html>
   );

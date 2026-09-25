@@ -4,6 +4,7 @@ import { ArrowUpRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAnchorHref } from "@/lib/use-anchor-href";
 import { Button } from "../ui/button";
 import MagneticButton from "./magnet-button";
 import ThemeToggle from "./theme-toggle";
@@ -28,6 +29,7 @@ const NAV = [
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const anchorHref = useAnchorHref();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -64,7 +66,7 @@ export default function Nav() {
             n.children ? (
               <div key={n.label} className="relative group">
                 <a
-                  href={n.href}
+                  href={anchorHref(n.href)}
                   className="small-caps flex items-center gap-1 text-ink/70 transition-colors hover:text-catalyst"
                 >
                   {n.label}
@@ -87,7 +89,7 @@ export default function Nav() {
             ) : (
               <Link
                 key={n.href}
-                href={n.href}
+                href={anchorHref(n.href)}
                 className="small-caps text-ink/70 transition-colors hover:text-catalyst"
               >
                 {n.label}
@@ -108,7 +110,7 @@ export default function Nav() {
           <ThemeToggle />
           <MagneticButton
             as="a"
-            href="/#audit"
+            href={anchorHref("/#audit")}
             variant="catalyst"
             aria-label="Get a free growth audit"
           >
@@ -168,7 +170,7 @@ export default function Nav() {
               ) : (
                 <Link
                   key={n.href}
-                  href={n.href}
+                  href={anchorHref(n.href)}
                   onClick={() => setOpen(false)}
                   className="small-caps py-3 text-ink/70 hover:text-catalyst"
                 >
@@ -187,7 +189,7 @@ export default function Nav() {
             </a>
             <MagneticButton
               as="a"
-              href="/#audit"
+              href={anchorHref("/#audit")}
               variant="catalyst"
               className="mt-4 w-full"
               onClick={() => setOpen(false)}

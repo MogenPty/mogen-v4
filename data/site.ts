@@ -14,7 +14,7 @@ export const siteConfig = {
   stagingUrl: "https://mogen-v4.vercel.app",
   title: "Mogen | Digital Services for South African Businesses",
   description:
-    "Mogen is a South African digital services business based in Maboloka, serving Pretoria, Soshanguve and Gauteng. We provide web development, SEO, digital marketing and business documentation for businesses ready to grow.",
+    "Mogen helps South African businesses grow with websites, SEO, digital marketing and business documentation. Based in Maboloka, serving Pretoria and Soshanguve.",
   locale: "en_ZA",
   // Language tag for Next.js html lang
   lang: "en",

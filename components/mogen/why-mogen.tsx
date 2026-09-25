@@ -1,4 +1,5 @@
 import { Check, Code2, Handshake, Layers, MapPin } from "lucide-react";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 
 const REASONS = [
@@ -29,11 +30,18 @@ const REASONS = [
   },
 ];
 
-export default function WhyMogen() {
+interface Props {
+  numbering?: number;
+}
+
+export default function WhyMogen({ numbering = 1 }: Readonly<Props>) {
   return (
     <BlueprintGrid id="why-mogen" className="bg-secondary py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 03 — Why Mogen" title="Why Consider Mogen" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Why Mogen`}
+          title="Why Consider Mogen"
+        />
         <div className="mb-14 max-w-2xl">
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">
             A straightforward

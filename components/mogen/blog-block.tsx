@@ -5,13 +5,18 @@ import { ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { POSTS } from "@/data/blog";
+import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 import PageShell from "./page-shell";
 
 const CATEGORIES = ["All", "Article", "Growth Advice"];
 
-export default function BlogBlock() {
+interface Props {
+  numbering?: number;
+}
+
+export default function BlogBlock({ numbering = 1 }: Readonly<Props>) {
   const [filter, setFilter] = useState("All");
   const featured = POSTS[0];
   const rest = POSTS.slice(1);
@@ -22,7 +27,7 @@ export default function BlogBlock() {
 
   return (
     <PageShell
-      index="// 09 — Insights"
+      index={`// ${formatNumber(numbering)} — Insights`}
       label="Blog & Insights"
       title={
         <>
