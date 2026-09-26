@@ -55,7 +55,7 @@ export default function MagneticButton({
   const variants: Record<string, string> = {
     solid: "bg-ink text-bone hover:bg-catalyst",
     catalyst: "bg-catalyst text-white hover:bg-ink hover:text-bone",
-    volt: "bg-volt text-obsidian hover:bg-ink hover:text-obsidian",
+    volt: "bg-volt text-obsidian hover:bg-ink hover:text-volt",
     outline: "border border-ink text-ink hover:bg-ink hover:text-bone",
     ghost: "text-ink hover:text-catalyst",
   };
