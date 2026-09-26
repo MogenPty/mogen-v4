@@ -1,46 +1,63 @@
 "use client";
 
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { type SubmitEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
+import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
+import { siteConfig } from "@/data/site";
 import MagneticButton from "./magnet-button";
-
-const SERVICES = [
-  "Web Development",
-  "Business Documentation",
-  "SEO Services",
-  "Digital Marketing",
-  "Full Growth Package",
-];
 
 export default function ContactForm() {
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
-    business_name: "",
-    service_interest: "Full Growth Package",
+    businessName: "",
+    service: "Web Development",
     message: "",
+    // Honeypot — hidden from humans, bots fill it in.
+    companyWebsite: "",
   });
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
-  const submit = async (e: SubmitEvent<HTMLFormElement>) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!form.name || !form.email) {
+    if (!form.name.trim() || !form.email.trim()) {
       setError("Name and email are required.");
       return;
     }
     setSaving(true);
     setError("");
     try {
-      // await base44.entities.Lead.create({ ...form, status: "new" });
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        error?: string;
+        fieldErrors?: Record<string, string>;
+      };
+      if (!res.ok || !data.ok) {
+        const firstFieldError = data.fieldErrors
+          ? Object.values(data.fieldErrors)[0]
+          : undefined;
+        setError(
+          firstFieldError ??
+            data.error ??
+            `Something went wrong. Please try again or email ${siteConfig.email}.`,
+        );
+        setSaving(false);
+        return;
+      }
       setSaving(false);
       setDone(true);
     } catch {
       setSaving(false);
       setError(
-        "Something went wrong. Please try again or email hello@mogen.co.za.",
+        `Something went wrong. Please try again or email ${siteConfig.email}.`,
       );
     }
   };
@@ -53,8 +70,9 @@ export default function ContactForm() {
           Message received.
         </h3>
         <p className="mt-3 max-w-sm text-ink/70">
-          Thanks{form.name ? `, ${form.name.split(" ")[0]}` : ""}. A Mogen
-          strategist will reach out within one business day.
+          Thanks{form.name ? `, ${form.name.split(" ")[0]}` : ""}. Mogen will
+          review your enquiry and reply within one business day with a
+          practical next step.
         </p>
       </div>
     );
@@ -66,48 +84,57 @@ export default function ContactForm() {
         Send us a message
       </h2>
       <p className="mt-2 text-sm text-ink/60">
-        Tell us about your project. We&apos;ll reply within one business day.
+        Explain what you need. Mogen will review it and reply within one
+        business day with a practical next step.
       </p>
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field
           label="Name"
+          name="name"
           value={form.name}
           onChange={(v) => setForm({ ...form, name: v })}
           required
+          autoComplete="name"
         />
         <Field
           label="Email"
+          name="email"
           type="email"
           value={form.email}
           onChange={(v) => setForm({ ...form, email: v })}
           required
+          autoComplete="email"
         />
         <Field
           label="Phone"
+          name="phone"
+          type="tel"
           value={form.phone}
           onChange={(v) => setForm({ ...form, phone: v })}
+          autoComplete="tel"
         />
         <Field
           label="Business"
-          value={form.business_name}
-          onChange={(v) => setForm({ ...form, business_name: v })}
+          name="businessName"
+          value={form.businessName}
+          onChange={(v) => setForm({ ...form, businessName: v })}
+          autoComplete="organization"
         />
       </div>
       <div className="mt-3">
-        <label htmlFor="service_of_interest" className="small-caps text-ink/60">
+        <label htmlFor="service" className="small-caps text-ink/60">
           Service of interest
         </label>
         <select
-          name="service_of_interest"
-          value={form.service_interest}
-          onChange={(e) =>
-            setForm({ ...form, service_interest: e.target.value })
-          }
+          id="service"
+          name="service"
+          value={form.service}
+          onChange={(e) => setForm({ ...form, service: e.target.value })}
           className="mt-2 w-full border border-ink/15 bg-bone px-4 py-3 text-ink focus:outline-none"
         >
-          {SERVICES.map((s) => (
+          {CONTACT_SERVICES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {s === "SEO" ? "SEO" : s}
             </option>
           ))}
         </select>
@@ -117,7 +144,8 @@ export default function ContactForm() {
           Project details
         </label>
         <textarea
-          name="project_details"
+          id="project_details"
+          name="message"
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
           rows={4}
@@ -125,7 +153,26 @@ export default function ContactForm() {
           placeholder="Tell us what you need…"
         />
       </div>
-      {error && <p className="mt-3 text-sm text-catalyst">{error}</p>}
+      {/* Honeypot — invisible to humans */}
+      <div className="hidden" aria-hidden="true">
+        <label htmlFor="company_website">Company website</label>
+        <input
+          id="company_website"
+          name="companyWebsite"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.companyWebsite}
+          onChange={(e) =>
+            setForm({ ...form, companyWebsite: e.target.value })
+          }
+        />
+      </div>
+      {error && (
+        <p className="mt-3 text-sm text-catalyst" role="alert">
+          {error}
+        </p>
+      )}
       <MagneticButton
         type="submit"
         variant="catalyst"
@@ -142,30 +189,38 @@ export default function ContactForm() {
 
 interface FieldProps {
   label: string;
+  name: string;
   value: string;
-  onChange: FunctionStringCallback;
+  onChange: (v: string) => void;
   type?: string;
   required?: boolean;
+  autoComplete?: string;
 }
 
 function Field({
   label,
+  name,
   value,
   onChange,
   type = "text",
   required,
+  autoComplete,
 }: Readonly<FieldProps>) {
+  const id = `contact-${name}`;
   return (
     <div>
-      <label htmlFor={value} className="small-caps text-ink/60">
+      <label htmlFor={id} className="small-caps text-ink/60">
         {label}
         {required && <span className="text-catalyst"> *</span>}
       </label>
       <input
-        name={value}
+        id={id}
+        name={name}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        autoComplete={autoComplete}
+        required={required}
         className="mt-2 w-full border border-ink/15 bg-bone px-4 py-3 text-ink placeholder:text-ink/30 focus:outline-none"
       />
     </div>
