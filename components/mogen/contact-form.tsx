@@ -1,10 +1,36 @@
 "use client";
 
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import Script from "next/script";
+import { type FormEvent, useRef, useState } from "react";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
 import { siteConfig } from "@/data/site";
 import MagneticButton from "./magnet-button";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const TURNSTILE_ACTION = "contact";
+
+type TurnstileWidgetId = string;
+interface TurnstileApi {
+  render: (
+    container: HTMLElement,
+    options: {
+      sitekey: string;
+      action: string;
+      theme: "light" | "dark" | "auto";
+      callback: (token: string) => void;
+      "expired-callback"?: () => void;
+      "error-callback"?: () => void;
+    },
+  ) => TurnstileWidgetId;
+  reset: (widgetId: TurnstileWidgetId) => void;
+}
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi;
+  }
+}
 
 export default function ContactForm() {
   const [form, setForm] = useState({
@@ -20,11 +46,57 @@ export default function ContactForm() {
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileContainer = useRef<HTMLDivElement>(null);
+  const contactWidgetId = useRef<TurnstileWidgetId | null>(null);
+
+  function renderTurnstile() {
+    if (
+      !TURNSTILE_SITE_KEY ||
+      !turnstileContainer.current ||
+      contactWidgetId.current !== null ||
+      typeof window.turnstile === "undefined"
+    ) {
+      return;
+    }
+    contactWidgetId.current = window.turnstile.render(
+      turnstileContainer.current,
+      {
+        sitekey: TURNSTILE_SITE_KEY,
+        action: TURNSTILE_ACTION,
+        theme: "auto",
+        callback: setTurnstileToken,
+        "expired-callback": () => setTurnstileToken(""),
+        "error-callback": () => setTurnstileToken(""),
+      },
+    );
+  }
+
+  function resetTurnstile() {
+    if (
+      contactWidgetId.current !== null &&
+      typeof window.turnstile !== "undefined"
+    ) {
+      window.turnstile.reset(contactWidgetId.current);
+    }
+    setTurnstileToken("");
+  }
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) {
       setError("Name and email are required.");
+      return;
+    }
+    // Fail closed: no submission without a passing Turnstile check.
+    if (!TURNSTILE_SITE_KEY) {
+      setError(
+        "Verification is not configured right now. Please email info@mogen.co.za directly.",
+      );
+      return;
+    }
+    if (!turnstileToken) {
+      setError("Please complete the verification check before sending.");
       return;
     }
     setSaving(true);
@@ -33,7 +105,7 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, turnstileToken }),
       });
       const data = (await res.json()) as {
         ok: boolean;
@@ -49,6 +121,8 @@ export default function ContactForm() {
             data.error ??
             `Something went wrong. Please try again or email ${siteConfig.email}.`,
         );
+        // Tokens are single-use: reset so a retry gets a fresh check.
+        resetTurnstile();
         setSaving(false);
         return;
       }
@@ -56,6 +130,7 @@ export default function ContactForm() {
       setDone(true);
     } catch {
       setSaving(false);
+      resetTurnstile();
       setError(
         `Something went wrong. Please try again or email ${siteConfig.email}.`,
       );
@@ -169,6 +244,21 @@ export default function ContactForm() {
       {error && (
         <p className="mt-3 text-sm text-catalyst" role="alert">
           {error}
+        </p>
+      )}
+      {TURNSTILE_SITE_KEY ? (
+        <>
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="afterInteractive"
+            onReady={renderTurnstile}
+          />
+          <div ref={turnstileContainer} className="mt-6" />
+        </>
+      ) : (
+        <p className="mt-6 text-sm text-catalyst" role="alert">
+          Verification is not configured right now. Please email
+          info@mogen.co.za directly.
         </p>
       )}
       <MagneticButton

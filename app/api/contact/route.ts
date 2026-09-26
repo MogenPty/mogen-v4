@@ -6,6 +6,10 @@ import {
   submitContact,
 } from "@/lib/contact/contact-service";
 import { getMailProvider } from "@/lib/mail/provider-factory";
+import {
+  parseExpectedHostnames,
+  verifyTurnstileToken,
+} from "@/lib/turnstile/verify";
 
 /**
  * Lightweight in-memory throttle: 5 submissions / 10 min per key.
@@ -72,6 +76,33 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { ok: false, error: "Invalid request." },
       { status: 400 },
+    );
+  }
+
+  // Turnstile gate: the form must not submit without a passing check.
+  // Tokens are single-use; verification happens before mail delivery.
+  const token =
+    typeof body === "object" && body !== null
+      ? (body as Record<string, unknown>)["turnstileToken"]
+      : undefined;
+  const verification = await verifyTurnstileToken({
+    token,
+    remoteip: ip === "unknown" ? undefined : ip,
+    secret: process.env.TURNSTILE_SECRET,
+    expectedAction: "contact",
+    expectedHostnames: parseExpectedHostnames(
+      process.env.TURNSTILE_HOSTNAMES,
+    ),
+  });
+  if (!verification.ok) {
+    console.error(`[contact] turnstile rejected: ${verification.reason}`);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "Verification failed. Please complete the check and try again.",
+        turnstile: true,
+      },
+      { status: 403 },
     );
   }
 
