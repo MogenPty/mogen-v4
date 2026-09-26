@@ -33,9 +33,9 @@ export default function Contact({ numbering = 1 }: Readonly<Props>) {
                 <span className="text-catalyst">something that lasts.</span>
               </h1>
               <p className="mt-6 text-lg text-ink/70">
-                This is Mogen. Explain what you need — Mogen will review
-                your enquiry and reply within one business day with a
-                practical next step. No pushy sales calls.
+                This is Mogen. Explain what you need — Mogen will review your
+                enquiry and reply within one business day with a practical next
+                step. No pushy sales calls.
               </p>
             </div>
 
@@ -53,13 +53,13 @@ export default function Contact({ numbering = 1 }: Readonly<Props>) {
                   />
                   <Detail
                     icon={MapPin}
-                    label="Area served"
-                    value="Pretoria · Gauteng · South Africa"
+                    label="Areas served"
+                    value="Maboloka · Soshanguve · South Africa"
                   />
                   <Detail
                     icon={Clock}
                     label="Hours"
-                    value="Mon–Fri, 08:00–17:00 SAST"
+                    value="Mon-Fri, 08:00-17:00 SAST"
                   />
                 </ul>
 

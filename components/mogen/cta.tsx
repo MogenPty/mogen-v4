@@ -39,7 +39,7 @@ export default function CallToAction({ numbering = 1 }: Readonly<Props>) {
               as="a"
               href="#audit"
               variant="outline"
-              className="border-white/60 text-white hover:bg-white hover:text-ink"
+              className="border-white/60 text-white hover:bg-white hover:text-ink dark:hover:text-black"
             >
               Get Free Growth Audit
             </MagneticButton>

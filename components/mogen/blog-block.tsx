@@ -139,7 +139,7 @@ export default function BlogBlock({ numbering = 1 }: Readonly<Props>) {
               as="a"
               href="/contact"
               variant="outline"
-              className="border-white/60 text-white hover:bg-white hover:text-ink"
+              className="border-white/60 text-white hover:bg-white hover:text-ink dark:hover:text-black"
             >
               Talk to Us
             </MagneticButton>

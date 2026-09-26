@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { SERVICES } from "@/data/services";
 import {
   buildContactMessage,
+  CONTACT_SERVICES,
   getContactMailConfig,
   submitContact,
 } from "../contact-service";
@@ -138,5 +140,12 @@ describe("contact submission service", () => {
     } as NodeJS.ProcessEnv);
     expect(cfg.from).toContain("info@mogen.co.za");
     expect(cfg.to).toBe("info@mogen.co.za");
+  });
+
+  it("derives service options from the canonical SERVICES list", () => {
+    expect(CONTACT_SERVICES).toEqual([
+      ...SERVICES.map((s) => s.name),
+      "Other",
+    ]);
   });
 });
