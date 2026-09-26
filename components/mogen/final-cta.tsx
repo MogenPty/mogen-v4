@@ -4,9 +4,14 @@ import MagneticButton from "./magnet-button";
 
 interface Props {
   numbering?: number;
+  /** Destination for the audit CTA. Defaults to the homepage-local anchor. */
+  auditHref?: string;
 }
 
-export default function FinalCTA({ numbering = 1 }: Readonly<Props>) {
+export default function FinalCTA({
+  numbering = 1,
+  auditHref = "#audit",
+}: Readonly<Props>) {
   return (
     <BlueprintGrid id="final-cta" className="bg-catalyst py-24 text-white lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -35,7 +40,7 @@ export default function FinalCTA({ numbering = 1 }: Readonly<Props>) {
             </MagneticButton>
             <MagneticButton
               as="a"
-              href="#audit"
+              href={auditHref}
               variant="outline"
               className="border-white/60 text-white hover:bg-white hover:text-ink"
             >

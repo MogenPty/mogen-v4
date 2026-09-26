@@ -10,6 +10,7 @@ interface Props {
 }
 
 export default function LocationsPreview({ numbering = 1 }: Readonly<Props>) {
+  const locationData = LOCATIONS.toSorted((a, b) => a.order - b.order);
   return (
     <BlueprintGrid id="locations" className="bg-secondary py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -30,19 +31,33 @@ export default function LocationsPreview({ numbering = 1 }: Readonly<Props>) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
-          {LOCATIONS.map((loc) => (
+        <div
+          className={`grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-${locationData.length % 3 === 0 ? 3 : 4}`}
+        >
+          {locationData.map((loc) => (
             <article key={loc.slug} className="flex flex-col bg-bone p-8">
               <MapPin className="h-6 w-6 text-catalyst" aria-hidden="true" />
-              <h3 className="mt-4 font-display text-xl font-black text-ink">{loc.name}</h3>
+              <h3 className="mt-4 font-display text-xl font-black text-ink">
+                {loc.name}
+              </h3>
               <span className="small-caps mt-1 text-ink/50">{loc.region}</span>
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">{loc.description}</p>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">
+                {loc.description}
+              </p>
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {loc.services.slice(0, 2).map((s) => (
-                  <span key={s} className="small-caps border border-ink/10 px-2 py-1 text-ink/60">
+                  <span
+                    key={s}
+                    className="small-caps border border-ink/10 px-2 py-1 text-ink/60"
+                  >
                     {s}
                   </span>
                 ))}
+                {loc.services.length > 2 && (
+                  <span className="small-caps border border-ink/10 px-2 py-1 text-ink/60">
+                    +{loc.services.length - 2}
+                  </span>
+                )}
               </div>
               <Link
                 href={loc.href}

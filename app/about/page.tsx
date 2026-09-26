@@ -1,183 +1,311 @@
-import { ArrowRight, Compass, ShieldCheck, Target, Zap } from "lucide-react";
-import BlueprintGrid from "@/components/mogen/blueprint-grid";
-import MagneticButton from "@/components/mogen/magnet-button";
+import type { Metadata } from "next";
+import {
+  Check,
+  ClipboardList,
+  Compass,
+  Hammer,
+  SearchCheck,
+} from "lucide-react";
+import Link from "next/link";
+import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
+import FinalCTA from "@/components/mogen/final-cta";
+import LocationsPreview from "@/components/mogen/locations-preview";
 import PageShell from "@/components/mogen/page-shell";
+import Services from "@/components/mogen/services";
+import WhatMogenDoes from "@/components/mogen/what-mogen-does";
+import WhyMogen from "@/components/mogen/why-mogen";
+import { siteConfig } from "@/data/site";
+import { formatNumber } from "@/lib/utils";
 
-const VALUES = [
+const PAGE_URL = `${siteConfig.url}/about`;
+
+export const metadata: Metadata = {
+  // Rendered title becomes "About Mogen | Mogen" via the layout template.
+  // The fuller "About Mogen | Digital Services for South African Businesses"
+  // form is used for Open Graph / Twitter titles below.
+  title: "About Mogen",
+  description:
+    "Mogen Pty Ltd (Motsoane Global Enterprise) is a South African digital services business based in Maboloka, North West — web development, SEO, digital marketing and business documentation for businesses across South Africa.",
+  alternates: {
+    canonical: PAGE_URL,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    type: "website",
+    url: PAGE_URL,
+    siteName: siteConfig.name,
+    title: "About Mogen | Digital Services for South African Businesses",
+    description:
+      "Who Mogen is, what Mogen does, how Mogen works, and where Mogen operates — practical digital services based in Maboloka, serving South African businesses.",
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: siteConfig.ogImageWidth,
+        height: siteConfig.ogImageHeight,
+        alt: siteConfig.ogImageAlt,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Mogen | Digital Services for South African Businesses",
+    description:
+      "Who Mogen is, what Mogen does, how Mogen works, and where Mogen operates — practical digital services based in Maboloka, serving South African businesses.",
+    images: [siteConfig.ogImage],
+  },
+};
+
+const HOW_STEPS = [
   {
-    icon: Target,
-    title: "Outcomes over output",
-    desc: "We measure success in bookings, enquiries and revenue — not vanity metrics.",
+    icon: SearchCheck,
+    title: "Understand",
+    desc: "Understand the business, its audience, its current digital presence, and what it actually needs — before any technology is selected.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Plan",
+    desc: "Define the appropriate solution: structure, content, technical requirements, and priorities — so scope stays clear and costs stay predictable.",
+  },
+  {
+    icon: Hammer,
+    title: "Build",
+    desc: "Implement the agreed solution using appropriate modern web and digital technologies — fast, secure, and built to last.",
   },
   {
     icon: Compass,
-    title: "Local first",
-    desc: "We know Pretoria, Maboloka, Soshanguve and Gauteng. We build for the customers next door.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Built to last",
-    desc: "Fast, secure, well-engineered sites that keep ranking and converting for years.",
-  },
-  {
-    icon: Zap,
-    title: "Momentum compounds",
-    desc: "SEO and content stack on each other. We engineer growth that accelerates over time.",
+    title: "Improve",
+    desc: "Review performance, search visibility, usability, content, and conversion opportunities where applicable — and act on what the evidence shows.",
   },
 ];
 
-const APPROACH = [
-  {
-    title: "Engineering-led",
-    desc: "We build fast, secure, well-structured websites with clean code and strong technical foundations.",
-  },
-  {
-    title: "Local expertise",
-    desc: "We focus on how local customers search and decide — from Google Business Profile to local content.",
-  },
-  {
-    title: "Practical process",
-    desc: "Clear scopes, transparent pricing, and a defined process from discovery through launch and growth.",
-  },
-  {
-    title: "Specialist partners",
-    desc: "Where a project needs specialist input, we work with trusted external partners and keep you informed throughout.",
-  },
+const TECHNICAL_AREAS = [
+  "Modern web development",
+  "Front-end development",
+  "Back-end development",
+  "Databases",
+  "Web applications",
+  "SEO implementation",
+  "Performance optimisation",
+  "Technical problem solving",
+  "Modernisation of existing systems",
+  "Business Documentation",
+  "APIs and integrations",
+  "Automation",
 ];
+
+function AboutJsonLd() {
+  const organizationId = `${siteConfig.url}/#organization`;
+  const websiteId = `${siteConfig.url}/#website`;
+  // Same @ids and values as the homepage graph — a consistent reference,
+  // not a second competing identity. No Person entities, no invented data.
+  const graph = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": organizationId,
+        name: siteConfig.name,
+        legalName: siteConfig.legalName,
+        url: siteConfig.url,
+        logo: `${siteConfig.url}${siteConfig.logo}`,
+        description: siteConfig.description,
+        email: siteConfig.email,
+        telephone: siteConfig.telephone,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: siteConfig.address.addressLocality,
+          addressRegion: siteConfig.address.addressRegion,
+          addressCountry: siteConfig.address.addressCountry,
+        },
+        ...(siteConfig.sameAs.length > 0 ? { sameAs: siteConfig.sameAs } : {}),
+      },
+      {
+        "@type": "WebSite",
+        "@id": websiteId,
+        url: siteConfig.url,
+        name: siteConfig.name,
+        publisher: { "@id": organizationId },
+        inLanguage: siteConfig.lang,
+      },
+      {
+        "@type": "AboutPage",
+        "@id": `${PAGE_URL}#webpage`,
+        url: PAGE_URL,
+        name: "About Mogen | Digital Services for South African Businesses",
+        description:
+          "Who Mogen is, what Mogen does, how Mogen works, and where Mogen operates.",
+        isPartOf: { "@id": websiteId },
+        about: { "@id": organizationId },
+        publisher: { "@id": organizationId },
+        inLanguage: siteConfig.lang,
+      },
+    ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: No workaround for JSON-LD injection
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+    />
+  );
+}
 
 export default function About() {
   return (
     <PageShell
-      index="// 10 — About"
+      index="// 01 — About Mogen"
       label="About Mogen"
       title={
         <>
-          We build growth engines for{" "}
-          <span className="text-catalyst">local business.</span>
+          MO<span className="text-catalyst">GEN.</span>
         </>
       }
-      intro="Mogen is a Pretoria-based growth agency. We build websites, business documentation and SEO for local businesses across Gauteng — with specialist partners where needed."
+      intro="Mogen is a South African digital services business based in Maboloka, North West. Mogen helps businesses build and improve the digital foundations they rely on to be found, understood, and contacted online — across Pretoria, Soshanguve, Gauteng, and elsewhere in South Africa."
     >
-      {/* Origin story */}
-      <BlueprintGrid className="bg-bone pb-24">
+      <AboutJsonLd />
+
+      {/* 02 — Who Mogen is (reused homepage section, About numbering) */}
+      <WhatMogenDoes numbering={2} />
+
+      {/* 03 — What Mogen does (reused service grid, About numbering) */}
+      <Services numbering={3} auditHref="/#audit" />
+      <div className="bg-bone pb-4">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
-            <div>
-              <span className="small-caps text-ink/50">Our story</span>
-              <h2 className="mt-4 font-display text-3xl font-black leading-tight text-ink lg:text-4xl text-balance">
-                Started in a Pretoria back office. Built for the businesses big
-                agencies ignore.
-              </h2>
-            </div>
-            <div className="space-y-5 text-lg leading-relaxed text-ink/70">
-              <p>
-                Mogen began when our founders noticed the same problem again and
-                again: brilliant local businesses — restaurants, clinics,
-                retailers — were invisible online. Not because they weren&apos;t
-                good, but because the tools to get found on Google were locked
-                behind expensive agencies and confusing software.
-              </p>
-              <p>
-                We set out to change that. We combined real engineering with
-                deep local SEO knowledge to build growth engines that any local
-                business could afford and understand. No jargon, no vanity
-                dashboards — just more customers.
-              </p>
-              <p>
-                Today we serve businesses across Pretoria, Maboloka, Soshanguve
-                and greater Gauteng — helping local businesses get found and
-                present themselves professionally online.
-              </p>
-            </div>
+          <Link
+            href="/services"
+            className="small-caps text-ink hover:text-catalyst"
+          >
+            View all services →
+          </Link>
+        </div>
+      </div>
+
+      {/* 04 — How Mogen works */}
+      <BlueprintGrid
+        id="how-mogen-works"
+        className="bg-secondary py-24 lg:py-32"
+      >
+        <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
+          <SectionLabel
+            index={`// ${formatNumber(4)} — How Mogen Works`}
+            title="Deliberate, Not Rushed"
+          />
+          <div className="mb-14 max-w-2xl">
+            <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">
+              Understand first,
+              <br />
+              <span className="text-catalyst">then build.</span>
+            </h2>
+            <p className="mt-6 text-lg text-ink/70">
+              Mogen&apos;s working approach is deliberate rather than
+              &ldquo;build first, figure it out later.&rdquo; The business comes
+              before the technology — every time.
+            </p>
           </div>
-        </div>
-      </BlueprintGrid>
-
-      {/* Mission */}
-      <BlueprintGrid className="bg-ink py-24 text-bone">
-        <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-          <span className="small-caps text-catalyst">Our mission</span>
-          <p className="mt-6 max-w-4xl font-display text-3xl font-black leading-tight lg:text-5xl text-balance">
-            To give every local South African business the digital presence of a
-            major brand — and the customers to match.
-          </p>
-        </div>
-      </BlueprintGrid>
-
-      {/* Values */}
-      <BlueprintGrid className="bg-bone py-24">
-        <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-          <h2 className="mb-12 font-display text-3xl font-black text-ink lg:text-4xl">
-            What we stand for
-          </h2>
           <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
-            {VALUES.map((v) => {
-              const Icon = v.icon;
+            {HOW_STEPS.map((s) => {
+              const Icon = s.icon;
               return (
-                <div key={v.title} className="bg-bone p-8">
+                <div key={s.title} className="bg-bone p-8">
                   <Icon
                     className="h-8 w-8 text-catalyst"
                     strokeWidth={1.5}
                     aria-hidden="true"
                   />
                   <h3 className="mt-6 font-display text-xl font-black text-ink">
-                    {v.title}
+                    {s.title}
                   </h3>
-                  <p className="mt-3 text-sm text-ink/70">{v.desc}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-ink/70">
+                    {s.desc}
+                  </p>
                 </div>
               );
             })}
           </div>
+          <p className="mt-10 text-sm text-ink/60">
+            This is a working approach, not a rigid methodology.{" "}
+            <Link
+              href="/process"
+              className="small-caps text-ink hover:text-catalyst"
+            >
+              See the process in more detail →
+            </Link>
+          </p>
         </div>
       </BlueprintGrid>
 
-      {/* How we work */}
-      <BlueprintGrid className="bg-bone pb-24">
+      {/* 05 — Technical experience */}
+      <BlueprintGrid
+        id="technical-experience"
+        className="bg-bone py-24 lg:py-32"
+      >
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-          <h2 className="mb-12 font-display text-3xl font-black text-ink lg:text-4xl">
-            How Mogen works
-          </h2>
-          <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
-            {APPROACH.map((a) => (
-              <div key={a.title} className="bg-bone p-8">
-                <h3 className="font-display text-xl font-black text-ink">
-                  {a.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink/70">
-                  {a.desc}
-                </p>
+          <SectionLabel
+            index={`// ${formatNumber(5)} — Technical Experience`}
+            title="Technical Depth"
+          />
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.1fr_1.9fr] lg:gap-16">
+            <div>
+              <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
+                More than
+                <br />
+                <span className="text-catalyst">website assembly.</span>
+              </h2>
+            </div>
+            <div className="space-y-5 text-lg leading-relaxed text-ink/70">
+              <p>
+                Mogen&apos;s technical background extends beyond putting pages
+                together. Websites are designed around the needs of the business
+                — structured for clarity and discovery, engineered for speed and
+                security, and connected to the systems around them: search,
+                analytics, forms, messaging, and the documents a business runs
+                on.
+              </p>
+              <p>
+                That includes modernising existing systems where replacement
+                would waste what already works, and automating repetitive work
+                where it genuinely saves time. Technology is chosen to solve the
+                actual business problem — not for its own sake.
+              </p>
+            </div>
+          </div>
+          <div className="mt-12 grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
+            {TECHNICAL_AREAS.map((area) => (
+              <div key={area} className="flex items-center gap-3 bg-bone p-6">
+                <Check
+                  className="h-5 w-5 shrink-0 text-catalyst"
+                  aria-hidden="true"
+                />
+                <span className="text-ink/80">{area}</span>
               </div>
             ))}
           </div>
+          <p className="mt-10 text-sm text-ink/60">
+            No certifications, partnerships, or accreditations are claimed here
+            — only the work itself. For practical notes on websites, local SEO,
+            and digital marketing, see the{" "}
+            <Link
+              href="/blog"
+              className="small-caps text-ink hover:text-catalyst"
+            >
+              blog →
+            </Link>
+          </p>
         </div>
       </BlueprintGrid>
 
-      {/* CTA */}
-      <BlueprintGrid className="bg-catalyst py-20 text-white">
-        <div className="mx-auto flex max-w-[1600px] flex-col items-start justify-between gap-6 px-6 lg:flex-row lg:items-center lg:px-10">
-          <h2 className="font-display text-3xl font-black lg:text-4xl text-balance">
-            Let&apos;s grow your business together.
-          </h2>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <MagneticButton
-              as="a"
-              href="/#audit"
-              variant="solid"
-              className="bg-ink text-bone hover:bg-bone hover:text-ink"
-            >
-              Get Free Audit
-            </MagneticButton>
-            <MagneticButton
-              as="a"
-              href="/contact"
-              variant="outline"
-              className="border-white/60 text-white hover:bg-white hover:text-ink"
-            >
-              Contact Us <ArrowRight className="h-4 w-4" />
-            </MagneticButton>
-          </div>
-        </div>
-      </BlueprintGrid>
+      {/* 06 — Mogen's approach (reused homepage section, About numbering) */}
+      <WhyMogen numbering={6} />
+
+      {/* 07 — Where Mogen works (reused locations section, About numbering) */}
+      <LocationsPreview numbering={7} />
+
+      {/* 08 — Next step */}
+      <FinalCTA numbering={8} auditHref="/#audit" />
     </PageShell>
   );
 }
