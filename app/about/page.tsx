@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Check, ClipboardList, Compass, Hammer, SearchCheck } from "lucide-react";
+import {
+  Check,
+  ClipboardList,
+  Compass,
+  Hammer,
+  SearchCheck,
+} from "lucide-react";
 import Link from "next/link";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import FinalCTA from "@/components/mogen/final-cta";
@@ -80,13 +86,14 @@ const TECHNICAL_AREAS = [
   "Front-end development",
   "Back-end development",
   "Databases",
-  "APIs and integrations",
   "Web applications",
   "SEO implementation",
   "Performance optimisation",
-  "Automation",
   "Technical problem solving",
   "Modernisation of existing systems",
+  "Business Documentation",
+  "APIs and integrations",
+  "Automation",
 ];
 
 function AboutJsonLd() {
@@ -154,10 +161,7 @@ export default function About() {
       label="About Mogen"
       title={
         <>
-          Mogen Pty Ltd /<br />
-          <span className="text-catalyst">
-            Motsoane Global Enterprise.
-          </span>
+          MO<span className="text-catalyst">GEN.</span>
         </>
       }
       intro="Mogen is a South African digital services business based in Maboloka, North West. Mogen helps businesses build and improve the digital foundations they rely on to be found, understood, and contacted online — across Pretoria, Soshanguve, Gauteng, and elsewhere in South Africa."
@@ -171,14 +175,20 @@ export default function About() {
       <Services numbering={3} auditHref="/#audit" />
       <div className="bg-bone pb-4">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-          <Link href="/services" className="small-caps text-ink hover:text-catalyst">
+          <Link
+            href="/services"
+            className="small-caps text-ink hover:text-catalyst"
+          >
             View all services →
           </Link>
         </div>
       </div>
 
       {/* 04 — How Mogen works */}
-      <BlueprintGrid id="how-mogen-works" className="bg-secondary py-24 lg:py-32">
+      <BlueprintGrid
+        id="how-mogen-works"
+        className="bg-secondary py-24 lg:py-32"
+      >
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <SectionLabel
             index={`// ${formatNumber(4)} — How Mogen Works`}
@@ -218,7 +228,10 @@ export default function About() {
           </div>
           <p className="mt-10 text-sm text-ink/60">
             This is a working approach, not a rigid methodology.{" "}
-            <Link href="/process" className="small-caps text-ink hover:text-catalyst">
+            <Link
+              href="/process"
+              className="small-caps text-ink hover:text-catalyst"
+            >
               See the process in more detail →
             </Link>
           </p>
@@ -226,7 +239,10 @@ export default function About() {
       </BlueprintGrid>
 
       {/* 05 — Technical experience */}
-      <BlueprintGrid id="technical-experience" className="bg-bone py-24 lg:py-32">
+      <BlueprintGrid
+        id="technical-experience"
+        className="bg-bone py-24 lg:py-32"
+      >
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <SectionLabel
             index={`// ${formatNumber(5)} — Technical Experience`}
@@ -272,7 +288,10 @@ export default function About() {
             No certifications, partnerships, or accreditations are claimed here
             — only the work itself. For practical notes on websites, local SEO,
             and digital marketing, see the{" "}
-            <Link href="/blog" className="small-caps text-ink hover:text-catalyst">
+            <Link
+              href="/blog"
+              className="small-caps text-ink hover:text-catalyst"
+            >
               blog →
             </Link>
           </p>
