@@ -71,8 +71,8 @@ export default function ContactForm() {
         </h3>
         <p className="mt-3 max-w-sm text-ink/70">
           Thanks{form.name ? `, ${form.name.split(" ")[0]}` : ""}. Mogen will
-          review your enquiry and reply within one business day with a
-          practical next step.
+          review your enquiry and reply within one business day with a practical
+          next step.
         </p>
       </div>
     );
@@ -130,11 +130,11 @@ export default function ContactForm() {
           name="service"
           value={form.service}
           onChange={(e) => setForm({ ...form, service: e.target.value })}
-          className="mt-2 w-full border border-ink/15 bg-bone px-4 py-3 text-ink focus:outline-none"
+          className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink [color-scheme:light] focus:border-catalyst/60 focus:outline-none dark:[color-scheme:dark]"
         >
           {CONTACT_SERVICES.map((s) => (
-            <option key={s} value={s}>
-              {s === "SEO" ? "SEO" : s}
+            <option key={s} value={s} className="bg-bone text-ink">
+              {s}
             </option>
           ))}
         </select>
@@ -149,7 +149,7 @@ export default function ContactForm() {
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
           rows={4}
-          className="mt-2 w-full border border-ink/15 bg-bone px-4 py-3 text-ink placeholder:text-ink/30 focus:outline-none"
+          className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink placeholder:text-ink/30 focus:border-catalyst/60 focus:outline-none"
           placeholder="Tell us what you need…"
         />
       </div>
@@ -163,9 +163,7 @@ export default function ContactForm() {
           tabIndex={-1}
           autoComplete="off"
           value={form.companyWebsite}
-          onChange={(e) =>
-            setForm({ ...form, companyWebsite: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, companyWebsite: e.target.value })}
         />
       </div>
       {error && (
@@ -221,7 +219,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         autoComplete={autoComplete}
         required={required}
-        className="mt-2 w-full border border-ink/15 bg-bone px-4 py-3 text-ink placeholder:text-ink/30 focus:outline-none"
+        className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink placeholder:text-ink/30 focus:border-catalyst/60 focus:outline-none"
       />
     </div>
   );

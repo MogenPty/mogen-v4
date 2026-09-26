@@ -1,15 +1,19 @@
 import { z } from "zod";
+import { SERVICES } from "@/data/services";
 import type { MailProvider } from "@/lib/mail/mail-provider";
-import type { MailResult } from "@/lib/mail/mail-types";
-import type { MailMessage as Message } from "@/lib/mail/mail-types";
+import type { MailResult, MailMessage as Message } from "@/lib/mail/mail-types";
 
-export const CONTACT_SERVICES = [
-  "Web Development",
-  "SEO",
-  "Digital Marketing",
-  "Business Documentation",
-  "Other",
-] as const;
+/**
+ * Single source of truth: service options flow from data/services.ts.
+ * "Other" stays as a catch-all for enquiries outside the core services.
+ */
+function buildContactServices(): [string, ...string[]] {
+  const names = [...SERVICES.map((s) => s.name), "Other"];
+  // "Other" is always appended, so this is never empty.
+  return names as [string, ...string[]];
+}
+
+export const CONTACT_SERVICES = buildContactServices();
 
 export type ContactService = (typeof CONTACT_SERVICES)[number];
 
@@ -19,7 +23,11 @@ export const contactInputSchema = z.object({
   phone: z.string().trim().max(40).optional().default(""),
   businessName: z.string().trim().max(160).optional().default(""),
   service: z.enum(CONTACT_SERVICES),
-  message: z.string().trim().min(10, "Please add a few details (min 10 characters).").max(5000),
+  message: z
+    .string()
+    .trim()
+    .min(10, "Please add a few details (min 10 characters).")
+    .max(5000),
   // Honeypot — must stay empty. Checked server-side.
   companyWebsite: z.string().max(200).optional().default(""),
 });
@@ -45,12 +53,17 @@ function sanitizeHeader(value: string): string {
   return value.replace(/[\r\n]+/g, " ").trim();
 }
 
-export function buildContactSubject(input: Pick<ContactInput, "service">): string {
+export function buildContactSubject(
+  input: Pick<ContactInput, "service">,
+): string {
   if (input.service === "Other") return "New Mogen website enquiry";
   return `New Mogen enquiry — ${sanitizeHeader(input.service)}`;
 }
 
-export function buildContactText(input: ContactInput, submittedAt: string): string {
+export function buildContactText(
+  input: ContactInput,
+  submittedAt: string,
+): string {
   const lines = [
     "New enquiry from mogen.co.za/contact",
     "",
@@ -67,7 +80,10 @@ export function buildContactText(input: ContactInput, submittedAt: string): stri
   return lines.join("\n");
 }
 
-export function buildContactHtml(input: ContactInput, submittedAt: string): string {
+export function buildContactHtml(
+  input: ContactInput,
+  submittedAt: string,
+): string {
   const row = (label: string, value: string) =>
     `<tr><td style="padding:4px 12px 4px 0;color:#666">${escapeHtml(label)}</td><td style="padding:4px 0">${escapeHtml(value)}</td></tr>`;
   const optional = [
@@ -116,7 +132,11 @@ export async function submitContact(
       const key = issue.path.join(".") || "form";
       if (!fieldErrors[key]) fieldErrors[key] = issue.message;
     }
-    return { ok: false, error: "Please check the highlighted fields.", fieldErrors };
+    return {
+      ok: false,
+      error: "Please check the highlighted fields.",
+      fieldErrors,
+    };
   }
   const input = parsed.data;
 
@@ -124,7 +144,11 @@ export async function submitContact(
   if (input.companyWebsite) return { ok: true };
 
   // Recipient always comes from server config — never the client.
-  if (!config.to || (Array.isArray(config.to) && config.to.length === 0) || !config.from) {
+  if (
+    !config.to ||
+    (Array.isArray(config.to) && config.to.length === 0) ||
+    !config.from
+  ) {
     console.error("[contact] mail recipient/sender is not configured");
     return { ok: false, error: SAFE_USER_ERROR };
   }
@@ -138,13 +162,17 @@ export async function submitContact(
   const result: MailResult = await provider.send(message);
   if (!result.success) {
     // Log diagnostics server-side without secrets; user gets a safe message.
-    console.error(`[contact] provider "${provider.name}" failed: ${result.error.code}`);
+    console.error(
+      `[contact] provider "${provider.name}" failed: ${result.error.code}`,
+    );
     return { ok: false, error: SAFE_USER_ERROR };
   }
   return { ok: true };
 }
 
-export function getContactMailConfig(env: NodeJS.ProcessEnv = process.env): ContactMailConfig {
+export function getContactMailConfig(
+  env: NodeJS.ProcessEnv = process.env,
+): ContactMailConfig {
   return {
     from: env.MAIL_FROM ?? "Mogen <info@mogen.co.za>",
     to: env.MAIL_TO ?? "info@mogen.co.za",
