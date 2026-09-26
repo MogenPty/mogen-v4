@@ -4,11 +4,11 @@ import { Clock, type LucideProps, Mail, MapPin } from "lucide-react";
 import type React from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import { formatNumber } from "@/lib/utils";
+import { siteConfig } from "@/data/site";
 import ContactForm from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import Nav from "@/components/mogen/nav";
-import ContactExternalLink from "./contact-external-link";
 
 interface Props {
   numbering?: number;
@@ -33,8 +33,9 @@ export default function Contact({ numbering = 1 }: Readonly<Props>) {
                 <span className="text-catalyst">something that lasts.</span>
               </h1>
               <p className="mt-6 text-lg text-ink/70">
-                Tell us where you want to grow. We&apos;ll reply within one
-                business day with a clear next step — no pushy sales calls.
+                This is Mogen. Explain what you need — Mogen will review
+                your enquiry and reply within one business day with a
+                practical next step. No pushy sales calls.
               </p>
             </div>
 
@@ -47,8 +48,8 @@ export default function Contact({ numbering = 1 }: Readonly<Props>) {
                   <Detail
                     icon={Mail}
                     label="Email"
-                    value="hello@mogen.co.za"
-                    href="mailto:hello@mogen.co.za"
+                    value={siteConfig.email}
+                    href={`mailto:${siteConfig.email}`}
                   />
                   <Detail
                     icon={MapPin}
@@ -62,18 +63,16 @@ export default function Contact({ numbering = 1 }: Readonly<Props>) {
                   />
                 </ul>
 
-                <div className="flex flex-row gap-4 mt-10 border-t border-ink/10 pt-8">
-                  <ContactExternalLink
-                    title="Mogen SEO"
-                    url="https://seo.mogen.co.za"
-                    desc="Ready-to-use templates, brand kits and landing-page packs built for South African SMEs."
-                  />
-                  <ContactExternalLink
-                    title="Mogen Store"
-                    url="https://store.mogen.co.za"
-                    desc="Ready-to-use templates, brand kits and landing-page packs built for South African SMEs."
-                  />
-                </div>
+                <p className="mt-10 border-t border-ink/10 pt-8 text-sm leading-relaxed text-ink/60">
+                  Prefer email? Write to{" "}
+                  <a
+                    href={`mailto:${siteConfig.email}`}
+                    className="font-semibold text-ink hover:text-catalyst"
+                  >
+                    {siteConfig.email}
+                  </a>{" "}
+                  with a few lines about your business and what you need.
+                </p>
               </div>
 
               <div className="bg-bone p-8 lg:p-12">
