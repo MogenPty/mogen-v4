@@ -30,6 +30,13 @@ describe("contact submission service", () => {
     expect(fake.sent[0].subject).toContain("Web Development");
     expect(fake.sent[0].replyTo).toBe("visitor@example.com");
     expect(fake.sent[0].text).toContain("Test User");
+    expect(fake.sent[0].text).toContain("visitor@example.com");
+    expect(fake.sent[0].text).toContain("+27123456789");
+    expect(fake.sent[0].text).toContain("Test Business");
+    expect(fake.sent[0].text).toContain("Web Development");
+    expect(fake.sent[0].text).toContain("We need a new website");
+    expect(fake.sent[0].html).toContain("Test Business");
+    expect(fake.sent[0].html).toContain("visitor@example.com");
   });
 
   it("rejects an invalid email before sending", async () => {
@@ -127,8 +134,9 @@ describe("contact submission service", () => {
     const cfg = getContactMailConfig({
       ...process.env,
       MAIL_FROM: "Mogen <info@mogen.co.za>",
-      MAIL_TO: "info@mogen.co.za>",
+      MAIL_TO: "info@mogen.co.za",
     } as NodeJS.ProcessEnv);
     expect(cfg.from).toContain("info@mogen.co.za");
+    expect(cfg.to).toBe("info@mogen.co.za");
   });
 });
