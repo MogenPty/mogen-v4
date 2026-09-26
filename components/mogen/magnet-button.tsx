@@ -54,8 +54,8 @@ export default function MagneticButton({
     "group relative inline-flex items-center justify-center gap-2 px-7 py-4 font-display font-bold uppercase tracking-wider text-sm transition-transform duration-200 ease-out will-change-transform";
   const variants: Record<string, string> = {
     solid: "bg-ink text-bone hover:bg-catalyst",
-    catalyst: "bg-catalyst text-white hover:bg-ink",
-    volt: "bg-volt text-obsidian hover:bg-ink hover:text-volt",
+    catalyst: "bg-catalyst text-white hover:bg-ink hover:text-bone",
+    volt: "bg-volt text-obsidian hover:bg-ink hover:text-obsidian",
     outline: "border border-ink text-ink hover:bg-ink hover:text-bone",
     ghost: "text-ink hover:text-catalyst",
   };

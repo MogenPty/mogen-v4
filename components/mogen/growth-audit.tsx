@@ -200,7 +200,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                   </div>
                   <MagneticButton
                     variant="catalyst"
-                    className="text-black hover:bg-ink hover:text-white dark:hover:text-secondary-foreground"
+                    className="text-black hover:bg-ink hover:text-white dark:hover:text-black"
                     onClick={runScan}
                     aria-label="Run growth audit scan"
                   >
@@ -354,7 +354,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                   <MagneticButton
                     type="submit"
                     variant="catalyst"
-                    className="w-full text-black hover:bg-ink hover:text-white dark:hover:text-secondary-foreground"
+                    className="w-full text-black hover:bg-ink hover:text-white dark:hover:text-black"
                     disabled={saving}
                     aria-label="Unlock full growth report"
                   >
@@ -384,7 +384,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                 <MagneticButton
                   onClick={() => router.push("/growth-audit-results")}
                   variant="catalyst"
-                  className="mt-8 w-full text-black hover:bg-ink hover:text-white dark:hover:text-secondary-foreground"
+                  className="mt-8 w-full text-black hover:bg-ink hover:text-white dark:hover:text-black"
                 >
                   View Full Results <ArrowRight className="h-4 w-4" />
                 </MagneticButton>

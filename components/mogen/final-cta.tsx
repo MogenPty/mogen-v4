@@ -42,7 +42,7 @@ export default function FinalCTA({
               as="a"
               href={auditHref}
               variant="outline"
-              className="border-white/60 text-white hover:bg-white hover:text-ink"
+              className="border-white/60 text-white hover:bg-white hover:text-ink dark:hover:text-black"
             >
               Get Free Growth Audit
             </MagneticButton>

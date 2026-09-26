@@ -60,7 +60,7 @@ export default function ConversionBar({
           </div>
           <Link
             href={auditHref}
-            className="small-caps bg-catalyst px-5 py-2 text-white transition-colors hover:bg-ink"
+            className="small-caps bg-catalyst px-5 py-2 text-white transition-colors hover:bg-ink dark:hover:text-black"
             aria-label="Get your free growth audit now"
           >
             Get Free Audit →

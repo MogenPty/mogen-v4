@@ -24,7 +24,7 @@ export default function AuditGrid() {
             as="a"
             href="/contact"
             variant="outline"
-            className="border-white/60 text-white hover:bg-white hover:text-ink"
+            className="border-white/60 text-white hover:bg-white hover:text-ink dark:hover:text-black"
           >
             Talk to Us <ArrowRight className="h-4 w-4" />
           </MagneticButton>
