@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { getActivePromotion } from "@/data/promotions";
+import { getFeaturedPromotion } from "@/data/promotions";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
@@ -11,11 +11,12 @@ interface Props {
 }
 
 export default function Promotion({ numbering = 1 }: Readonly<Props>) {
-  const promo = getActivePromotion();
+  // Homepage shows only an active + explicitly featured promotion.
+  // When none qualifies, no section is rendered at all.
+  const promo = getFeaturedPromotion();
   if (!promo) return null;
 
-  const formattedOriginal = `R${promo.originalPrice}`;
-  const formattedPromo = `R${promo.promotionalPrice}`;
+  const headline = promo.pricing.find((p) => p.promotional) ?? promo.pricing[0];
 
   return (
     <BlueprintGrid id="promotion" className="bg-bone py-24 lg:py-32">
@@ -28,68 +29,76 @@ export default function Promotion({ numbering = 1 }: Readonly<Props>) {
           <div className="bg-bone p-8 lg:p-12">
             <span className="small-caps text-catalyst">Featured</span>
             <h2 className="mt-3 font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
-              {promo.title}
+              {promo.name}
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink/70">
-              {promo.description}
+              {promo.shortDescription}
             </p>
-            <div className="mt-8 flex items-baseline gap-4">
-              <span className="font-display text-5xl font-black text-catalyst lg:text-6xl">
-                {formattedPromo}
-              </span>
-              <span className="text-xl text-ink/40 line-through">
-                {formattedOriginal}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-ink/60">
-              Regular price{" "}
-              <span className="line-through">{formattedOriginal}</span> — now{" "}
-              <span className="font-semibold text-ink">{formattedPromo}</span> while the promotion is active.
-            </p>
-            {promo.terms && (
-              <p className="mt-6 text-xs leading-relaxed text-ink/50">{promo.terms}</p>
+            {headline && (
+              <>
+                <div className="mt-8 flex items-baseline gap-4">
+                  <span className="font-display text-5xl font-black text-catalyst lg:text-6xl">
+                    {headline.promotional ?? headline.regular}
+                  </span>
+                  {headline.promotional && (
+                    <span className="text-xl text-ink/40 line-through">
+                      {headline.regular}
+                    </span>
+                  )}
+                </div>
+                {headline.note && (
+                  <p className="mt-2 text-sm text-ink/60">{headline.note}</p>
+                )}
+              </>
             )}
             <div className="mt-8 flex flex-wrap gap-4">
               <MagneticButton as="a" href={promo.cta.href} variant="catalyst">
                 {promo.cta.label}
               </MagneticButton>
-              <MagneticButton as="a" href={`/services/${promo.relatedService}`} variant="outline">
-                View service
+              <MagneticButton
+                as="a"
+                href={`/promotions/${promo.slug}`}
+                variant="outline"
+              >
+                Promotion details
               </MagneticButton>
             </div>
           </div>
           <div className="flex flex-col justify-between bg-ink p-8 text-bone lg:p-12">
             <div>
-              <h3 className="font-display text-xl font-black">What&apos;s included</h3>
+              <h3 className="font-display text-xl font-black">
+                What&apos;s included
+              </h3>
               <ul className="mt-6 space-y-3 text-sm text-bone/80">
-                <li className="flex gap-2">
-                  <span className="mt-1 h-1 w-1 shrink-0 bg-catalyst" aria-hidden="true" />
-                  Starter website structure tailored to your business
-                </li>
-                <li className="flex gap-2">
-                  <span className="mt-1 h-1 w-1 shrink-0 bg-catalyst" aria-hidden="true" />
-                  Mobile-first, fast and structured for discovery
-                </li>
-                <li className="flex gap-2">
-                  <span className="mt-1 h-1 w-1 shrink-0 bg-catalyst" aria-hidden="true" />
-                  Contact / enquiry path set up
-                </li>
-                <li className="flex gap-2">
-                  <span className="mt-1 h-1 w-1 shrink-0 bg-catalyst" aria-hidden="true" />
-                  Clear next steps for SEO and growth
-                </li>
+                {(promo.included ?? []).map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span
+                      className="mt-1 h-1 w-1 shrink-0 bg-catalyst"
+                      aria-hidden="true"
+                    />
+                    {item}
+                  </li>
+                ))}
               </ul>
             </div>
             <div className="mt-10 border-t border-bone/10 pt-6">
               <p className="text-sm text-bone/60">
-                Not WaaS. This is Mogen Seed — a starter website offer.
+                Not WaaS. This is {promo.name} — a limited promotional offer.
               </p>
-              <Link
-                href="/contact"
-                className="mt-3 inline-flex small-caps text-catalyst hover:text-bone"
-              >
-                Questions? Contact us →
-              </Link>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+                <Link
+                  href="/contact"
+                  className="inline-flex small-caps text-catalyst hover:text-bone"
+                >
+                  Questions? Contact us →
+                </Link>
+                <Link
+                  href="/promotions"
+                  className="inline-flex small-caps text-bone/60 hover:text-bone"
+                >
+                  All promotions →
+                </Link>
+              </div>
             </div>
           </div>
         </div>

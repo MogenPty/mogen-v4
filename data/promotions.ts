@@ -1,41 +1,323 @@
-export interface Promotion {
+/**
+ * Central promotion data source for the Mogen Promotion System.
+ *
+ * All promotion surfaces (homepage, /promotions, /promotions/[slug])
+ * consume this data through the selector functions below — never by
+ * manipulating the raw PROMOTIONS array directly.
+ *
+ * The model is deliberately UI-agnostic so it can later move from this
+ * static TypeScript file into a database/CMS without rewriting the UI.
+ */
+
+export type PromotionStatus =
+  | "draft"
+  | "scheduled"
+  | "active"
+  | "expired"
+  | "archived";
+
+export interface PromotionImage {
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
+export interface PromotionCta {
+  label: string;
+  href: string;
+}
+
+export interface PromotionPricePoint {
+  /** e.g. "Setup fee", "Monthly subscription", "Additional pages" */
+  label: string;
+  /** Regular (non-promotional) price display, e.g. "R1,200" */
+  regular: string;
+  /** Promotional price display, e.g. "R900". Omit when not discounted. */
+  promotional?: string;
+  /** e.g. "once-off", "/month" */
+  cadence?: string;
+  /** Extra clarification shown under the price line. */
+  note?: string;
+}
+
+export interface PromotionStep {
   title: string;
-  slug: string;
   description: string;
-  originalPrice: number;
-  promotionalPrice: number;
-  currency: string;
+}
+
+export interface PromotionFaq {
+  q: string;
+  a: string;
+}
+
+export interface Promotion {
+  id: string;
+  slug: string;
+  name: string;
+  shortDescription: string;
+  description: string;
+
+  status: PromotionStatus;
+  /** ISO date strings (YYYY-MM-DD). Informational; `status` is authoritative. */
   startDate?: string;
   endDate?: string;
-  status: "active" | "scheduled" | "expired" | "draft";
-  featured: boolean;
-  showOnHomepage: boolean;
-  relatedService: string;
-  cta: { label: string; href: string };
-  terms?: string;
+
+  /** Explicit featuring — never inferred from sortOrder. */
+  isFeatured: boolean;
+  sortOrder: number;
+
+  pricing: PromotionPricePoint[];
+  eligibility: string[];
+  terms: string[];
+
+  /** Promotional campaign images. Optional — may be empty. */
+  images: PromotionImage[];
+
+  cta: PromotionCta;
+  relatedService?: string;
+
+  /**
+   * Allocation cap for capacity-limited campaigns (e.g. first 100
+   * customers). No counting/billing logic is built yet — this field
+   * exists so a real allocation source can be wired in later.
+   */
+  maximumCustomers?: number;
+  /** How many months the promotional recurring price applies, if any. */
+  promoDurationMonths?: number;
+
+  included?: string[];
+  howItWorks?: PromotionStep[];
+  faqs?: PromotionFaq[];
+  billingNote?: string;
+  savingsCallout?: string;
 }
 
 export const PROMOTIONS: Promotion[] = [
   {
-    title: "Mogen Seed Website",
-    slug: "mogen-seed-website",
+    id: "mogen-seed",
+    slug: "mogen-seed-r99",
+    name: "Mogen Seed Website",
+    shortDescription:
+      "A focused starter website for businesses that need a professional online presence without unnecessary complexity.",
     description:
       "A focused starter website for businesses that need a professional online presence without unnecessary complexity. Clean structure, mobile-first build, and the essentials to get found and contacted.",
-    originalPrice: 199,
-    promotionalPrice: 99,
-    currency: "ZAR",
     status: "active",
-    featured: true,
-    showOnHomepage: true,
-    relatedService: "web-development",
+    endDate: "2026-10-30",
+    isFeatured: true,
+    sortOrder: 1,
+    pricing: [
+      {
+        label: "Mogen Seed Website",
+        regular: "R199",
+        promotional: "R99",
+        cadence: "once-off",
+        note: "Regular price R199 — now R99 while the promotion is active.",
+      },
+    ],
+    eligibility: [
+      "Available to new and existing Mogen customers while the promotion is active.",
+    ],
+    terms: [
+      "Promotion price valid while the promotion is active.",
+      "Current campaign runs through 30 October 2026.",
+      "Promotion terms available on request.",
+    ],
+    images: [],
     cta: { label: "Claim Mogen Seed", href: "/contact" },
-    terms:
-      "Promotion terms available on request. No fake expiry — price valid while promotion is active.",
+    relatedService: "web-development",
+    included: [
+      "Starter website structure tailored to your business",
+      "Mobile-first, fast and structured for discovery",
+      "Contact / enquiry path set up",
+      "Clear next steps for SEO and growth",
+    ],
+  },
+  {
+    id: "mogen-sprout",
+    slug: "mogen-sprout-first-100",
+    name: "Mogen Sprout",
+    shortDescription:
+      "Mogen's managed website subscription — professional website, hosting, maintenance and email handled for one monthly price. Available to the first 100 eligible customers.",
+    description:
+      "Mogen Sprout is the managed way to get online: Mogen designs and builds your website, then keeps it hosted, maintained and supported for one monthly subscription. This launch promotion discounts the setup fee and the monthly subscription for the first 12 months for the first 100 eligible customers.",
+    status: "scheduled",
+    startDate: "2026-10-01",
+    isFeatured: false,
+    sortOrder: 2,
+    pricing: [
+      {
+        label: "Setup fee",
+        regular: "R1,200",
+        promotional: "R900",
+        cadence: "once-off",
+        note: "Paid before development begins. Save R300 on setup.",
+      },
+      {
+        label: "Monthly subscription",
+        regular: "R399/month",
+        promotional: "R299/month",
+        cadence: "/month",
+        note: "Promotional rate applies for the first 12 months, then the normal R399/month applies.",
+      },
+      {
+        label: "Additional pages",
+        regular: "R150/month",
+        cadence: "per additional 5 pages",
+        note: "Not discounted — additional pages remain R150/month per additional 5 pages.",
+      },
+    ],
+    eligibility: [
+      "Available to customers who are not already on Sprout, because Sprout requires the setup fee before development begins.",
+      "Limited to the first 100 eligible customers.",
+    ],
+    terms: [
+      "Promotion starts 1 October 2026 and ends when the 100-customer allocation is exhausted, unless Mogen extends it.",
+      "The promotional monthly rate of R299/month applies for the first 12 months of the subscription. Thereafter the normal R399/month applies.",
+      "Additional pages remain R150/month per additional 5 pages and are not discounted by this promotion.",
+      "Monthly subscription fees are paid in advance.",
+      "No customer counters or availability claims are shown until a real allocation source exists.",
+    ],
+    images: [],
+    cta: { label: "Claim Sprout Offer", href: "/contact" },
+    relatedService: "web-development",
+    maximumCustomers: 100,
+    promoDurationMonths: 12,
+    included: [
+      "Professionally designed starter website",
+      "Hosting, maintenance and ongoing support",
+      "Mogen email services available",
+      "Launch-ready structure for SEO and growth",
+    ],
+    howItWorks: [
+      {
+        title: "Accept the offer",
+        description:
+          "Confirm you want the Sprout promotion and that you are not already on Sprout.",
+      },
+      {
+        title: "Pay the R900 setup fee",
+        description:
+          "The once-off setup fee is paid before development begins.",
+      },
+      {
+        title: "We build your website",
+        description:
+          "Mogen designs and develops your website, then walks through a review with you.",
+      },
+      {
+        title: "Website launches",
+        description:
+          "Your site goes live once development and review are complete.",
+      },
+      {
+        title: "Monthly subscription begins",
+        description:
+          "The monthly Sprout subscription begins when the website launches. The first monthly charge may be pro-rated depending on the launch date.",
+      },
+    ],
+    faqs: [
+      {
+        q: "When does monthly billing start?",
+        a: "The monthly subscription normally begins when the website launches and may be pro-rated for the first month. If you want Mogen email services active from the beginning of development, monthly billing may begin earlier.",
+      },
+      {
+        q: "How long does the R299/month rate last?",
+        a: "The promotional R299/month rate applies for the first 12 months. After that, the normal R399/month applies.",
+      },
+      {
+        q: "Are additional pages discounted?",
+        a: "No. Additional pages remain R150/month per additional 5 pages. The promotion discounts the setup fee and the base monthly subscription only.",
+      },
+      {
+        q: "Who is eligible?",
+        a: "Customers who are not already on Sprout, because Sprout requires the setup fee before development begins. The offer is limited to the first 100 eligible customers.",
+      },
+    ],
+    billingNote:
+      "Monthly subscription fees are paid in advance. The monthly subscription normally begins when the website launches and may be pro-rated for the first month.",
+    savingsCallout:
+      "First-year total: R4,488 on promotion vs R5,988 normally — save R1,500 in year one (R900 + R299 × 12 vs R1,200 + R399 × 12).",
   },
 ];
 
-export const getActivePromotion = () =>
-  PROMOTIONS.find((p) => p.status === "active" && p.showOnHomepage);
+// ---------------------------------------------------------------------------
+// Selectors — UI code must use these, not the raw PROMOTIONS array.
+// ---------------------------------------------------------------------------
 
-export const getPromotion = (slug: string) =>
-  PROMOTIONS.find((p) => p.slug === slug);
+/** All promotions in raw (sortOrder) order. */
+export function getPromotions(): Promotion[] {
+  return [...PROMOTIONS].sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export function getPromotionBySlug(slug: string): Promotion | undefined {
+  return PROMOTIONS.find((p) => p.slug === slug);
+}
+
+export function getActivePromotions(): Promotion[] {
+  return getPromotions().filter((p) => p.status === "active");
+}
+
+/**
+ * The single promotion for the homepage: must be both active AND
+ * explicitly featured. Returns undefined when none qualifies — callers
+ * must then render no promotion section at all.
+ */
+export function getFeaturedPromotion(): Promotion | undefined {
+  return getPromotions().find(
+    (p) => p.status === "active" && p.isFeatured,
+  );
+}
+
+function publicRank(p: Promotion): number {
+  if (p.status === "active" && p.isFeatured) return 0;
+  if (p.status === "active") return 1;
+  if (p.status === "scheduled") return 2;
+  if (p.status === "expired") return 3;
+  return 4;
+}
+
+/**
+ * Pure ordering helper (exported for testing): active featured first,
+ * then other active, then scheduled, then expired — each by sortOrder.
+ * Draft and archived promotions are excluded from public listing.
+ */
+export function orderPublicPromotions(list: Promotion[]): Promotion[] {
+  return [...list]
+    .filter((p) => p.status !== "draft" && p.status !== "archived")
+    .sort((a, b) => publicRank(a) - publicRank(b) || a.sortOrder - b.sortOrder);
+}
+
+/** Public promotions for /promotions, in display order. */
+export function getPublicPromotions(): Promotion[] {
+  return orderPublicPromotions(PROMOTIONS);
+}
+
+export function isPromotionExpired(promotion: Promotion): boolean {
+  return promotion.status === "expired";
+}
+
+export function getPromotionStatusLabel(status: PromotionStatus): string {
+  switch (status) {
+    case "active":
+      return "Active";
+    case "scheduled":
+      return "Coming soon";
+    case "expired":
+      return "Promotion ended";
+    case "archived":
+      return "Archived";
+    case "draft":
+      return "Draft";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Deprecated aliases — kept so older imports keep working.
+// Prefer getFeaturedPromotion() / getPromotionBySlug() in new code.
+// ---------------------------------------------------------------------------
+
+/** @deprecated Use getFeaturedPromotion() instead. */
+export const getActivePromotion = getFeaturedPromotion;
+
+/** @deprecated Use getPromotionBySlug() instead. */
+export const getPromotion = getPromotionBySlug;
