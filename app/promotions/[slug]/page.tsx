@@ -104,11 +104,17 @@ function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {
   return null;
 }
 
-function PricingSection({ promo }: Readonly<{ promo: Promotion }>) {
+function PricingSection({
+  promo,
+  numbering = 1,
+}: Readonly<{ promo: Promotion; numbering?: number }>) {
   return (
     <BlueprintGrid className="bg-bone py-20">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-        <SectionLabel index="// 02 — Offer" title="Pricing" />
+        <SectionLabel
+          index={`// ${formatNumber(numbering)} — Offer`}
+          title="Pricing"
+        />
         <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-3">
           {promo.pricing.map((p) => (
             <div key={p.label} className="bg-bone p-8">
@@ -158,7 +164,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
   const promo = getPromotionBySlug(slug);
   if (!promo) notFound();
 
-  const numbering = 1;
+  let numbering = 1;
   const status = getEffectiveStatus(promo);
 
   return (
@@ -224,14 +230,14 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
         <StatusBanner promo={promo} />
 
         {/* PRICING / OFFER */}
-        <PricingSection promo={promo} />
+        <PricingSection numbering={numbering++} promo={promo} />
 
         {/* PROMOTIONAL IMAGE CAROUSEL — only when images exist */}
         {promo.images.length > 0 && (
           <BlueprintGrid className="bg-secondary py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering + 2)} — Gallery`}
+                index={`// ${formatNumber(numbering++)} — Gallery`}
                 title="Campaign images"
               />
               <PromotionCarousel
@@ -248,7 +254,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
           <BlueprintGrid className="bg-bone py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering + 3)} — Included`}
+                index={`// ${formatNumber(numbering++)} — Included`}
                 title="What's included"
               />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2">
@@ -274,7 +280,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
           <BlueprintGrid className="bg-secondary py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering + 4)} — Process`}
+                index={`// ${formatNumber(numbering++)} — Process`}
                 title="How it works"
               />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-5">
@@ -301,7 +307,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
           <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:px-10">
             <div>
               <SectionLabel
-                index={`// ${formatNumber(numbering + 5)} — Eligibility`}
+                index={`// ${formatNumber(numbering++)} — Eligibility`}
                 title="Eligibility"
               />
               <ul className="space-y-3 text-ink/80">
@@ -318,7 +324,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
             </div>
             <div>
               <SectionLabel
-                index={`// ${formatNumber(numbering + 6)} — Terms`}
+                index={`// ${formatNumber(numbering++)} — Terms`}
                 title="Terms"
               />
               <ul className="space-y-3 text-sm text-ink/70">
@@ -341,7 +347,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
           <BlueprintGrid className="bg-bone pb-20 lg:pb-28">
             <div className="mx-auto max-w-225 px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering + 7)} — Questions`}
+                index={`// ${formatNumber(numbering++)} — Questions`}
                 title="FAQ"
               />
               <h2 className="mb-10 font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
@@ -358,7 +364,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
               <div>
                 <span className="small-caps text-catalyst">
-                  {`// ${formatNumber(numbering + 8)} — Start`}
+                  {`// ${formatNumber(numbering++)} — Start`}
                 </span>
                 <h2 className="mt-6 font-display text-4xl font-black leading-[1.05] lg:text-6xl text-balance">
                   {status === "expired" ? (
@@ -392,9 +398,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
                   variant="catalyst"
                   className="w-fit"
                 >
-                  {status === "expired"
-                    ? "Contact Mogen"
-                    : promo.cta.label}
+                  {status === "expired" ? "Contact Mogen" : promo.cta.label}
                 </MagneticButton>
                 <Link
                   href="/promotions"
