@@ -12,11 +12,16 @@ import { PromotionStatusBadge } from "@/components/mogen/promotion-card";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import { formatNumber } from "@/lib/utils";
 import {
+  getEffectiveStatus,
   getPromotionBySlug,
   getPromotions,
   type Promotion,
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
+
+// Date transitions (start/end) and the fallback-featuring env flag take
+// effect without a redeploy: pages regenerate at most hourly.
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -61,7 +66,8 @@ function formatDate(iso: string): string {
 }
 
 function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {
-  if (promo.status === "expired") {
+  const status = getEffectiveStatus(promo);
+  if (status === "expired") {
     return (
       <div
         role="status"
@@ -77,7 +83,7 @@ function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {
       </div>
     );
   }
-  if (promo.status === "scheduled") {
+  if (status === "scheduled") {
     return (
       <div
         role="status"
@@ -153,6 +159,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
   if (!promo) notFound();
 
   const numbering = 1;
+  const status = getEffectiveStatus(promo);
 
   return (
     <div className="bg-bone">
@@ -174,7 +181,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
             </Link>
             <div className="mt-8">
               <PromotionStatusBadge
-                status={promo.status}
+                status={status}
                 isFeatured={promo.isFeatured}
               />
             </div>
@@ -196,10 +203,10 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
             <div className="mt-10 flex flex-wrap gap-4">
               <MagneticButton
                 as="a"
-                href={promo.status === "expired" ? "/contact" : promo.cta.href}
+                href={status === "expired" ? "/contact" : promo.cta.href}
                 variant="catalyst"
               >
-                {promo.status === "expired" ? "Contact Mogen" : promo.cta.label}
+                {status === "expired" ? "Contact Mogen" : promo.cta.label}
               </MagneticButton>
               {promo.relatedService && (
                 <MagneticButton
@@ -354,12 +361,12 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
                   {`// ${formatNumber(numbering + 8)} — Start`}
                 </span>
                 <h2 className="mt-6 font-display text-4xl font-black leading-[1.05] lg:text-6xl text-balance">
-                  {promo.status === "expired" ? (
+                  {status === "expired" ? (
                     <>
                       This offer has{" "}
                       <span className="text-catalyst">ended.</span>
                     </>
-                  ) : promo.status === "scheduled" ? (
+                  ) : status === "scheduled" ? (
                     <>
                       Starts{" "}
                       <span className="text-catalyst">
@@ -373,7 +380,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
                   )}
                 </h2>
                 <p className="mt-6 max-w-md text-lg text-bone/70">
-                  {promo.status === "expired"
+                  {status === "expired"
                     ? "This promotion is no longer available, but we can still help — send us your details and we will suggest the closest current option."
                     : "Send us your details and we will confirm eligibility and next steps within one business day — no obligation."}
                 </p>
@@ -385,7 +392,7 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
                   variant="catalyst"
                   className="w-fit"
                 >
-                  {promo.status === "expired"
+                  {status === "expired"
                     ? "Contact Mogen"
                     : promo.cta.label}
                 </MagneticButton>

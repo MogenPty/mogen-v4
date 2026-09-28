@@ -58,7 +58,14 @@ export interface Promotion {
   description: string;
 
   status: PromotionStatus;
-  /** ISO date strings (YYYY-MM-DD). Informational; `status` is authoritative. */
+  /**
+   * ISO date strings (YYYY-MM-DD). These drive the *effective* status via
+   * getEffectiveStatus(): a dated promotion activates on startDate and
+   * expires after endDate (inclusive) without a data edit. An explicit
+   * `expired`, `draft` or `archived` status always sticks — dates never
+   * revive those, so allocation-based endings (e.g. Sprout's 100-customer
+   * cap) still end via a manual flip to `expired`.
+   */
   startDate?: string;
   endDate?: string;
 
@@ -135,7 +142,7 @@ export const PROMOTIONS: Promotion[] = [
   {
     id: "mogen-sprout",
     slug: "mogen-sprout-first-100",
-    name: "Mogen Sprout",
+    name: "Mogen Sprout Website",
     shortDescription:
       "Mogen's managed website subscription — professional website, hosting, maintenance and email handled for one monthly price. Available to the first 100 eligible customers.",
     description:
@@ -244,6 +251,56 @@ export const PROMOTIONS: Promotion[] = [
 // Selectors — UI code must use these, not the raw PROMOTIONS array.
 // ---------------------------------------------------------------------------
 
+/** Today's date as YYYY-MM-DD (UTC). Inject a value in tests to freeze time. */
+export function todayISO(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
+
+/**
+ * Effective status of a promotion on a given day (YYYY-MM-DD).
+ * ISO strings compare lexicographically, so no Date parsing is needed.
+ *
+ * - `draft` / `archived` / explicit `expired` always stick — dates never
+ *   revive them. Allocation-based endings (no endDate) end via manual flip.
+ * - Past endDate (inclusive) → `expired`.
+ * - `scheduled` activates once its startDate arrives; without a startDate it
+ *   stays `scheduled` (never silently goes live).
+ * - `active` with a future startDate reads as `scheduled`.
+ */
+export function getEffectiveStatus(
+  promotion: Promotion,
+  today: string = todayISO(),
+): PromotionStatus {
+  if (
+    promotion.status === "draft" ||
+    promotion.status === "archived" ||
+    promotion.status === "expired"
+  ) {
+    return promotion.status;
+  }
+  if (promotion.endDate && today > promotion.endDate) return "expired";
+  if (promotion.status === "scheduled") {
+    return promotion.startDate && today >= promotion.startDate
+      ? "active"
+      : "scheduled";
+  }
+  if (promotion.status === "active") {
+    if (promotion.startDate && today < promotion.startDate) return "scheduled";
+    return "active";
+  }
+  return promotion.status;
+}
+
+/**
+ * Fallback-featuring kill switch. Read at call time (server-side) from a
+ * plain server-only env var so it can be flipped without a redeploy
+ * (takes effect on next ISR regeneration). Defaults to false.
+ * NEVER expose as NEXT_PUBLIC_ — homepage featuring is decided server-side.
+ */
+export function isFallbackFeaturingEnabled(): boolean {
+  return process.env.MOGEN_ALLOW_FALLBACK_FEATURING === "true";
+}
+
 /** All promotions in raw (sortOrder) order. */
 export function getPromotions(): Promotion[] {
   return [...PROMOTIONS].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -253,26 +310,38 @@ export function getPromotionBySlug(slug: string): Promotion | undefined {
   return PROMOTIONS.find((p) => p.slug === slug);
 }
 
-export function getActivePromotions(): Promotion[] {
-  return getPromotions().filter((p) => p.status === "active");
-}
-
-/**
- * The single promotion for the homepage: must be both active AND
- * explicitly featured. Returns undefined when none qualifies — callers
- * must then render no promotion section at all.
- */
-export function getFeaturedPromotion(): Promotion | undefined {
-  return getPromotions().find(
-    (p) => p.status === "active" && p.isFeatured,
+export function getActivePromotions(today: string = todayISO()): Promotion[] {
+  return getPromotions().filter(
+    (p) => getEffectiveStatus(p, today) === "active",
   );
 }
 
-function publicRank(p: Promotion): number {
-  if (p.status === "active" && p.isFeatured) return 0;
-  if (p.status === "active") return 1;
-  if (p.status === "scheduled") return 2;
-  if (p.status === "expired") return 3;
+/**
+ * The single promotion for the homepage: must be effectively active AND
+ * explicitly featured. Returns undefined when none qualifies — callers
+ * must then render no promotion section at all.
+ *
+ * When fallback featuring is enabled (env, default off), an active but
+ * unfeatured promotion with the lowest sortOrder is returned instead of
+ * undefined. Explicit featuring always wins when present.
+ */
+export function getFeaturedPromotion(
+  today: string = todayISO(),
+  allowFallback: boolean = isFallbackFeaturingEnabled(),
+): Promotion | undefined {
+  const actives = getActivePromotions(today);
+  const featured = actives.find((p) => p.isFeatured);
+  if (featured) return featured;
+  if (allowFallback) return actives[0];
+  return undefined;
+}
+
+function publicRank(p: Promotion, today: string): number {
+  const status = getEffectiveStatus(p, today);
+  if (status === "active" && p.isFeatured) return 0;
+  if (status === "active") return 1;
+  if (status === "scheduled") return 2;
+  if (status === "expired") return 3;
   return 4;
 }
 
@@ -281,19 +350,32 @@ function publicRank(p: Promotion): number {
  * then other active, then scheduled, then expired — each by sortOrder.
  * Draft and archived promotions are excluded from public listing.
  */
-export function orderPublicPromotions(list: Promotion[]): Promotion[] {
+export function orderPublicPromotions(
+  list: Promotion[],
+  today: string = todayISO(),
+): Promotion[] {
   return [...list]
-    .filter((p) => p.status !== "draft" && p.status !== "archived")
-    .sort((a, b) => publicRank(a) - publicRank(b) || a.sortOrder - b.sortOrder);
+    .filter((p) => {
+      const status = getEffectiveStatus(p, today);
+      return status !== "draft" && status !== "archived";
+    })
+    .sort(
+      (a, b) =>
+        publicRank(a, today) - publicRank(b, today) ||
+        a.sortOrder - b.sortOrder,
+    );
 }
 
 /** Public promotions for /promotions, in display order. */
-export function getPublicPromotions(): Promotion[] {
-  return orderPublicPromotions(PROMOTIONS);
+export function getPublicPromotions(today: string = todayISO()): Promotion[] {
+  return orderPublicPromotions(PROMOTIONS, today);
 }
 
-export function isPromotionExpired(promotion: Promotion): boolean {
-  return promotion.status === "expired";
+export function isPromotionExpired(
+  promotion: Promotion,
+  today: string = todayISO(),
+): boolean {
+  return getEffectiveStatus(promotion, today) === "expired";
 }
 
 export function getPromotionStatusLabel(status: PromotionStatus): string {

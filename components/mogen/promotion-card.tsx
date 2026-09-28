@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getPromotionStatusLabel, type Promotion } from "@/data/promotions";
+import {
+  getEffectiveStatus,
+  getPromotionStatusLabel,
+  type Promotion,
+} from "@/data/promotions";
 
 export function PromotionStatusBadge({
   status,
@@ -72,7 +76,8 @@ function PriceSummary({ promotion }: { promotion: Promotion }) {
 export default function PromotionCard({
   promotion,
 }: Readonly<{ promotion: Promotion }>) {
-  const expired = promotion.status === "expired";
+  const status = getEffectiveStatus(promotion);
+  const expired = status === "expired";
   return (
     <Link
       href={`/promotions/${promotion.slug}`}
@@ -80,7 +85,7 @@ export default function PromotionCard({
         "group relative flex flex-col bg-bone p-8 transition-colors hover:bg-ink hover:text-bone",
         expired && "opacity-90",
       )}
-      aria-label={`${promotion.name} — ${getPromotionStatusLabel(promotion.status)}`}
+      aria-label={`${promotion.name} — ${getPromotionStatusLabel(status)}`}
     >
       {expired && (
         <span
@@ -91,7 +96,7 @@ export default function PromotionCard({
         </span>
       )}
       <PromotionStatusBadge
-        status={promotion.status}
+        status={status}
         isFeatured={promotion.isFeatured}
       />
       <h3 className="mt-4 font-display text-2xl font-black leading-tight">

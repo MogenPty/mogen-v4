@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { getFeaturedPromotion } from "@/data/promotions";
 import { formatNumber } from "@/lib/utils";

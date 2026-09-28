@@ -16,6 +16,10 @@ import WhyMogen from "@/components/mogen/why-mogen";
 import { getFeaturedPromotion } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
 
+// Promotion date transitions and the fallback-featuring env flag take
+// effect without a redeploy: the homepage regenerates at most hourly.
+export const revalidate = 3600;
+
 export default function Home() {
   const promotion = getFeaturedPromotion();
   // The promotion slot sits at 05. When no promotion is active the section is

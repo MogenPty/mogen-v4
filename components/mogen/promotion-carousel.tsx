@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PromotionImage } from "@/data/promotions";
 
@@ -32,6 +32,10 @@ export default function PromotionCarousel({
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
+  // Visitor-controlled pause: set when focus enters the carousel or the
+  // pointer hovers over it, and stays set until the visitor restarts
+  // rotation via the pause/restart control.
+  const [paused, setPaused] = useState(false);
 
   const goTo = useCallback(
     (next: number) => {
@@ -59,12 +63,13 @@ export default function PromotionCarousel({
     return () => query.removeEventListener("change", onChange);
   }, []);
 
-  // Single auto-advance timer. Re-created on manual navigation so the
-  // rotation continues from the newly selected image; cleanup guarantees
-  // only one timer ever exists.
+  // Single auto-advance timer. Skipped while paused, under
+  // prefers-reduced-motion, or with 0–1 images. Re-created on manual
+  // navigation so the rotation continues from the newly selected image;
+  // cleanup guarantees only one timer ever exists.
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
-    if (count <= 1 || reducedMotion) return;
+    if (count <= 1 || reducedMotion || paused) return;
     timer.current = setInterval(() => {
       setIndex((i) => (i + 1) % count);
     }, intervalMs);
@@ -72,7 +77,7 @@ export default function PromotionCarousel({
       if (timer.current) clearInterval(timer.current);
       timer.current = null;
     };
-  }, [count, intervalMs, reducedMotion, index]);
+  }, [count, intervalMs, reducedMotion, paused, index]);
 
   if (count === 0) return null;
 
@@ -94,6 +99,8 @@ export default function PromotionCarousel({
       aria-roledescription="carousel"
       aria-label={`${label} images`}
       onKeyDown={handleKeyDown}
+      onFocus={() => setPaused(true)}
+      onMouseEnter={() => setPaused(true)}
       className={cn(
         "relative overflow-hidden border border-ink/10 bg-ink/5",
         className,
@@ -135,6 +142,26 @@ export default function PromotionCarousel({
             <ChevronRight className="h-5 w-5" aria-hidden="true" />
           </button>
 
+          {!reducedMotion && (
+            <button
+              type="button"
+              onClick={() => setPaused((p) => !p)}
+              aria-label={
+                paused
+                  ? "Restart automatic image rotation"
+                  : "Pause automatic image rotation"
+              }
+              aria-pressed={paused}
+              className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 bg-bone/90 text-ink transition-colors hover:bg-ink hover:text-bone"
+            >
+              {paused ? (
+                <Play className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Pause className="h-5 w-5" aria-hidden="true" />
+              )}
+            </button>
+          )}
+
           <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
             {images.map((img, i) => (
               <button
@@ -153,7 +180,12 @@ export default function PromotionCarousel({
             ))}
           </div>
 
-          <p aria-live="polite" className="sr-only">
+          <p
+            aria-live={
+              count > 1 && !reducedMotion && !paused ? "off" : "polite"
+            }
+            className="sr-only"
+          >
             Image {index + 1} of {count}: {current.alt}
           </p>
         </>
