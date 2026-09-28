@@ -22,9 +22,7 @@ export const revalidate = 3600;
 
 export default function Home() {
   const promotion = getFeaturedPromotion();
-  // The promotion slot sits at 05. When no promotion is active the section is
-  // not rendered, so every section after it shifts up one to stay consecutive.
-  const afterPromotion = promotion ? 6 : 5;
+  let numbering = 1;
 
   return (
     <div className="bg-bone">
@@ -34,15 +32,15 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
-        <WhatMogenDoes numbering={1} />
-        <Services numbering={2} auditHref="#audit" />
-        <WhyMogen numbering={3} />
-        <GrowthAudit numbering={4} />
-        {promotion && <Promotion numbering={5} />}
-        <Portfolio numbering={afterPromotion} />
-        <ArticlesPreview numbering={afterPromotion + 1} />
-        <LocationsPreview numbering={afterPromotion + 2} />
-        <FinalCTA numbering={afterPromotion + 3} />
+        <WhatMogenDoes numbering={numbering++} />
+        <Services numbering={numbering++} auditHref="#audit" />
+        <WhyMogen numbering={numbering++} />
+        <GrowthAudit numbering={numbering++} />
+        {promotion && <Promotion numbering={numbering++} />}
+        <Portfolio numbering={numbering++} />
+        <ArticlesPreview numbering={numbering++} />
+        <LocationsPreview numbering={numbering++} />
+        <FinalCTA numbering={numbering++} />
       </main>
       <Footer />
       <ConversionBar auditHref="#audit" />
