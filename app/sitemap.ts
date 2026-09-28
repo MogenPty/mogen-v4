@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { POSTS } from "@/data/blog";
+import { getPublicPromotions } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -20,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/partners",
     "/success-stories",
     "/blog",
+    "/promotions",
     "/contact",
     "/privacy-policy",
     "/terms-of-service",
@@ -39,7 +41,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticEntries, ...blogEntries];
+  const promotionEntries: MetadataRoute.Sitemap = getPublicPromotions().map((p) => ({
+    url: `${base}/promotions/${p.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
+
+  return [...staticEntries, ...blogEntries, ...promotionEntries];
 }
 
 function getRoutePriority(route: string) {

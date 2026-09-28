@@ -13,11 +13,15 @@ import Promotion from "@/components/mogen/promotion";
 import Services from "@/components/mogen/services";
 import WhatMogenDoes from "@/components/mogen/what-mogen-does";
 import WhyMogen from "@/components/mogen/why-mogen";
-import { getActivePromotion } from "@/data/promotions";
+import { getFeaturedPromotion } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
 
+// Promotion date transitions and the fallback-featuring env flag take
+// effect without a redeploy: the homepage regenerates at most hourly.
+export const revalidate = 3600;
+
 export default function Home() {
-  const promotion = getActivePromotion();
+  const promotion = getFeaturedPromotion();
   // The promotion slot sits at 05. When no promotion is active the section is
   // not rendered, so every section after it shifts up one to stay consecutive.
   const afterPromotion = promotion ? 6 : 5;
