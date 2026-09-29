@@ -96,6 +96,12 @@ export default function ContactForm({
   const turnstileContainer = useRef<HTMLDivElement>(null);
   const contactWidgetId = useRef<TurnstileWidgetId | null>(null);
 
+  // The single error string doubles as the "Other" field error when it
+  // carries the service-detail message (set identically client-side and
+  // by server fieldErrors), so it can be associated with its input.
+  const isOtherDetailError =
+    form.service === "Other" && error === "Please specify your service.";
+
   function renderTurnstile() {
     if (
       !TURNSTILE_SITE_KEY ||
@@ -325,6 +331,10 @@ export default function ContactForm({
             }
             required
             aria-required="true"
+            aria-invalid={isOtherDetailError ? true : undefined}
+            aria-describedby={
+              isOtherDetailError ? "contact-service-other-error" : undefined
+            }
             autoFocus
             placeholder="e.g. website maintenance, consulting, training"
             className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink placeholder:text-ink/30 focus:border-catalyst/60 focus:outline-none"
@@ -371,7 +381,11 @@ export default function ContactForm({
         ))}
       </div>
       {error && (
-        <p className="mt-3 text-sm text-catalyst" role="alert">
+        <p
+          className="mt-3 text-sm text-catalyst"
+          role="alert"
+          id={isOtherDetailError ? "contact-service-other-error" : undefined}
+        >
           {error}
         </p>
       )}
