@@ -116,6 +116,8 @@ export default async function ContactPage({
         numbering={8}
         initialService={details.serviceName}
         initialMessage={details.message}
+        initialPromotionName={details.promotion?.name}
+        initialServiceNotice={details.serviceNotice}
         initialAttribution={details.attribution}
       />
     </>

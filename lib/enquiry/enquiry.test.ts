@@ -77,6 +77,13 @@ describe("resolveEnquiryService", () => {
     expect(resolveEnquiryService(slug)?.name).toBe(name);
   });
 
+  it("resolves service=other to the Other catch-all", () => {
+    expect(resolveEnquiryService("other")).toEqual({
+      slug: "other",
+      name: "Other",
+    });
+  });
+
   it("returns undefined for invalid, empty or missing slugs without throwing", () => {
     expect(resolveEnquiryService("does-not-exist")).toBeUndefined();
     expect(resolveEnquiryService("")).toBeUndefined();
@@ -115,6 +122,16 @@ describe("resolveEnquiryDetails", () => {
     expect(details.message).toContain("Mogen Sprout Website");
   });
 
+  it("leaves the service empty for a direct /contact visit", () => {
+    const details = resolveEnquiryDetails({});
+    expect(details.service).toBeUndefined();
+    expect(details.serviceName).toBeUndefined();
+    expect(details.promotion).toBeUndefined();
+    expect(details.message).toBeUndefined();
+    expect(details.serviceAdjusted).toBe(false);
+    expect(details.serviceNotice).toBeUndefined();
+  });
+
   it("leaves invalid service/promotion unresolved without throwing", () => {
     const details = resolveEnquiryDetails({
       service: "does-not-exist",
@@ -124,6 +141,48 @@ describe("resolveEnquiryDetails", () => {
     expect(details.serviceName).toBeUndefined();
     expect(details.promotion).toBeUndefined();
     expect(details.message).toBeUndefined();
+  });
+
+  it("resolves service=other without a promotion", () => {
+    const details = resolveEnquiryDetails({ service: "other" });
+    expect(details.serviceName).toBe("Other");
+    expect(details.promotion).toBeUndefined();
+    expect(details.message).toBeUndefined();
+    expect(details.serviceAdjusted).toBe(false);
+  });
+
+  it("resolves the promotion's associated service when no service is given", () => {
+    const details = resolveEnquiryDetails({
+      promotion: "mogen-sprout-first-100",
+    });
+    expect(details.promotion?.name).toBe("Mogen Sprout Website");
+    expect(details.serviceName).toBe("Web Development");
+    expect(details.serviceAdjusted).toBe(false);
+    expect(details.serviceNotice).toBeUndefined();
+    expect(details.message).toContain("Mogen Sprout Website");
+  });
+
+  it("keeps a valid promotion + service combination untouched", () => {
+    const details = resolveEnquiryDetails({
+      service: "web-development",
+      promotion: "mogen-sprout-first-100",
+    });
+    expect(details.serviceName).toBe("Web Development");
+    expect(details.promotion?.name).toBe("Mogen Sprout Website");
+    expect(details.serviceAdjusted).toBe(false);
+    expect(details.serviceNotice).toBeUndefined();
+    expect(details.message).toContain("Mogen Sprout Website");
+  });
+
+  it("adjusts a contradictory service to the promotion's service with a notice", () => {
+    const details = resolveEnquiryDetails({
+      service: "seo",
+      promotion: "mogen-sprout-first-100",
+    });
+    expect(details.promotion?.name).toBe("Mogen Sprout Website");
+    expect(details.serviceName).toBe("Web Development");
+    expect(details.serviceAdjusted).toBe(true);
+    expect(details.serviceNotice).toContain("Web Development");
   });
 
   it("produces no message when there is no promotion", () => {
@@ -141,12 +200,37 @@ describe("buildPromotionEnquiryMessage", () => {
     expect(message.length).toBeGreaterThan(0);
   });
 
-  it("never hardcodes pricing and never includes UTM metadata", () => {
+  it("generates pricing from the promotion data (not hardcoded)", () => {
     const promotion = resolveEnquiryPromotion("mogen-sprout-first-100")!;
     const message = buildPromotionEnquiryMessage(promotion);
-    for (const banned of ["R900", "R299", "R399", "utm_", "whatsapp"]) {
+    for (const point of promotion.pricing) {
+      if (point.promotional) expect(message).toContain(point.promotional);
+    }
+    if (promotion.promoDurationMonths) {
+      expect(message).toContain(String(promotion.promoDurationMonths));
+    }
+  });
+
+  it("generates a single-price message for single-price promotions", () => {
+    const promotion = resolveEnquiryPromotion("mogen-seed-r99")!;
+    const message = buildPromotionEnquiryMessage(promotion);
+    expect(message).toContain(promotion.name);
+    expect(message).toContain(
+      promotion.pricing.find((p) => p.promotional)?.promotional ?? "",
+    );
+  });
+
+  it("stays concise and never includes UTM metadata", () => {
+    const promotion = resolveEnquiryPromotion("mogen-sprout-first-100")!;
+    const message = buildPromotionEnquiryMessage(promotion);
+    for (const banned of ["utm_", "whatsapp"]) {
       expect(message).not.toContain(banned);
     }
+    // Full terms/eligibility live on the promotion page, not the enquiry.
+    for (const term of promotion.terms) {
+      expect(message).not.toContain(term);
+    }
+    expect(message.length).toBeLessThan(500);
   });
 });
 
