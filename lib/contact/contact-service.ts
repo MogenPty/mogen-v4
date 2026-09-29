@@ -20,17 +20,21 @@ export type ContactService = (typeof CONTACT_SERVICES)[number];
 /**
  * Marketing attribution carried from enquiry URLs (see lib/enquiry).
  * Optional tracking metadata for the internal enquiry email — never part
- * of the visitor-facing message. Lenient by design: malformed attribution
- * falls back to empty and never rejects an enquiry.
+ * of the visitor-facing message. Lenient by design: each invalid field
+ * falls back individually (valid fields are preserved), malformed
+ * attribution falls back to empty, and attribution never rejects an
+ * enquiry.
  */
+const utmField = z.string().trim().max(200).optional().catch(undefined);
+
 const contactAttributionSchema = z
   .object({
-    utm_source: z.string().trim().max(200).optional(),
-    utm_medium: z.string().trim().max(200).optional(),
-    utm_campaign: z.string().trim().max(200).optional(),
-    utm_content: z.string().trim().max(200).optional(),
-    utm_term: z.string().trim().max(200).optional(),
-    utm_id: z.string().trim().max(200).optional(),
+    utm_source: utmField,
+    utm_medium: utmField,
+    utm_campaign: utmField,
+    utm_content: utmField,
+    utm_term: utmField,
+    utm_id: utmField,
   })
   .optional()
   .default({})

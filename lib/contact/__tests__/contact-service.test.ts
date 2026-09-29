@@ -211,6 +211,28 @@ describe("contact attribution", () => {
     expect(fake.sent[0].text).not.toContain("Attribution:");
   });
 
+  it("preserves valid fields when another attribution field is invalid", async () => {
+    const fake = new FakeMailProvider();
+    const result = await submitContact(
+      {
+        ...validInput,
+        attribution: {
+          utm_source: "whatsapp",
+          utm_medium: 123,
+          utm_campaign: "x".repeat(201),
+        },
+      },
+      fake,
+      config,
+      { submittedAt: "2026-01-01T00:00:00.000Z" },
+    );
+    expect(result).toEqual({ ok: true });
+    expect(fake.sent).toHaveLength(1);
+    expect(fake.sent[0].text).toContain("Source: whatsapp");
+    expect(fake.sent[0].text).not.toContain("Medium:");
+    expect(fake.sent[0].text).not.toContain("Campaign:");
+  });
+
   it("escapes HTML in attribution values", () => {
     const msg = buildContactMessage(
       {
