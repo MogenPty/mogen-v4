@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Script from "next/script";
 import { type FormEvent, useRef, useState } from "react";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
+import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { siteConfig } from "@/data/site";
 import MagneticButton from "./magnet-button";
 
@@ -32,17 +33,51 @@ declare global {
   }
 }
 
-export default function ContactForm() {
+const DEFAULT_SERVICE = "Web Development";
+
+interface ContactFormProps {
+  /**
+   * Preselected service display name resolved server-side from
+   * `?service=`. A default, not a lock: the selector stays editable.
+   * Unknown values fall back to the normal default.
+   */
+  initialService?: string;
+  /**
+   * Editable starter message generated from `?promotion=` data.
+   * Used only as the initial value — visitor edits are never
+   * overwritten.
+   */
+  initialMessage?: string;
+  /**
+   * Attribution carried through the enquiry journey. Rendered as
+   * hidden fields and sent with the submission for later use — never
+   * injected into the visitor-facing message.
+   */
+  initialAttribution?: EnquiryAttribution;
+}
+
+export default function ContactForm({
+  initialService,
+  initialMessage,
+  initialAttribution,
+}: Readonly<ContactFormProps> = {}) {
+  const resolvedService =
+    initialService && CONTACT_SERVICES.includes(initialService)
+      ? initialService
+      : DEFAULT_SERVICE;
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     businessName: "",
-    service: "Web Development",
-    message: "",
+    service: resolvedService,
+    message: initialMessage ?? "",
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
   });
+  const [attribution] = useState<EnquiryAttribution>(
+    initialAttribution ?? {},
+  );
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -105,7 +140,7 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, turnstileToken }),
+        body: JSON.stringify({ ...form, attribution, turnstileToken }),
       });
       const data = (await res.json()) as {
         ok: boolean;
@@ -240,6 +275,18 @@ export default function ContactForm() {
           value={form.companyWebsite}
           onChange={(e) => setForm({ ...form, companyWebsite: e.target.value })}
         />
+      </div>
+      {/* Attribution carried through the enquiry (tracking metadata only) */}
+      <div className="hidden" aria-hidden="true">
+        {Object.entries(attribution).map(([key, value]) => (
+          <input
+            key={key}
+            name={key}
+            type="hidden"
+            value={value ?? ""}
+            readOnly
+          />
+        ))}
       </div>
       {error && (
         <p className="mt-3 text-sm text-catalyst" role="alert">
