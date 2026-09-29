@@ -18,6 +18,7 @@ const validInput = {
   service: "Web Development" as const,
   message: "We need a new website for our business.",
   companyWebsite: "",
+  attribution: {},
 };
 
 describe("contact submission service", () => {
@@ -147,5 +148,79 @@ describe("contact submission service", () => {
       ...SERVICES.map((s) => s.name),
       "Other",
     ]);
+  });
+});
+
+describe("contact attribution", () => {
+  const attributedInput = {
+    ...validInput,
+    attribution: {
+      utm_source: "whatsapp",
+      utm_medium: "organic_social",
+      utm_campaign: "sprout-launch-2026",
+      utm_content: "whatsapp-status",
+    },
+  };
+
+  it("accepts nested attribution and includes non-empty values in the email", async () => {
+    const fake = new FakeMailProvider();
+    const result = await submitContact(attributedInput, fake, config, {
+      submittedAt: "2026-01-01T00:00:00.000Z",
+    });
+    expect(result).toEqual({ ok: true });
+    expect(fake.sent).toHaveLength(1);
+    expect(fake.sent[0].text).toContain("Source: whatsapp");
+    expect(fake.sent[0].text).toContain("Medium: organic_social");
+    expect(fake.sent[0].text).toContain("Campaign: sprout-launch-2026");
+    expect(fake.sent[0].text).toContain("Content: whatsapp-status");
+    expect(fake.sent[0].html).toContain("whatsapp");
+    expect(fake.sent[0].html).toContain("sprout-launch-2026");
+  });
+
+  it("omits the attribution section when no attribution is provided", async () => {
+    const fake = new FakeMailProvider();
+    const result = await submitContact(validInput, fake, config, {
+      submittedAt: "2026-01-01T00:00:00.000Z",
+    });
+    expect(result).toEqual({ ok: true });
+    expect(fake.sent[0].text).not.toContain("Attribution:");
+    expect(fake.sent[0].text).not.toContain("Source:");
+  });
+
+  it("keeps attribution out of the visitor message body", async () => {
+    const fake = new FakeMailProvider();
+    await submitContact(attributedInput, fake, config, {
+      submittedAt: "2026-01-01T00:00:00.000Z",
+    });
+    const text = fake.sent[0].text ?? "";
+    const visitorPart = text.slice(text.indexOf("Message:"));
+    expect(visitorPart).not.toContain("whatsapp");
+    expect(visitorPart).not.toContain("sprout-launch-2026");
+  });
+
+  it("never rejects an enquiry over malformed attribution", async () => {
+    const fake = new FakeMailProvider();
+    const result = await submitContact(
+      { ...validInput, attribution: "whatsapp" },
+      fake,
+      config,
+      { submittedAt: "2026-01-01T00:00:00.000Z" },
+    );
+    expect(result).toEqual({ ok: true });
+    expect(fake.sent).toHaveLength(1);
+    expect(fake.sent[0].text).not.toContain("Attribution:");
+  });
+
+  it("escapes HTML in attribution values", () => {
+    const msg = buildContactMessage(
+      {
+        ...validInput,
+        attribution: { utm_source: "<script>alert(1)</script>" },
+      },
+      config,
+      "2026-01-01T00:00:00.000Z",
+    );
+    expect(msg.html).not.toContain("<script>");
+    expect(msg.html).toContain("&lt;script&gt;");
   });
 });
