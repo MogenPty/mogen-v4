@@ -17,6 +17,29 @@ export const CONTACT_SERVICES = buildContactServices();
 
 export type ContactService = (typeof CONTACT_SERVICES)[number];
 
+/**
+ * Marketing attribution carried from enquiry URLs (see lib/enquiry).
+ * Optional tracking metadata for the internal enquiry email — never part
+ * of the visitor-facing message. Lenient by design: each invalid field
+ * falls back individually (valid fields are preserved), malformed
+ * attribution falls back to empty, and attribution never rejects an
+ * enquiry.
+ */
+const utmField = z.string().trim().max(200).optional().catch(undefined);
+
+const contactAttributionSchema = z
+  .object({
+    utm_source: utmField,
+    utm_medium: utmField,
+    utm_campaign: utmField,
+    utm_content: utmField,
+    utm_term: utmField,
+    utm_id: utmField,
+  })
+  .optional()
+  .default({})
+  .catch({});
+
 export const contactInputSchema = z.object({
   name: z.string().trim().min(2, "Name is required.").max(120),
   email: z.string().trim().email("A valid email is required.").max(254),
@@ -30,6 +53,8 @@ export const contactInputSchema = z.object({
     .max(5000),
   // Honeypot — must stay empty. Checked server-side.
   companyWebsite: z.string().max(200).optional().default(""),
+  // Marketing attribution (utm_*) sent by ContactForm as a nested object.
+  attribution: contactAttributionSchema,
 });
 
 export type ContactInput = z.infer<typeof contactInputSchema>;
@@ -53,6 +78,33 @@ function sanitizeHeader(value: string): string {
   return value.replace(/[\r\n]+/g, " ").trim();
 }
 
+const ATTRIBUTION_LABELS = {
+  utm_source: "Source",
+  utm_medium: "Medium",
+  utm_campaign: "Campaign",
+  utm_content: "Content",
+  utm_term: "Term",
+  utm_id: "Campaign ID",
+} as const;
+
+type AttributionKey = keyof typeof ATTRIBUTION_LABELS;
+
+/**
+ * Non-empty attribution entries for the internal enquiry email.
+ * Kept separate from the visitor message — tracking metadata only.
+ */
+function attributionEntries(
+  input: Pick<ContactInput, "attribution">,
+): { label: string; value: string }[] {
+  const attribution = input.attribution ?? {};
+  return (Object.keys(ATTRIBUTION_LABELS) as AttributionKey[])
+    .map((key) => ({
+      label: ATTRIBUTION_LABELS[key],
+      value: (attribution[key] ?? "").trim(),
+    }))
+    .filter((entry) => entry.value !== "");
+}
+
 export function buildContactSubject(
   input: Pick<ContactInput, "service">,
 ): string {
@@ -64,6 +116,9 @@ export function buildContactText(
   input: ContactInput,
   submittedAt: string,
 ): string {
+  const attribution = attributionEntries(input).map(
+    ({ label, value }) => `${label}: ${value}`,
+  );
   const lines = [
     "New enquiry from mogen.co.za/contact",
     "",
@@ -73,6 +128,7 @@ export function buildContactText(
     ...(input.businessName ? [`Business: ${input.businessName}`] : []),
     `Service: ${input.service}`,
     `Submitted: ${submittedAt}`,
+    ...(attribution.length > 0 ? ["", "Attribution:", ...attribution] : []),
     "",
     "Message:",
     input.message,
@@ -90,7 +146,10 @@ export function buildContactHtml(
     input.phone ? row("Phone", input.phone) : "",
     input.businessName ? row("Business", input.businessName) : "",
   ].join("");
-  return `<div style="font-family:sans-serif;max-width:600px"><h2>New Mogen enquiry</h2><table><tbody>${row("Name", input.name)}${row("Email", input.email)}${optional}${row("Service", input.service)}${row("Submitted", submittedAt)}</tbody></table><p style="color:#666">Message</p><p>${escapeHtml(input.message).replaceAll("\n", "<br>")}</p></div>`;
+  const attributionRows = attributionEntries(input)
+    .map(({ label, value }) => row(label, value))
+    .join("");
+  return `<div style="font-family:sans-serif;max-width:600px"><h2>New Mogen enquiry</h2><table><tbody>${row("Name", input.name)}${row("Email", input.email)}${optional}${row("Service", input.service)}${row("Submitted", submittedAt)}${attributionRows}</tbody></table><p style="color:#666">Message</p><p>${escapeHtml(input.message).replaceAll("\n", "<br>")}</p></div>`;
 }
 
 export function buildContactMessage(

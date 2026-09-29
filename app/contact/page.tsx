@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Contact from "@/components/mogen/contact";
 import { siteConfig } from "@/data/site";
+import {
+  parseEnquiryContext,
+  resolveEnquiryDetails,
+} from "@/lib/enquiry/enquiry";
 
 const PAGE_URL = `${siteConfig.url}/contact`;
 
@@ -93,11 +97,27 @@ function ContactJsonLd() {
   );
 }
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: Readonly<{
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}>) {
+  // Server-side resolution: the page stays a Server Component and the
+  // Client form below receives plain initial values (no useSearchParams,
+  // so no extra Suspense boundary is required).
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const details = resolveEnquiryDetails(
+    parseEnquiryContext(resolvedSearchParams),
+  );
   return (
     <>
       <ContactJsonLd />
-      <Contact numbering={8} />
+      <Contact
+        numbering={8}
+        initialService={details.serviceName}
+        initialMessage={details.message}
+        initialAttribution={details.attribution}
+      />
     </>
   );
 }

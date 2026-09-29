@@ -5,6 +5,7 @@ import type React from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import { formatNumber } from "@/lib/utils";
 import { siteConfig } from "@/data/site";
+import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import ContactForm from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -12,9 +13,20 @@ import Nav from "@/components/mogen/nav";
 
 interface Props {
   numbering?: number;
+  /** Preselected service display name from `?service=` (default, editable). */
+  initialService?: string;
+  /** Editable starter message from `?promotion=` (absent without promotion). */
+  initialMessage?: string;
+  /** Attribution carried through the enquiry journey (never shown in copy). */
+  initialAttribution?: EnquiryAttribution;
 }
 
-export default function Contact({ numbering = 1 }: Readonly<Props>) {
+export default function Contact({
+  numbering = 1,
+  initialService,
+  initialMessage,
+  initialAttribution,
+}: Readonly<Props>) {
   return (
     <div className="bg-bone">
       <Nav />
@@ -76,7 +88,11 @@ export default function Contact({ numbering = 1 }: Readonly<Props>) {
               </div>
 
               <div className="bg-bone p-8 lg:p-12">
-                <ContactForm />
+                <ContactForm
+                  initialService={initialService}
+                  initialMessage={initialMessage}
+                  initialAttribution={initialAttribution}
+                />
               </div>
             </div>
           </div>
