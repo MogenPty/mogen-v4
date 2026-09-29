@@ -40,22 +40,37 @@ const contactAttributionSchema = z
   .default({})
   .catch({});
 
-export const contactInputSchema = z.object({
-  name: z.string().trim().min(2, "Name is required.").max(120),
-  email: z.string().trim().email("A valid email is required.").max(254),
-  phone: z.string().trim().max(40).optional().default(""),
-  businessName: z.string().trim().max(160).optional().default(""),
-  service: z.enum(CONTACT_SERVICES),
-  message: z
-    .string()
-    .trim()
-    .min(10, "Please add a few details (min 10 characters).")
-    .max(5000),
-  // Honeypot — must stay empty. Checked server-side.
-  companyWebsite: z.string().max(200).optional().default(""),
-  // Marketing attribution (utm_*) sent by ContactForm as a nested object.
-  attribution: contactAttributionSchema,
-});
+export const contactInputSchema = z
+  .object({
+    name: z.string().trim().min(2, "Name is required.").max(120),
+    email: z.string().trim().email("A valid email is required.").max(254),
+    phone: z.string().trim().max(40).optional().default(""),
+    businessName: z.string().trim().max(160).optional().default(""),
+    service: z.enum(CONTACT_SERVICES),
+    /**
+     * Free-text specification required only when service is "Other".
+     * Never part of enquiry URLs — user-entered form data only.
+     */
+    otherServiceDetail: z.string().trim().max(200).optional().default(""),
+    message: z
+      .string()
+      .trim()
+      .min(10, "Please add a few details (min 10 characters).")
+      .max(5000),
+    // Honeypot — must stay empty. Checked server-side.
+    companyWebsite: z.string().max(200).optional().default(""),
+    // Marketing attribution (utm_*) sent by ContactForm as a nested object.
+    attribution: contactAttributionSchema,
+  })
+  .superRefine((data, ctx) => {
+    if (data.service === "Other" && !data.otherServiceDetail.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["otherServiceDetail"],
+        message: "Please specify your service.",
+      });
+    }
+  });
 
 export type ContactInput = z.infer<typeof contactInputSchema>;
 
@@ -127,6 +142,9 @@ export function buildContactText(
     ...(input.phone ? [`Phone: ${input.phone}`] : []),
     ...(input.businessName ? [`Business: ${input.businessName}`] : []),
     `Service: ${input.service}`,
+    ...(input.service === "Other" && input.otherServiceDetail
+      ? [`Service detail: ${input.otherServiceDetail}`]
+      : []),
     `Submitted: ${submittedAt}`,
     ...(attribution.length > 0 ? ["", "Attribution:", ...attribution] : []),
     "",
@@ -145,6 +163,9 @@ export function buildContactHtml(
   const optional = [
     input.phone ? row("Phone", input.phone) : "",
     input.businessName ? row("Business", input.businessName) : "",
+    input.service === "Other" && input.otherServiceDetail
+      ? row("Service detail", input.otherServiceDetail)
+      : "",
   ].join("");
   const attributionRows = attributionEntries(input)
     .map(({ label, value }) => row(label, value))

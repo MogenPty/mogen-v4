@@ -1,5 +1,5 @@
 import { getPromotionBySlug, type Promotion } from "@/data/promotions";
-import { getService, type Service } from "@/data/services";
+import { getService } from "@/data/services";
 
 /**
  * Shared enquiry-context model for links into `/contact`.
@@ -99,17 +99,31 @@ export function parseEnquiryAttribution(
 }
 
 /**
- * Resolve a service slug (e.g. `web-development`) to the existing
- * service data. Returns undefined for missing/unknown slugs — callers
- * must fall back to the form's normal default state, never render an
- * invalid service as valid.
+ * Minimal service identity used for enquiry resolution. A full `Service`
+ * satisfies this; the "Other" catch-all (which has no entry in
+ * data/services.ts) is represented as { slug: "other", name: "Other" }.
+ */
+export interface EnquiryService {
+  slug: string;
+  name: string;
+}
+
+/**
+ * Resolve a service slug (e.g. `web-development`, `other`) to a service
+ * identity. Returns undefined for missing/unknown slugs — callers must
+ * fall back to the form's normal default state, never render an invalid
+ * service as valid.
  */
 export function resolveEnquiryService(
   slug: string | undefined,
-): Service | undefined {
+): EnquiryService | undefined {
   const cleaned = clean(slug);
   if (!cleaned) return undefined;
-  return getService(cleaned);
+  if (cleaned.toLowerCase() === "other") {
+    return { slug: "other", name: "Other" };
+  }
+  const service = getService(cleaned);
+  return service ? { slug: service.slug, name: service.name } : undefined;
 }
 
 /**
@@ -128,25 +142,64 @@ export function resolveEnquiryPromotion(
 
 /**
  * Build the visitor-facing starter message for a valid promotion from
- * the promotion data itself. No pricing is embedded — the promotion
- * data remains the source of truth. The message is an editable initial
- * value, never appended with UTM tracking metadata.
+ * the promotion data itself. Discounted price points in
+ * `promotion.pricing` drive the pricing sentence, so the message stays
+ * concise and never hardcodes values in the Contact component — only
+ * the values present in the central promotion data appear. The message
+ * is an editable initial value, never appended with UTM tracking
+ * metadata.
  */
 export function buildPromotionEnquiryMessage(promotion: Promotion): string {
-  return `I'm interested in the ${promotion.name} promotion. Please confirm eligibility and the next steps.`;
+  const base = `I'm interested in the ${promotion.name} promotion.`;
+  const closing = "Please confirm my eligibility and the next steps.";
+  const discounted = promotion.pricing.filter((p) => p.promotional);
+  if (discounted.length === 0) {
+    return `${base} ${closing}`;
+  }
+  let pricingSentence: string;
+  if (discounted.length === 1) {
+    const [point] = discounted;
+    pricingSentence = `The promotional price is ${point.promotional}.`;
+  } else {
+    const fragments = discounted.map((p) => {
+      const label = p.label.charAt(0).toLowerCase() + p.label.slice(1);
+      return `the promotional ${label} is ${p.promotional}`;
+    });
+    pricingSentence = `${fragments.join(" and ")}`.replace(/^the/, "The");
+    pricingSentence += ".";
+  }
+  if (promotion.promoDurationMonths) {
+    pricingSentence = pricingSentence.replace(
+      /\.$/,
+      ` for the first ${promotion.promoDurationMonths} months.`,
+    );
+  }
+  return `${base} ${pricingSentence} ${closing}`;
 }
 
 export interface ResolvedEnquiry {
-  service: Service | undefined;
+  service: EnquiryService | undefined;
   promotion: Promotion | undefined;
   /** Display name to preselect in the service selector, if valid. */
   serviceName: string | undefined;
   /** Editable starter message, present only when valid promotion context exists. */
   message: string | undefined;
   attribution: EnquiryAttribution;
+  /** True when an explicit service was overridden by the promotion's service. */
+  serviceAdjusted: boolean;
+  /** Non-blocking explanation shown when serviceAdjusted is true. */
+  serviceNotice: string | undefined;
 }
 
-/** Resolve a parsed context into service/promotion data + form defaults. */
+/**
+ * Resolve a parsed context into service/promotion data + form defaults.
+ *
+ * The promotion's `relatedService` is the source of truth for the
+ * promotion: a promotion without an explicit service selects its
+ * associated service, and a contradictory explicit service is adjusted
+ * to the promotion's service with a non-blocking notice — never
+ * submitted as contradictory business context.
+ */
 export function resolveEnquiryDetails(
   context: EnquiryContext,
 ): ResolvedEnquiry {
@@ -156,12 +209,29 @@ export function resolveEnquiryDetails(
   for (const key of ATTRIBUTION_KEYS) {
     if (context[key]) attribution[key] = context[key];
   }
+  const promotionService = promotion?.relatedService
+    ? resolveEnquiryService(promotion.relatedService)
+    : undefined;
+  let effectiveService = service;
+  let serviceAdjusted = false;
+  let serviceNotice: string | undefined;
+  if (promotion && promotionService) {
+    if (!effectiveService) {
+      effectiveService = promotionService;
+    } else if (effectiveService.slug !== promotionService.slug) {
+      effectiveService = promotionService;
+      serviceAdjusted = true;
+      serviceNotice = `This promotion applies to ${promotionService.name}, so the service selection has been adjusted.`;
+    }
+  }
   return {
-    service,
+    service: effectiveService,
     promotion,
-    serviceName: service?.name,
+    serviceName: effectiveService?.name,
     message: promotion ? buildPromotionEnquiryMessage(promotion) : undefined,
     attribution,
+    serviceAdjusted,
+    serviceNotice,
   };
 }
 

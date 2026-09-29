@@ -16,6 +16,7 @@ const validInput = {
   phone: "+27123456789",
   businessName: "Test Business",
   service: "Web Development" as const,
+  otherServiceDetail: "",
   message: "We need a new website for our business.",
   companyWebsite: "",
   attribution: {},
@@ -244,5 +245,68 @@ describe("contact attribution", () => {
     );
     expect(msg.html).not.toContain("<script>");
     expect(msg.html).toContain("&lt;script&gt;");
+  });
+});
+
+describe("contact service selection", () => {
+  it("rejects an empty service selection", async () => {
+    const fake = new FakeMailProvider();
+    const result = await submitContact(
+      { ...validInput, service: "" },
+      fake,
+      config,
+    );
+    expect(result.ok).toBe(false);
+    expect(fake.sent).toHaveLength(0);
+  });
+
+  it("rejects Other without a specification", async () => {
+    const fake = new FakeMailProvider();
+    const result = await submitContact(
+      { ...validInput, service: "Other", otherServiceDetail: "" },
+      fake,
+      config,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.fieldErrors?.["otherServiceDetail"]).toBeDefined();
+    }
+    expect(fake.sent).toHaveLength(0);
+  });
+
+  it("accepts Other with a specification and includes it in the email", async () => {
+    const fake = new FakeMailProvider();
+    const result = await submitContact(
+      {
+        ...validInput,
+        service: "Other",
+        otherServiceDetail: "Website maintenance and consulting",
+      },
+      fake,
+      config,
+      { submittedAt: "2026-01-01T00:00:00.000Z" },
+    );
+    expect(result).toEqual({ ok: true });
+    expect(fake.sent).toHaveLength(1);
+    expect(fake.sent[0].text).toContain("Service: Other");
+    expect(fake.sent[0].text).toContain(
+      "Service detail: Website maintenance and consulting",
+    );
+    expect(fake.sent[0].html).toContain(
+      "Website maintenance and consulting",
+    );
+  });
+
+  it("does not require the specification for non-Other services", async () => {
+    const fake = new FakeMailProvider();
+    const result = await submitContact(
+      { ...validInput, service: "SEO", otherServiceDetail: "" },
+      fake,
+      config,
+      { submittedAt: "2026-01-01T00:00:00.000Z" },
+    );
+    expect(result).toEqual({ ok: true });
+    expect(fake.sent).toHaveLength(1);
+    expect(fake.sent[0].text).not.toContain("Service detail:");
   });
 });

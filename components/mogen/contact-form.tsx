@@ -33,13 +33,12 @@ declare global {
   }
 }
 
-const DEFAULT_SERVICE = "Web Development";
-
 interface ContactFormProps {
   /**
    * Preselected service display name resolved server-side from
-   * `?service=`. A default, not a lock: the selector stays editable.
-   * Unknown values fall back to the normal default.
+   * `?service=` (or from the promotion's associated service).
+   * Absent/unknown values leave the selector empty — a default, not a
+   * lock: the selector stays editable.
    */
   initialService?: string;
   /**
@@ -48,6 +47,15 @@ interface ContactFormProps {
    * overwritten.
    */
   initialMessage?: string;
+  /**
+   * Display name of the recognised promotion, if any.
+   */
+  initialPromotionName?: string;
+  /**
+   * Non-blocking explanation when the promotion adjusted the service
+   * selection (e.g. contradictory service + promotion in the URL).
+   */
+  initialServiceNotice?: string;
   /**
    * Attribution carried through the enquiry journey. Rendered as
    * hidden fields and sent with the submission for later use — never
@@ -59,18 +67,21 @@ interface ContactFormProps {
 export default function ContactForm({
   initialService,
   initialMessage,
+  initialPromotionName,
+  initialServiceNotice,
   initialAttribution,
 }: Readonly<ContactFormProps> = {}) {
   const resolvedService =
     initialService && CONTACT_SERVICES.includes(initialService)
       ? initialService
-      : DEFAULT_SERVICE;
+      : "";
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     businessName: "",
     service: resolvedService,
+    otherServiceDetail: "",
     message: initialMessage ?? "",
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
@@ -121,6 +132,14 @@ export default function ContactForm({
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) {
       setError("Name and email are required.");
+      return;
+    }
+    if (!form.service) {
+      setError("Please select a service.");
+      return;
+    }
+    if (form.service === "Other" && !form.otherServiceDetail.trim()) {
+      setError("Please specify your service.");
       return;
     }
     // Fail closed: no submission without a passing Turnstile check.
@@ -232,16 +251,50 @@ export default function ContactForm({
         />
       </div>
       <div className="mt-3">
+        {initialPromotionName && (
+          <div
+            className="mb-3 border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/70"
+            role="status"
+          >
+            <p>
+              Promotion:{" "}
+              <span className="font-semibold text-ink">
+                {initialPromotionName}
+              </span>
+            </p>
+            {initialServiceNotice && (
+              <p className="mt-1">{initialServiceNotice}</p>
+            )}
+          </div>
+        )}
         <label htmlFor="service" className="small-caps text-ink/60">
           Service of interest
+          <span className="text-catalyst" aria-hidden="true">
+            {" "}
+            *
+          </span>
+          <span className="sr-only"> (required)</span>
         </label>
         <select
           id="service"
           name="service"
           value={form.service}
-          onChange={(e) => setForm({ ...form, service: e.target.value })}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              service: e.target.value,
+              // Drop stale hidden data when leaving "Other".
+              otherServiceDetail:
+                e.target.value === "Other" ? prev.otherServiceDetail : "",
+            }))
+          }
+          required
+          aria-required="true"
           className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink [color-scheme:light] focus:border-catalyst/60 focus:outline-none dark:[color-scheme:dark]"
         >
+          <option value="" className="bg-bone text-ink">
+            Select a service
+          </option>
           {CONTACT_SERVICES.map((s) => (
             <option key={s} value={s} className="bg-bone text-ink">
               {s}
@@ -249,6 +302,35 @@ export default function ContactForm({
           ))}
         </select>
       </div>
+      {form.service === "Other" && (
+        <div className="mt-3">
+          <label
+            htmlFor="contact-service-other"
+            className="small-caps text-ink/60"
+          >
+            If Other, please specify
+            <span className="text-catalyst" aria-hidden="true">
+              {" "}
+              *
+            </span>
+            <span className="sr-only"> (required)</span>
+          </label>
+          <input
+            id="contact-service-other"
+            name="otherServiceDetail"
+            type="text"
+            value={form.otherServiceDetail}
+            onChange={(e) =>
+              setForm({ ...form, otherServiceDetail: e.target.value })
+            }
+            required
+            aria-required="true"
+            autoFocus
+            placeholder="e.g. website maintenance, consulting, training"
+            className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink placeholder:text-ink/30 focus:border-catalyst/60 focus:outline-none"
+          />
+        </div>
+      )}
       <div className="mt-3">
         <label htmlFor="project_details" className="small-caps text-ink/60">
           Project details

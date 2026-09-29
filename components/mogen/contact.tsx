@@ -17,6 +17,10 @@ interface Props {
   initialService?: string;
   /** Editable starter message from `?promotion=` (absent without promotion). */
   initialMessage?: string;
+  /** Display name of the recognised promotion, if any. */
+  initialPromotionName?: string;
+  /** Non-blocking explanation when the promotion adjusted the service. */
+  initialServiceNotice?: string;
   /** Attribution carried through the enquiry journey (never shown in copy). */
   initialAttribution?: EnquiryAttribution;
 }
@@ -25,6 +29,8 @@ export default function Contact({
   numbering = 1,
   initialService,
   initialMessage,
+  initialPromotionName,
+  initialServiceNotice,
   initialAttribution,
 }: Readonly<Props>) {
   return (
@@ -91,6 +97,8 @@ export default function Contact({
                 <ContactForm
                   initialService={initialService}
                   initialMessage={initialMessage}
+                  initialPromotionName={initialPromotionName}
+                  initialServiceNotice={initialServiceNotice}
                   initialAttribution={initialAttribution}
                 />
               </div>
