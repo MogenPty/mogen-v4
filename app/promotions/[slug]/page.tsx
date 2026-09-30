@@ -8,9 +8,11 @@ import Footer from "@/components/mogen/footer";
 import MagneticButton from "@/components/mogen/magnet-button";
 import Nav from "@/components/mogen/nav";
 import PromotionCarousel from "@/components/mogen/promotion-carousel";
+import PromotionEnquiryCta from "@/components/mogen/promotion-enquiry-cta";
 import { PromotionStatusBadge } from "@/components/mogen/promotion-card";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import { formatNumber } from "@/lib/utils";
+import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import {
   getEffectiveStatus,
   getPromotionBySlug,
@@ -25,6 +27,7 @@ export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export function generateStaticParams() {
@@ -159,10 +162,16 @@ function PricingSection({
   );
 }
 
-export default async function PromotionDetailPage({ params }: Readonly<Props>) {
+export default async function PromotionDetailPage({
+  params,
+  searchParams,
+}: Readonly<Props>) {
   const { slug } = await params;
   const promo = getPromotionBySlug(slug);
   if (!promo) notFound();
+  // Carry allowlisted attribution (utm_*) from the promotion URL into
+  // the enquiry CTAs — explicit promotion context always wins.
+  const attribution = parseEnquiryAttribution((await searchParams) ?? {});
 
   let numbering = 1;
   const status = getEffectiveStatus(promo);
@@ -207,13 +216,16 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
               )}
             </div>
             <div className="mt-10 flex flex-wrap gap-4">
-              <MagneticButton
-                as="a"
-                href={status === "expired" ? "/contact" : promo.cta.href}
-                variant="catalyst"
-              >
-                {status === "expired" ? "Contact Mogen" : promo.cta.label}
-              </MagneticButton>
+              {status === "expired" ? (
+                <MagneticButton as="a" href="/contact" variant="catalyst">
+                  Contact Mogen
+                </MagneticButton>
+              ) : (
+                <PromotionEnquiryCta
+                  promotion={promo}
+                  attribution={attribution}
+                />
+              )}
               {promo.relatedService && (
                 <MagneticButton
                   as="a"
@@ -392,14 +404,22 @@ export default async function PromotionDetailPage({ params }: Readonly<Props>) {
                 </p>
               </div>
               <div className="flex flex-col justify-center gap-4">
-                <MagneticButton
-                  as="a"
-                  href="/contact"
-                  variant="catalyst"
-                  className="w-fit"
-                >
-                  {status === "expired" ? "Contact Mogen" : promo.cta.label}
-                </MagneticButton>
+                {status === "expired" ? (
+                  <MagneticButton
+                    as="a"
+                    href="/contact"
+                    variant="catalyst"
+                    className="w-fit"
+                  >
+                    Contact Mogen
+                  </MagneticButton>
+                ) : (
+                  <PromotionEnquiryCta
+                    promotion={promo}
+                    attribution={attribution}
+                    className="w-fit"
+                  />
+                )}
                 <Link
                   href="/promotions"
                   className="small-caps text-bone/60 hover:text-bone"

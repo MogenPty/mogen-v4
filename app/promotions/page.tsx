@@ -4,6 +4,7 @@ import PromotionCard from "@/components/mogen/promotion-card";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import { getPublicPromotions } from "@/data/promotions";
+import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 
 export const metadata: Metadata = {
   title: "Promotions — Mogen",
@@ -15,8 +16,15 @@ export const metadata: Metadata = {
 // effect without a redeploy: the collection regenerates at most hourly.
 export const revalidate = 3600;
 
-export default function PromotionsIndexPage() {
+export default async function PromotionsIndexPage({
+  searchParams,
+}: Readonly<{
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}>) {
   const promotions = getPublicPromotions();
+  // Carry allowlisted attribution (utm_*) from the collection URL into
+  // each card's enquiry CTA — explicit promotion context always wins.
+  const attribution = parseEnquiryAttribution((await searchParams) ?? {});
 
   return (
     <PageShell
@@ -33,7 +41,11 @@ export default function PromotionsIndexPage() {
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2">
             {promotions.map((p) => (
-              <PromotionCard key={p.slug} promotion={p} />
+              <PromotionCard
+                key={p.slug}
+                promotion={p}
+                attribution={attribution}
+              />
             ))}
           </div>
         </div>

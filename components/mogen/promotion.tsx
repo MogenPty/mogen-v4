@@ -1,14 +1,25 @@
 import Link from "next/link";
 import { getFeaturedPromotion } from "@/data/promotions";
+import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
+import PromotionEnquiryCta from "./promotion-enquiry-cta";
 
 interface Props {
   numbering?: number;
+  /**
+   * Attribution carried from the homepage URL (utm_* only).
+   * Forwarded into the featured enquiry CTA via the shared Task 01
+   * helper — never rendered as copy.
+   */
+  attribution?: EnquiryAttribution;
 }
 
-export default function Promotion({ numbering = 1 }: Readonly<Props>) {
+export default function Promotion({
+  numbering = 1,
+  attribution,
+}: Readonly<Props>) {
   // Homepage shows only an active + explicitly featured promotion.
   // When none qualifies, no section is rendered at all.
   const promo = getFeaturedPromotion();
@@ -50,9 +61,10 @@ export default function Promotion({ numbering = 1 }: Readonly<Props>) {
               </>
             )}
             <div className="mt-8 flex flex-wrap gap-4">
-              <MagneticButton as="a" href={promo.cta.href} variant="catalyst">
-                {promo.cta.label}
-              </MagneticButton>
+              <PromotionEnquiryCta
+                promotion={promo}
+                attribution={attribution}
+              />
               <MagneticButton
                 as="a"
                 href={`/promotions/${promo.slug}`}
