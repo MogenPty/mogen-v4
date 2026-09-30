@@ -19,14 +19,14 @@
 // Promotion slug from the central promotion data (`data/promotions.ts`).
 // Referenced here (not re-declared as a new slug) so the campaign
 // destination always points at the canonical promotion.
-export const SPROUT_PROMOTION_SLUG = "mogen-sprout-first-100";
+export const MOGEN_SPROUT_PROMOTION_SLUG = "mogen-sprout-first-100";
 
 /** Campaign destination derived from the central promotion slug. */
-export const SPROUT_DESTINATION_PATH = `/promotions/${SPROUT_PROMOTION_SLUG}`;
+export const MOGEN_SPROUT_DESTINATION_PATH = `/promotions/${MOGEN_SPROUT_PROMOTION_SLUG}`;
 
 /** Campaign ID and name for the Sprout launch campaign. */
-export const SPROUT_CAMPAIGN_ID = "sprout-launch-2026";
-export const SPROUT_CAMPAIGN_NAME = "sprout-launch-2026";
+export const MOGEN_SPROUT_CAMPAIGN_ID = "sprout-launch-2026";
+export const MOGEN_SPROUT_CAMPAIGN_NAME = "sprout-launch-2026";
 
 /**
  * Attribution values for one placement. Field names mirror the
@@ -57,17 +57,17 @@ export interface CampaignDefinition {
   links: CampaignLinkDefinition[];
 }
 
-export const SPROUT_LAUNCH_2026: CampaignDefinition = {
-  id: SPROUT_CAMPAIGN_ID,
-  name: SPROUT_CAMPAIGN_NAME,
-  destinationPath: SPROUT_DESTINATION_PATH,
+export const MOGEN_SPROUT_CAMPAIGN: CampaignDefinition = {
+  id: MOGEN_SPROUT_CAMPAIGN_ID,
+  name: MOGEN_SPROUT_CAMPAIGN_NAME,
+  destinationPath: MOGEN_SPROUT_DESTINATION_PATH,
   links: [
     {
       key: "whatsapp-catalog",
       label: "WhatsApp Catalog",
       source: "whatsapp",
       medium: "organic_social",
-      campaign: SPROUT_CAMPAIGN_ID,
+      campaign: MOGEN_SPROUT_CAMPAIGN_ID,
       content: "whatsapp-catalog",
     },
     {
@@ -75,7 +75,7 @@ export const SPROUT_LAUNCH_2026: CampaignDefinition = {
       label: "WhatsApp Status",
       source: "whatsapp",
       medium: "organic_social",
-      campaign: SPROUT_CAMPAIGN_ID,
+      campaign: MOGEN_SPROUT_CAMPAIGN_ID,
       content: "whatsapp-status",
     },
     {
@@ -83,7 +83,7 @@ export const SPROUT_LAUNCH_2026: CampaignDefinition = {
       label: "Instagram",
       source: "instagram",
       medium: "organic_social",
-      campaign: SPROUT_CAMPAIGN_ID,
+      campaign: MOGEN_SPROUT_CAMPAIGN_ID,
       content: "profile",
     },
     {
@@ -91,7 +91,7 @@ export const SPROUT_LAUNCH_2026: CampaignDefinition = {
       label: "Facebook",
       source: "facebook",
       medium: "organic_social",
-      campaign: SPROUT_CAMPAIGN_ID,
+      campaign: MOGEN_SPROUT_CAMPAIGN_ID,
       content: "post",
     },
     {
@@ -99,7 +99,7 @@ export const SPROUT_LAUNCH_2026: CampaignDefinition = {
       label: "TikTok",
       source: "tiktok",
       medium: "organic_social",
-      campaign: SPROUT_CAMPAIGN_ID,
+      campaign: MOGEN_SPROUT_CAMPAIGN_ID,
       content: "profile",
     },
     {
@@ -107,7 +107,7 @@ export const SPROUT_LAUNCH_2026: CampaignDefinition = {
       label: "Google Business Profile",
       source: "google",
       medium: "organic",
-      campaign: SPROUT_CAMPAIGN_ID,
+      campaign: MOGEN_SPROUT_CAMPAIGN_ID,
       content: "business-profile",
     },
     {
@@ -115,7 +115,7 @@ export const SPROUT_LAUNCH_2026: CampaignDefinition = {
       label: "QR / Printed Material",
       source: "qr",
       medium: "offline",
-      campaign: SPROUT_CAMPAIGN_ID,
+      campaign: MOGEN_SPROUT_CAMPAIGN_ID,
       content: "flyer",
     },
   ],
@@ -127,7 +127,7 @@ export const SPROUT_LAUNCH_2026: CampaignDefinition = {
  * adding one entry here — the URL builder needs no changes.
  */
 export const CAMPAIGNS: Record<string, CampaignDefinition> = {
-  [SPROUT_LAUNCH_2026.id]: SPROUT_LAUNCH_2026,
+  [MOGEN_SPROUT_CAMPAIGN.id]: MOGEN_SPROUT_CAMPAIGN,
 };
 
 /** Look up a campaign definition by ID. Returns undefined for unknown IDs. */
