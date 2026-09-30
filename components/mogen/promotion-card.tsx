@@ -6,6 +6,8 @@ import {
   getPromotionStatusLabel,
   type Promotion,
 } from "@/data/promotions";
+import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
+import PromotionEnquiryCta from "./promotion-enquiry-cta";
 
 export function PromotionStatusBadge({
   status,
@@ -75,12 +77,13 @@ function PriceSummary({ promotion }: { promotion: Promotion }) {
 
 export default function PromotionCard({
   promotion,
-}: Readonly<{ promotion: Promotion }>) {
+  attribution,
+}: Readonly<{ promotion: Promotion; attribution?: EnquiryAttribution }>) {
   const status = getEffectiveStatus(promotion);
   const expired = status === "expired";
+  const detailHref = `/promotions/${promotion.slug}`;
   return (
-    <Link
-      href={`/promotions/${promotion.slug}`}
+    <article
       className={cn(
         "group relative flex flex-col bg-bone p-8 transition-colors hover:bg-ink hover:text-bone",
         expired && "opacity-90",
@@ -106,13 +109,21 @@ export default function PromotionCard({
         {promotion.shortDescription}
       </p>
       <PriceSummary promotion={promotion} />
-      <span className="mt-6 flex items-center gap-2 small-caps text-catalyst">
-        View promotion
-        <ArrowRight
-          className="h-4 w-4 transition-transform group-hover:translate-x-1"
-          aria-hidden="true"
-        />
-      </span>
-    </Link>
+      <div className="mt-6 flex flex-wrap items-center gap-4">
+        {!expired && (
+          <PromotionEnquiryCta promotion={promotion} attribution={attribution} />
+        )}
+        <Link
+          href={detailHref}
+          className="flex items-center gap-2 small-caps text-catalyst"
+        >
+          View promotion
+          <ArrowRight
+            className="h-4 w-4 transition-transform group-hover:translate-x-1"
+            aria-hidden="true"
+          />
+        </Link>
+      </div>
+    </article>
   );
 }

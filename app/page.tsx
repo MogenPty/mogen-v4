@@ -14,14 +14,22 @@ import Services from "@/components/mogen/services";
 import WhatMogenDoes from "@/components/mogen/what-mogen-does";
 import WhyMogen from "@/components/mogen/why-mogen";
 import { getFeaturedPromotion } from "@/data/promotions";
+import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { siteConfig } from "@/data/site";
 
 // Promotion date transitions and the fallback-featuring env flag take
 // effect without a redeploy: the homepage regenerates at most hourly.
 export const revalidate = 3600;
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: Readonly<{
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}>) {
   const promotion = getFeaturedPromotion();
+  // Carry allowlisted attribution (utm_*) from the homepage URL into
+  // the featured promotion's enquiry CTA.
+  const attribution = parseEnquiryAttribution((await searchParams) ?? {});
   let numbering = 1;
 
   return (
@@ -36,7 +44,9 @@ export default function Home() {
         <Services numbering={numbering++} auditHref="#audit" />
         <WhyMogen numbering={numbering++} />
         <GrowthAudit numbering={numbering++} />
-        {promotion && <Promotion numbering={numbering++} />}
+        {promotion && (
+          <Promotion numbering={numbering++} attribution={attribution} />
+        )}
         <Portfolio numbering={numbering++} />
         <ArticlesPreview numbering={numbering++} />
         <LocationsPreview numbering={numbering++} />
