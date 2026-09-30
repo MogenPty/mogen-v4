@@ -58,12 +58,26 @@ function requireValue(value: string | undefined, name: string): string {
  * - Preserves an existing query string / hash on the destination path.
  * - Returns a relative URL (no domain); use `toAbsoluteCampaignUrl` when an
  *   absolute URL is needed for external distribution.
+ * - Rejects absolute HTTP(S) and protocol-relative paths: campaign
+ *   destinations must remain relative and domain-free.
  */
 export function buildCampaignUrl(input: BuildCampaignUrlInput): string {
   const rawPath = clean(input.path);
   if (!rawPath) {
     throw new Error(
       `buildCampaignUrl: "path" is required and must not be empty.`,
+    );
+  }
+  // Campaign destinations must stay relative and domain-free so an
+  // untrusted host can never flow through to toAbsoluteCampaignUrl.
+  const lowerPath = rawPath.toLowerCase();
+  if (
+    lowerPath.startsWith("http://") ||
+    lowerPath.startsWith("https://") ||
+    rawPath.startsWith("//")
+  ) {
+    throw new Error(
+      `buildCampaignUrl: "path" must be relative (no protocol or host).`,
     );
   }
   const source = requireValue(input.source, "source");

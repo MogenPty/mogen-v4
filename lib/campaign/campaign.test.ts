@@ -171,6 +171,24 @@ describe("buildCampaignUrl — existing query strings", () => {
   });
 });
 
+describe("buildCampaignUrl — relative paths only", () => {
+  it.each([
+    "https://evil.com/promotions/mogen-sprout-first-100",
+    "http://evil.com/promotions/mogen-sprout-first-100",
+    "HTTPS://evil.com/promotions/mogen-sprout-first-100",
+    "//evil.com/promotions/mogen-sprout-first-100",
+  ])("rejects untrusted destination %s", (path) => {
+    expect(() =>
+      buildCampaignUrl({
+        path,
+        source: "qr",
+        medium: "offline",
+        campaign: "sprout-launch-2026",
+      }),
+    ).toThrow(/must be relative/);
+  });
+});
+
 describe("getCampaignDefinition — prototype safety", () => {
   it("returns undefined for inherited property names", () => {
     expect(getCampaignDefinition("toString")).toBeUndefined();
