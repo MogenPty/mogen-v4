@@ -2,16 +2,27 @@
 
 import { Check } from "lucide-react";
 import MagneticButton from "./magnet-button";
+import {
+  buildEnquiryHref,
+  type EnquiryAttribution,
+} from "@/lib/enquiry/enquiry";
 import { Pricing } from "@/data/services";
 
 interface Props {
   pricing: Pricing[];
   serviceSlug: string;
+  /**
+   * Attribution carried from the service page URL (utm_* only).
+   * Forwarded into enquiry CTAs via the shared Task 01 helper —
+   * never rendered as copy.
+   */
+  attribution?: EnquiryAttribution;
 }
 
 export default function ServicePricing({
   pricing,
   serviceSlug,
+  attribution,
 }: Readonly<Props>) {
   return (
     <div className="grid grid-cols-1 gap-px bg-ink/10 lg:grid-cols-3">
@@ -57,7 +68,10 @@ export default function ServicePricing({
           </ul>
           <MagneticButton
             as="a"
-            href="#quote"
+            href={buildEnquiryHref({
+              service: serviceSlug,
+              attribution,
+            })}
             variant={t.featured ? "catalyst" : "outline"}
             className="mt-8 w-full"
           >

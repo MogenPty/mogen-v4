@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
+import { buildEnquiryHref, type EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -17,11 +18,18 @@ import { getService, SERVICES } from "@/data/services";
 interface Props {
   serviceSlug: string;
   numbering?: number;
+  /**
+   * Attribution carried from the service page URL (utm_* only).
+   * Forwarded into enquiry CTAs via the shared Task 01 helper —
+   * never rendered as copy.
+   */
+  attribution?: EnquiryAttribution;
 }
 
 export default function ServiceDetail({
   serviceSlug,
   numbering = 1,
+  attribution,
 }: Readonly<Props>) {
   const service = getService(serviceSlug);
 
@@ -103,7 +111,14 @@ export default function ServiceDetail({
               {service.intro}
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
-              <MagneticButton as="a" href="#quote" variant="catalyst">
+              <MagneticButton
+                as="a"
+                href={buildEnquiryHref({
+                  service: service.slug,
+                  attribution,
+                })}
+                variant="catalyst"
+              >
                 Get a Quote
               </MagneticButton>
               <MagneticButton as="a" href="#pricing" variant="outline">
@@ -181,6 +196,7 @@ export default function ServiceDetail({
               <ServicePricing
                 pricing={service.pricing}
                 serviceSlug={service.slug}
+                attribution={attribution}
               />
             </div>
           </BlueprintGrid>
