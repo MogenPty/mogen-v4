@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import {
   Check,
   ClipboardList,
@@ -6,6 +5,7 @@ import {
   Hammer,
   SearchCheck,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import FinalCTA from "@/components/mogen/final-cta";
@@ -186,7 +186,7 @@ export default function About() {
 
       {/* 04 — How Mogen works */}
       <BlueprintGrid
-        id="how-mogen-works"
+        id={"how-mogen-works"}
         className="bg-secondary py-24 lg:py-32"
       >
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -240,7 +240,7 @@ export default function About() {
 
       {/* 05 — Technical experience */}
       <BlueprintGrid
-        id="technical-experience"
+        id={"technical-experience"}
         className="bg-bone py-24 lg:py-32"
       >
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">

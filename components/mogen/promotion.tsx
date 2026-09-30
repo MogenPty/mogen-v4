@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { getFeaturedPromotion } from "@/data/promotions";
+import {
+  getFeaturedPromotion,
+  type Promotion as PromotionData,
+} from "@/data/promotions";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
@@ -14,21 +17,28 @@ interface Props {
    * helper — never rendered as copy.
    */
   attribution?: EnquiryAttribution;
+  /**
+   * Explicitly featured promotion supplied by the homepage (which reads
+   * it from the central `getFeaturedPromotion()` selector). When omitted
+   * the section resolves it directly — same source, same rules.
+   */
+  promotion?: PromotionData;
 }
 
 export default function Promotion({
   numbering = 1,
   attribution,
+  promotion: promotionProp,
 }: Readonly<Props>) {
   // Homepage shows only an active + explicitly featured promotion.
   // When none qualifies, no section is rendered at all.
-  const promo = getFeaturedPromotion();
+  const promo = promotionProp ?? getFeaturedPromotion();
   if (!promo) return null;
 
   const headline = promo.pricing.find((p) => p.promotional) ?? promo.pricing[0];
 
   return (
-    <BlueprintGrid id="promotion" className="bg-bone py-24 lg:py-32">
+    <BlueprintGrid id={"promotion"} className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
         <SectionLabel
           index={`// ${formatNumber(numbering)} — Promotion`}
@@ -93,7 +103,7 @@ export default function Promotion({
             </div>
             <div className="mt-10 border-t border-bone/10 pt-6">
               <p className="text-sm text-bone/60">
-                Not WaaS. This is {promo.name} — a limited promotional offer.
+                This is {promo.name} — a limited promotional offer.
               </p>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
                 <Link

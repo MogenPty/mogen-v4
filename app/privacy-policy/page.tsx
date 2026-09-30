@@ -57,7 +57,7 @@ export default function PrivacyPolicy() {
       intro="How Mogen collects, uses and protects the personal information you share through our forms and Growth Audit."
     >
       <BlueprintGrid className="bg-bone pb-24">
-        <div className="mx-auto max-w-[760px] px-6 lg:px-10">
+        <div className="mx-auto max-w-190 px-6 lg:px-10">
           <p className="small-caps text-ink/50">
             Last updated: 1 September 2026
           </p>

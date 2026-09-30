@@ -3,8 +3,8 @@
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 import { useAnchorHref } from "@/lib/use-anchor-href";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import MagneticButton from "./magnet-button";
 import ThemeToggle from "./theme-toggle";
@@ -19,6 +19,7 @@ const SERVICES_SUB = [
 const NAV = [
   { label: "Services", href: "/#services", children: SERVICES_SUB },
   { label: "Growth Audit", href: "/#audit" },
+  { label: "Promotions", href: "/promotions" },
   { label: "Work", href: "/#work" },
   { label: "Articles", href: "/blog" },
   { label: "Contact", href: "/contact" },

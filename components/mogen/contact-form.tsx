@@ -3,9 +3,9 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Script from "next/script";
 import { type FormEvent, useRef, useState } from "react";
+import { siteConfig } from "@/data/site";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
-import { siteConfig } from "@/data/site";
 import MagneticButton from "./magnet-button";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
@@ -86,9 +86,7 @@ export default function ContactForm({
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
   });
-  const [attribution] = useState<EnquiryAttribution>(
-    initialAttribution ?? {},
-  );
+  const [attribution] = useState<EnquiryAttribution>(initialAttribution ?? {});
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -257,32 +255,15 @@ export default function ContactForm({
         />
       </div>
       <div className="mt-3">
-        {initialPromotionName && (
-          <div
-            className="mb-3 border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/70"
-            role="status"
-          >
-            <p>
-              Promotion:{" "}
-              <span className="font-semibold text-ink">
-                {initialPromotionName}
-              </span>
-            </p>
-            {initialServiceNotice && (
-              <p className="mt-1">{initialServiceNotice}</p>
-            )}
-          </div>
-        )}
         <label htmlFor="service" className="small-caps text-ink/60">
-          Service of interest
+          Service of interest{" "}
           <span className="text-catalyst" aria-hidden="true">
-            {" "}
             *
           </span>
           <span className="sr-only"> (required)</span>
         </label>
         <select
-          id="service"
+          id={"service"}
           name="service"
           value={form.service}
           onChange={(e) =>
@@ -296,7 +277,7 @@ export default function ContactForm({
           }
           required
           aria-required="true"
-          className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink [color-scheme:light] focus:border-catalyst/60 focus:outline-none dark:[color-scheme:dark]"
+          className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark"
         >
           <option value="" className="bg-bone text-ink">
             Select a service
@@ -307,6 +288,19 @@ export default function ContactForm({
             </option>
           ))}
         </select>
+        {initialPromotionName && (
+          <div className="mt-3 border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/70">
+            <p>
+              Promotion:{" "}
+              <span className="font-semibold text-ink">
+                {initialPromotionName}
+              </span>
+            </p>
+            {initialServiceNotice && (
+              <p className="mt-1">{initialServiceNotice}</p>
+            )}
+          </div>
+        )}
       </div>
       {form.service === "Other" && (
         <div className="mt-3">
@@ -314,15 +308,14 @@ export default function ContactForm({
             htmlFor="contact-service-other"
             className="small-caps text-ink/60"
           >
-            If Other, please specify
+            If Other, please specify{" "}
             <span className="text-catalyst" aria-hidden="true">
-              {" "}
               *
             </span>
             <span className="sr-only"> (required)</span>
           </label>
           <input
-            id="contact-service-other"
+            id={"contact-service-other"}
             name="otherServiceDetail"
             type="text"
             value={form.otherServiceDetail}
@@ -335,7 +328,6 @@ export default function ContactForm({
             aria-describedby={
               isOtherDetailError ? "contact-service-other-error" : undefined
             }
-            autoFocus
             placeholder="e.g. website maintenance, consulting, training"
             className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink placeholder:text-ink/30 focus:border-catalyst/60 focus:outline-none"
           />
@@ -346,7 +338,7 @@ export default function ContactForm({
           Project details
         </label>
         <textarea
-          id="project_details"
+          id={"project_details"}
           name="message"
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
@@ -359,7 +351,7 @@ export default function ContactForm({
       <div className="hidden" aria-hidden="true">
         <label htmlFor="company_website">Company website</label>
         <input
-          id="company_website"
+          id={"company_website"}
           name="companyWebsite"
           type="text"
           tabIndex={-1}
