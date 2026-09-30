@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  MOGEN_SPROUT_DESTINATION_PATH,
-  MOGEN_SPROUT_CAMPAIGN,
+  MOGEN_DESTINATION_PATH,
+  MOGEN_CAMPAIGN,
   getCampaignLink,
 } from "@/data/campaigns";
 import {
@@ -13,7 +13,7 @@ import {
 describe("buildCampaignUrl — required parameters", () => {
   it("produces the correct UTM parameters for source/medium/campaign", () => {
     const url = buildCampaignUrl({
-      path: MOGEN_SPROUT_DESTINATION_PATH,
+      path: MOGEN_DESTINATION_PATH,
       source: "whatsapp",
       medium: "organic_social",
       campaign: "sprout-launch-2026",
@@ -30,7 +30,7 @@ describe("buildCampaignUrl — required parameters", () => {
 describe("buildCampaignUrl — content parameter", () => {
   it("includes utm_content when supplied", () => {
     const url = buildCampaignUrl({
-      path: MOGEN_SPROUT_DESTINATION_PATH,
+      path: MOGEN_DESTINATION_PATH,
       source: "whatsapp",
       medium: "organic_social",
       campaign: "sprout-launch-2026",
@@ -45,7 +45,7 @@ describe("buildCampaignUrl — content parameter", () => {
 describe("buildCampaignUrl — optional parameters", () => {
   it("includes utm_term and utm_id when supplied", () => {
     const url = buildCampaignUrl({
-      path: MOGEN_SPROUT_DESTINATION_PATH,
+      path: MOGEN_DESTINATION_PATH,
       source: "whatsapp",
       medium: "organic_social",
       campaign: "sprout-launch-2026",
@@ -62,7 +62,7 @@ describe("buildCampaignUrl — optional parameters", () => {
 describe("buildCampaignUrl — empty optional parameters", () => {
   it("omits undefined/empty optional values", () => {
     const url = buildCampaignUrl({
-      path: MOGEN_SPROUT_DESTINATION_PATH,
+      path: MOGEN_DESTINATION_PATH,
       source: "whatsapp",
       medium: "organic_social",
       campaign: "sprout-launch-2026",
@@ -82,7 +82,7 @@ describe("buildCampaignUrl — empty optional parameters", () => {
 describe("buildCampaignUrl — encoding", () => {
   it("URL-encodes values with spaces or special characters", () => {
     const url = buildCampaignUrl({
-      path: MOGEN_SPROUT_DESTINATION_PATH,
+      path: MOGEN_DESTINATION_PATH,
       source: "my source",
       medium: "organic_social",
       campaign: "a b&c",
@@ -111,7 +111,7 @@ describe("buildCampaignUrl — destination path", () => {
 
   it("never invents service/promotion enquiry context", () => {
     const url = buildCampaignUrl({
-      path: MOGEN_SPROUT_DESTINATION_PATH,
+      path: MOGEN_DESTINATION_PATH,
       source: "qr",
       medium: "offline",
       campaign: "sprout-launch-2026",
@@ -164,17 +164,17 @@ describe("sprout-launch-2026 campaign links", () => {
     (key, expectedUrl) => {
       const link = getCampaignLink("sprout-launch-2026", key);
       expect(link).toBeDefined();
-      const url = buildCampaignLinkUrl(link!, MOGEN_SPROUT_CAMPAIGN.destinationPath);
+      const url = buildCampaignLinkUrl(link!, MOGEN_CAMPAIGN.destinationPath);
       expect(url).toBe(expectedUrl);
     },
   );
 
   it("derives the destination from the central promotion slug (no duplication)", () => {
-    expect(MOGEN_SPROUT_CAMPAIGN.destinationPath).toBe(
+    expect(MOGEN_CAMPAIGN.destinationPath).toBe(
       "/promotions/mogen-sprout-first-100",
     );
-    expect(MOGEN_SPROUT_CAMPAIGN.id).toBe("sprout-launch-2026");
-    expect(MOGEN_SPROUT_CAMPAIGN.name).toBe("sprout-launch-2026");
+    expect(MOGEN_CAMPAIGN.id).toBe("sprout-launch-2026");
+    expect(MOGEN_CAMPAIGN.name).toBe("sprout-launch-2026");
   });
 });
 
@@ -182,7 +182,7 @@ describe("toAbsoluteCampaignUrl", () => {
   it("prefixes the canonical site URL without hardcoding a domain", () => {
     const relative = buildCampaignLinkUrl(
       getCampaignLink("sprout-launch-2026", "qr-flyer")!,
-      MOGEN_SPROUT_CAMPAIGN.destinationPath,
+      MOGEN_CAMPAIGN.destinationPath,
     );
     const absolute = toAbsoluteCampaignUrl(relative);
     expect(absolute.startsWith("https://www.mogen.co.za/promotions/")).toBe(true);
