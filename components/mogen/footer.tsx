@@ -22,6 +22,7 @@ const COLS: Column[] = [
     links: [
       { label: "Services", href: "/#services" },
       { label: "Growth Audit", href: "/#audit" },
+      { label: "Promotions", href: "/promotions" },
       { label: "Our Work", href: "/#work" },
       { label: "Articles", href: "/blog" },
       { label: "Contact", href: "/contact" },

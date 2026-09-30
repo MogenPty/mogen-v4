@@ -1,18 +1,16 @@
+import { ArrowLeft, Check } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Check } from "lucide-react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import MagneticButton from "@/components/mogen/magnet-button";
 import Nav from "@/components/mogen/nav";
+import { PromotionStatusBadge } from "@/components/mogen/promotion-card";
 import PromotionCarousel from "@/components/mogen/promotion-carousel";
 import PromotionEnquiryCta from "@/components/mogen/promotion-enquiry-cta";
-import { PromotionStatusBadge } from "@/components/mogen/promotion-card";
 import ServiceFAQ from "@/components/mogen/service-faq";
-import { formatNumber } from "@/lib/utils";
-import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import {
   getEffectiveStatus,
   getPromotionBySlug,
@@ -20,6 +18,8 @@ import {
   type Promotion,
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
+import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
+import { formatNumber } from "@/lib/utils";
 
 // Date transitions (start/end) and the fallback-featuring env flag take
 // effect without a redeploy: pages regenerate at most hourly.
@@ -72,10 +72,7 @@ function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {
   const status = getEffectiveStatus(promo);
   if (status === "expired") {
     return (
-      <div
-        role="status"
-        className="border-y-2 border-catalyst bg-ink py-4 text-center"
-      >
+      <div className="border-y-2 border-catalyst bg-ink px-6 py-4 text-center">
         <p className="small-caps text-bone">
           Promotion ended
           {promo.endDate && ` — ran through ${formatDate(promo.endDate)}`}
@@ -88,10 +85,7 @@ function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {
   }
   if (status === "scheduled") {
     return (
-      <div
-        role="status"
-        className="border-y border-ink/15 bg-secondary py-4 text-center"
-      >
+      <div className="border-y border-ink/15 bg-secondary px-6 py-4 text-center">
         <p className="small-caps text-ink">
           Coming soon
           {promo.startDate && ` — starts ${formatDate(promo.startDate)}`}
@@ -371,7 +365,7 @@ export default async function PromotionDetailPage({
         )}
 
         {/* CTA */}
-        <BlueprintGrid id="claim" className="bg-ink py-20 text-bone lg:py-28">
+        <BlueprintGrid id={"claim"} className="bg-ink py-20 text-bone lg:py-28">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
               <div>
@@ -379,23 +373,7 @@ export default async function PromotionDetailPage({
                   {`// ${formatNumber(numbering++)} — Start`}
                 </span>
                 <h2 className="mt-6 font-display text-4xl font-black leading-[1.05] lg:text-6xl text-balance">
-                  {status === "expired" ? (
-                    <>
-                      This offer has{" "}
-                      <span className="text-catalyst">ended.</span>
-                    </>
-                  ) : status === "scheduled" ? (
-                    <>
-                      Starts{" "}
-                      <span className="text-catalyst">
-                        {promo.startDate && formatDate(promo.startDate)}.
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      Claim <span className="text-catalyst">{promo.name}.</span>
-                    </>
-                  )}
+                  {getPromoStatusComponent(promo)}
                 </h2>
                 <p className="mt-6 max-w-md text-lg text-bone/70">
                   {status === "expired"
@@ -435,4 +413,31 @@ export default async function PromotionDetailPage({
       <ConversionBar />
     </div>
   );
+
+  function getPromoStatusComponent(
+    promo: Promotion,
+  ): import("react").ReactNode {
+    if (status === "expired")
+      return (
+        <>
+          This offer has <span className="text-catalyst">ended.</span>
+        </>
+      );
+
+    if (status === "scheduled")
+      return (
+        <>
+          Starts{" "}
+          <span className="text-catalyst">
+            {promo.startDate && formatDate(promo.startDate)}.
+          </span>
+        </>
+      );
+
+    return (
+      <>
+        Claim <span className="text-catalyst">{promo.name}.</span>
+      </>
+    );
+  }
 }

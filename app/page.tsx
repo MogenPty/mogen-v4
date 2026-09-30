@@ -45,7 +45,11 @@ export default async function Home({
         <WhyMogen numbering={numbering++} />
         <GrowthAudit numbering={numbering++} />
         {promotion && (
-          <Promotion numbering={numbering++} attribution={attribution} />
+          <Promotion
+            numbering={numbering++}
+            attribution={attribution}
+            promotion={promotion}
+          />
         )}
         <Portfolio numbering={numbering++} />
         <ArticlesPreview numbering={numbering++} />

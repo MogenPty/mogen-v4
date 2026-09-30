@@ -5,6 +5,7 @@ import {
   getContactMailConfig,
   submitContact,
 } from "@/lib/contact/contact-service";
+import type { MailProvider } from "@/lib/mail/mail-provider";
 import { getMailProvider } from "@/lib/mail/provider-factory";
 import {
   parseExpectedHostnames,
@@ -60,8 +61,7 @@ function isRateLimited(ip: string): boolean {
 
 export async function POST(req: Request) {
   const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "unknown";
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (isRateLimited(ip)) {
     return NextResponse.json(
       { ok: false, error: "Too many requests. Please try again later." },
@@ -83,16 +83,14 @@ export async function POST(req: Request) {
   // Tokens are single-use; verification happens before mail delivery.
   const token =
     typeof body === "object" && body !== null
-      ? (body as Record<string, unknown>)["turnstileToken"]
+      ? (body as Record<string, unknown>).turnstileToken
       : undefined;
   const verification = await verifyTurnstileToken({
     token,
     remoteip: ip === "unknown" ? undefined : ip,
     secret: process.env.TURNSTILE_SECRET,
     expectedAction: "contact",
-    expectedHostnames: parseExpectedHostnames(
-      process.env.TURNSTILE_HOSTNAMES,
-    ),
+    expectedHostnames: parseExpectedHostnames(process.env.TURNSTILE_HOSTNAMES),
   });
   if (!verification.ok) {
     console.error(`[contact] turnstile rejected: ${verification.reason}`);
@@ -106,7 +104,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let provider;
+  let provider: MailProvider;
   try {
     provider = getMailProvider();
   } catch {
