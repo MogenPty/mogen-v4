@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   MOGEN_DESTINATION_PATH,
   MOGEN_CAMPAIGN,
+  getCampaignDefinition,
   getCampaignLink,
+  getCampaignLinks,
 } from "@/data/campaigns";
 import {
   buildCampaignLinkUrl,
@@ -138,6 +140,48 @@ describe("buildCampaignUrl — existing query strings", () => {
     expect(params.get("ref")).toBe("partner");
     expect(params.get("utm_source")).toBe("qr");
     expect(params.get("utm_content")).toBe("flyer");
+  });
+
+  it("clears stale optional UTMs when the input omits them", () => {
+    const url = buildCampaignUrl({
+      path: "/promotions/mogen-sprout-first-100?ref=partner&utm_content=stale&utm_term=stale&utm_id=stale",
+      source: "qr",
+      medium: "offline",
+      campaign: "sprout-launch-2026",
+    });
+    const params = new URLSearchParams(url.split("?")[1]);
+    expect(params.get("ref")).toBe("partner");
+    expect(params.has("utm_content")).toBe(false);
+    expect(params.has("utm_term")).toBe(false);
+    expect(params.has("utm_id")).toBe(false);
+    expect(params.get("utm_source")).toBe("qr");
+  });
+
+  it("overwrites a stale optional UTM when the input supplies it", () => {
+    const url = buildCampaignUrl({
+      path: "/promotions/mogen-sprout-first-100?utm_content=stale",
+      source: "qr",
+      medium: "offline",
+      campaign: "sprout-launch-2026",
+      content: "flyer",
+    });
+    expect(new URLSearchParams(url.split("?")[1]).get("utm_content")).toBe(
+      "flyer",
+    );
+  });
+});
+
+describe("getCampaignDefinition — prototype safety", () => {
+  it("returns undefined for inherited property names", () => {
+    expect(getCampaignDefinition("toString")).toBeUndefined();
+    expect(getCampaignDefinition("constructor")).toBeUndefined();
+    expect(getCampaignDefinition("hasOwnProperty")).toBeUndefined();
+    expect(getCampaignLinks("toString")).toEqual([]);
+    expect(getCampaignLink("toString", "whatsapp-catalog")).toBeUndefined();
+  });
+
+  it("still returns the registered campaign", () => {
+    expect(getCampaignDefinition("sprout-launch-2026")).toBe(MOGEN_CAMPAIGN);
   });
 });
 

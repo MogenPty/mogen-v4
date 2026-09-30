@@ -134,7 +134,9 @@ export const CAMPAIGNS: Record<string, CampaignDefinition> = {
 export function getCampaignDefinition(
   campaignId: string,
 ): CampaignDefinition | undefined {
-  return CAMPAIGNS[campaignId];
+  return Object.hasOwn(CAMPAIGNS, campaignId)
+    ? CAMPAIGNS[campaignId]
+    : undefined;
 }
 
 /** All placement definitions for a campaign (empty array when unknown). */

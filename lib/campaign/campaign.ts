@@ -42,7 +42,9 @@ function clean(value: string | undefined): string | undefined {
 function requireValue(value: string | undefined, name: string): string {
   const cleaned = clean(value);
   if (!cleaned) {
-    throw new Error(`buildCampaignUrl: "${name}" is required and must not be empty.`);
+    throw new Error(
+      `buildCampaignUrl: "${name}" is required and must not be empty.`,
+    );
   }
   return cleaned;
 }
@@ -51,7 +53,8 @@ function requireValue(value: string | undefined, name: string): string {
  * Build a relative campaign URL carrying `utm_*` attribution.
  *
  * - Uses `URLSearchParams` (correct encoding, no manual concatenation).
- * - Omits undefined/empty optional values (`content`, `term`, `id`).
+ * - Omits undefined/empty optional values (`content`, `term`, `id`) and
+ *   clears any stale value for those keys already on the destination path.
  * - Preserves an existing query string / hash on the destination path.
  * - Returns a relative URL (no domain); use `toAbsoluteCampaignUrl` when an
  *   absolute URL is needed for external distribution.
@@ -59,7 +62,9 @@ function requireValue(value: string | undefined, name: string): string {
 export function buildCampaignUrl(input: BuildCampaignUrlInput): string {
   const rawPath = clean(input.path);
   if (!rawPath) {
-    throw new Error(`buildCampaignUrl: "path" is required and must not be empty.`);
+    throw new Error(
+      `buildCampaignUrl: "path" is required and must not be empty.`,
+    );
   }
   const source = requireValue(input.source, "source");
   const medium = requireValue(input.medium, "medium");
@@ -88,12 +93,19 @@ export function buildCampaignUrl(input: BuildCampaignUrlInput): string {
   params.set("utm_source", source);
   params.set("utm_medium", medium);
   params.set("utm_campaign", campaign);
+  // The builder owns the utm_* keys: a supplied optional value sets its
+  // key, an absent one clears any stale value from the destination path.
+  // Unrelated query parameters are always preserved.
   if (content) params.set("utm_content", content);
+  else params.delete("utm_content");
   if (term) params.set("utm_term", term);
+  else params.delete("utm_term");
   if (id) params.set("utm_id", id);
+  else params.delete("utm_id");
 
   const query = params.toString();
-  return `${pathname}${query ? `?${query}` : ""}${hash}`;
+  if (!query) return `${pathname}${hash}`;
+  return `${pathname}?${query}${hash}`;
 }
 
 /**
@@ -127,9 +139,7 @@ export function toAbsoluteCampaignUrl(
 ): string {
   const cleaned = clean(relativeUrl);
   if (!cleaned) {
-    throw new Error(
-      "toAbsoluteCampaignUrl: relative URL must not be empty.",
-    );
+    throw new Error("toAbsoluteCampaignUrl: relative URL must not be empty.");
   }
   const base = clean(baseUrl)?.replace(/\/+$/, "") ?? "";
   if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) {
