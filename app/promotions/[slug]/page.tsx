@@ -18,7 +18,11 @@ import {
   type Promotion,
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
-import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
+import {
+  buildEnquiryHref,
+  parseEnquiryAttribution,
+  withAttribution,
+} from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 
 // Date transitions (start/end) and the fallback-featuring env flag take
@@ -211,7 +215,11 @@ export default async function PromotionDetailPage({
             </div>
             <div className="mt-10 flex flex-wrap gap-4">
               {status === "expired" ? (
-                <MagneticButton as="a" href="/contact" variant="catalyst">
+                <MagneticButton
+                  as="a"
+                  href={buildEnquiryHref({ attribution })}
+                  variant="catalyst"
+                >
                   Contact Mogen
                 </MagneticButton>
               ) : (
@@ -223,7 +231,10 @@ export default async function PromotionDetailPage({
               {promo.relatedService && (
                 <MagneticButton
                   as="a"
-                  href={`/services/${promo.relatedService}`}
+                  href={withAttribution(
+                    `/services/${promo.relatedService}`,
+                    attribution,
+                  )}
                   variant="outline"
                 >
                   View service
@@ -385,7 +396,7 @@ export default async function PromotionDetailPage({
                 {status === "expired" ? (
                   <MagneticButton
                     as="a"
-                    href="/contact"
+                    href={buildEnquiryHref({ attribution })}
                     variant="catalyst"
                     className="w-fit"
                   >

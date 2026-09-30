@@ -4,7 +4,11 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
-import { buildEnquiryHref, type EnquiryAttribution } from "@/lib/enquiry/enquiry";
+import {
+  buildEnquiryHref,
+  type EnquiryAttribution,
+  withAttribution,
+} from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -283,7 +287,7 @@ export default function ServiceDetail({
                 return (
                   <Link
                     key={s.slug}
-                    href={`/services/${s.slug}`}
+                    href={withAttribution(`/services/${s.slug}`, attribution)}
                     className="group bg-bone p-6 transition-colors hover:bg-ink hover:text-bone"
                   >
                     <RIcon

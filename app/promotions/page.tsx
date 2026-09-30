@@ -4,7 +4,11 @@ import PromotionCard from "@/components/mogen/promotion-card";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import { getPublicPromotions } from "@/data/promotions";
-import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
+import {
+  buildEnquiryHref,
+  parseEnquiryAttribution,
+  withAttribution,
+} from "@/lib/enquiry/enquiry";
 
 export const metadata: Metadata = {
   title: "Promotions — Mogen",
@@ -59,7 +63,7 @@ export default async function PromotionsIndexPage({
           <div className="flex flex-col gap-3 sm:flex-row">
             <MagneticButton
               as="a"
-              href="/contact"
+              href={buildEnquiryHref({ attribution })}
               variant="solid"
               className="bg-ink text-bone hover:bg-bone hover:text-ink"
             >
@@ -67,7 +71,10 @@ export default async function PromotionsIndexPage({
             </MagneticButton>
             <MagneticButton
               as="a"
-              href="/services/web-development"
+              href={withAttribution(
+                "/services/web-development",
+                attribution,
+              )}
               variant="outline"
               className="border-white/60 text-white hover:bg-white hover:text-ink dark:hover:text-black"
             >

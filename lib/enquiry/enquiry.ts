@@ -286,3 +286,47 @@ export function buildEnquiryHref(input: BuildEnquiryHrefInput): string {
   const query = params.toString();
   return query ? `/contact?${query}` : "/contact";
 }
+
+/**
+ * Carry allowlisted attribution (`utm_*` only) through an internal
+ * navigation link (e.g. promotion detail → service page, homepage →
+ * promotion detail) so a later CTA on that page can still forward it
+ * into the enquiry URL.
+ *
+ * - Uses `URLSearchParams` (correct encoding, no manual concatenation).
+ * - Only allowlisted attribution keys are added; unrelated keys are
+ *   never introduced and an existing query string / hash on the path
+ *   is preserved.
+ * - Omits undefined/empty values. Returns the path unchanged when
+ *   there is nothing to carry.
+ */
+export function withAttribution(
+  path: string,
+  attribution?: EnquiryAttribution,
+): string {
+  let base = path;
+  let hash = "";
+  const hashIndex = base.indexOf("#");
+  if (hashIndex >= 0) {
+    hash = base.slice(hashIndex);
+    base = base.slice(0, hashIndex);
+  }
+
+  let pathname = base;
+  let existingQuery = "";
+  const queryIndex = base.indexOf("?");
+  if (queryIndex >= 0) {
+    pathname = base.slice(0, queryIndex);
+    existingQuery = base.slice(queryIndex + 1);
+  }
+
+  const params = new URLSearchParams(existingQuery);
+  for (const key of ATTRIBUTION_KEYS) {
+    const value = clean(attribution?.[key]);
+    if (value) params.set(key, value);
+  }
+
+  const query = params.toString();
+  if (!query) return `${pathname}${hash}`;
+  return `${pathname}?${query}${hash}`;
+}

@@ -7,6 +7,7 @@ import {
   type Promotion,
 } from "@/data/promotions";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
+import { withAttribution } from "@/lib/enquiry/enquiry";
 import PromotionEnquiryCta from "./promotion-enquiry-cta";
 
 export function PromotionStatusBadge({
@@ -81,7 +82,10 @@ export default function PromotionCard({
 }: Readonly<{ promotion: Promotion; attribution?: EnquiryAttribution }>) {
   const status = getEffectiveStatus(promotion);
   const expired = status === "expired";
-  const detailHref = `/promotions/${promotion.slug}`;
+  const detailHref = withAttribution(
+    `/promotions/${promotion.slug}`,
+    attribution,
+  );
   return (
     <article
       className={cn(

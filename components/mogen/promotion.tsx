@@ -4,6 +4,7 @@ import {
   type Promotion as PromotionData,
 } from "@/data/promotions";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
+import { withAttribution } from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
@@ -77,7 +78,10 @@ export default function Promotion({
               />
               <MagneticButton
                 as="a"
-                href={`/promotions/${promo.slug}`}
+                href={withAttribution(
+                  `/promotions/${promo.slug}`,
+                  attribution,
+                )}
                 variant="outline"
               >
                 Promotion details
@@ -107,7 +111,7 @@ export default function Promotion({
               </p>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
                 <Link
-                  href="/contact"
+                  href={withAttribution("/contact", attribution)}
                   className="inline-flex small-caps text-catalyst hover:text-bone"
                 >
                   Questions? Contact us →
