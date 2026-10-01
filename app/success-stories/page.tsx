@@ -1,7 +1,16 @@
 import { ArrowRight } from "lucide-react";
+import type { Metadata } from "next";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  path: "/success-stories",
+  title: "Success Stories",
+  description:
+    "How Mogen approaches hospitality, clinic, service and retail sites — structure, local relevance and clear enquiry paths.",
+});
 
 const STORIES = [
   {

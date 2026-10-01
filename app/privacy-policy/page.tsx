@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import PageShell from "@/components/mogen/page-shell";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  path: "/privacy-policy",
+  title: "Privacy Policy",
+  description:
+    "How Mogen collects, uses and protects personal information shared through forms and the Growth Audit, in line with POPIA.",
+});
 
 const SECTIONS = [
   {

@@ -9,12 +9,14 @@ import {
   parseEnquiryAttribution,
   withAttribution,
 } from "@/lib/enquiry/enquiry";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Promotions — Mogen",
+export const metadata: Metadata = pageMetadata({
+  path: "/promotions",
+  title: "Promotions",
   description:
     "Current and past Mogen promotions — limited offers on websites and managed subscriptions, with clear pricing, eligibility and terms.",
-};
+});
 
 // Date transitions (start/end) and the fallback-featuring env flag take
 // effect without a redeploy: the collection regenerates at most hourly.

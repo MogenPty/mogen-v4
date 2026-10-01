@@ -6,12 +6,14 @@ import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import Nav from "@/components/mogen/nav";
 import { SERVICES } from "@/data/services";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Pricing — Mogen Services & Pricing",
+export const metadata: Metadata = pageMetadata({
+  path: "/pricing",
+  title: "Pricing",
   description:
-    "Mogen Services & Pricing — each service has its own three-tier pricing. View Web Development, SEO, Digital Marketing and Business Documentation pricing on their authoritative service pages.",
-};
+    "Mogen services and pricing — each service has its own three-tier pricing. View Web Development, SEO, Digital Marketing and Business Documentation pricing on their service pages.",
+});
 
 export default function PricingDirectoryPage() {
   return (
