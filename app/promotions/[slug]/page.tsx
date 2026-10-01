@@ -186,7 +186,7 @@ export default async function PromotionDetailPage({
           />
           <div className="relative z-10 mx-auto max-w-[1600px] px-6 lg:px-10">
             <Link
-              href="/promotions"
+              href={withAttribution("/promotions", attribution)}
               className="inline-flex items-center gap-2 small-caps text-muted-foreground hover:text-catalyst"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -410,7 +410,7 @@ export default async function PromotionDetailPage({
                   />
                 )}
                 <Link
-                  href="/promotions"
+                  href={withAttribution("/promotions", attribution)}
                   className="small-caps text-bone/60 hover:text-bone"
                 >
                   ← Back to all promotions

@@ -117,7 +117,7 @@ export default function Promotion({
                   Questions? Contact us →
                 </Link>
                 <Link
-                  href="/promotions"
+                  href={withAttribution("/promotions", attribution)}
                   className="inline-flex small-caps text-bone/60 hover:text-bone"
                 >
                   All promotions →

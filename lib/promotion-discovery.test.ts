@@ -160,6 +160,8 @@ describe("promotion discovery — collection remains the hub", () => {
 
   it("homepage links to the full collection for discovery", () => {
     const source = readSource("components/mogen/promotion.tsx");
-    expect(source).toContain('href="/promotions"');
+    // Attribution-preserving link still targets the collection hub.
+    expect(source).toContain('"/promotions"');
+    expect(source).toContain("withAttribution");
   });
 });
