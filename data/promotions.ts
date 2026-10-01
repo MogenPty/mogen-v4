@@ -30,14 +30,63 @@ export interface PromotionCta {
 export interface PromotionPricePoint {
   /** e.g. "Setup fee", "Monthly subscription", "Additional pages" */
   label: string;
-  /** Regular (non-promotional) price display, e.g. "R1,200" */
+  /**
+   * Regular (non-promotional) price display, e.g. "R1,200".
+   * May already contain its billing period (e.g. "R399/month") — in that
+   * case `cadence` must be omitted so presentation never renders
+   * "R399/month/month". See `formatPromotionPrice()`.
+   */
   regular: string;
   /** Promotional price display, e.g. "R900". Omit when not discounted. */
   promotional?: string;
-  /** e.g. "once-off", "/month" */
+  /**
+   * e.g. "once-off", "/month", "per additional 5 pages".
+   * Must NOT duplicate a period already present in the price value.
+   */
   cadence?: string;
+  /**
+   * Marks the price to feature prominently (e.g. the homepage hero).
+   * At most one entry per promotion should set this — the first flagged
+   * entry wins. When none is flagged, surfaces fall back to the first
+   * discounted entry, then the first entry (see getFeaturedPricePoint).
+   */
+  featured?: boolean;
   /** Extra clarification shown under the price line. */
   note?: string;
+}
+
+/**
+ * Render a promotion price value with its cadence without ever
+ * duplicating the billing period (Task 7B).
+ *
+ * - value "R299/month" + cadence "/month" → "R299/month" (no duplication)
+ * - value "R299" + cadence "/month" → "R299/month"
+ * - value "R150/month" + cadence "per additional 5 pages" → full string
+ * - value "R900" + cadence "once-off" → "R900 once-off"
+ */
+export function formatPromotionPrice(value: string, cadence?: string): string {
+  const v = value.trim();
+  const c = cadence?.trim();
+  if (!c) return v;
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+  if (norm(v).endsWith(norm(c))) return v;
+  // Values already carrying a monthly period never take a bare monthly suffix.
+  if (/\/\s*month$/i.test(v) && /^\/\s*month$/i.test(c)) return v;
+  // Bare "/month"-style cadences attach directly; word cadences take a space.
+  if (/^\//.test(c)) return `${v}${c.startsWith("/ ") ? c.slice(1) : c}`;
+  return `${v} ${c}`;
+}
+
+/**
+ * Whether `cadence` still needs to be shown alongside `value`.
+ * Returns false when the value already carries its billing period, so
+ * callers rendering value + separate cadence element never produce
+ * "R299/month/month".
+ */
+export function needsCadenceSuffix(value: string, cadence?: string): boolean {
+  const c = cadence?.trim();
+  if (!c) return false;
+  return formatPromotionPrice(value, cadence) !== value.trim();
 }
 
 export interface PromotionStep {
@@ -118,7 +167,7 @@ export const PROMOTIONS: Promotion[] = [
       "A focused starter website for businesses that need a professional online presence without unnecessary complexity. Clean structure, mobile-first build, and the essentials to get found and contacted.",
     status: "active",
     endDate: "2026-10-30",
-    isFeatured: true,
+    isFeatured: false,
     sortOrder: 1,
     pricing: [
       {
@@ -158,7 +207,7 @@ export const PROMOTIONS: Promotion[] = [
       "Mogen Sprout is the managed way to get online: Mogen designs and builds your website, then keeps it hosted, maintained and supported for one monthly subscription. This launch promotion discounts the setup fee and the monthly subscription for the first 12 months for the first 100 eligible customers.",
     status: "scheduled",
     startDate: "2026-10-01",
-    isFeatured: false,
+    isFeatured: true,
     sortOrder: 2,
     pricing: [
       {
@@ -172,7 +221,7 @@ export const PROMOTIONS: Promotion[] = [
         label: "Monthly subscription",
         regular: "R399/month",
         promotional: "R299/month",
-        cadence: "/month",
+        featured: true,
         note: "Promotional rate applies for the first 12 months, then the normal R399/month applies.",
       },
       {
@@ -202,7 +251,7 @@ export const PROMOTIONS: Promotion[] = [
     included: [
       "Professionally designed starter website",
       "Hosting, maintenance and ongoing support",
-      "Mogen email services available",
+      "Up to 5 email accounts",
       "Launch-ready structure for SEO and growth",
     ],
     howItWorks: [
@@ -235,7 +284,7 @@ export const PROMOTIONS: Promotion[] = [
     faqs: [
       {
         q: "When does monthly billing start?",
-        a: "The monthly subscription normally begins when the website launches and may be pro-rated for the first month. If you want Mogen email services active from the beginning of development, monthly billing may begin earlier.",
+        a: "The monthly subscription normally begins when the website launches and may be pro-rated for the first month. If you want your email accounts active from the beginning of development, monthly billing may begin earlier.",
       },
       {
         q: "How long does the R299/month rate last?",
@@ -318,6 +367,22 @@ export function getPromotions(): Promotion[] {
 
 export function getPromotionBySlug(slug: string): Promotion | undefined {
   return PROMOTIONS.find((p) => p.slug === slug);
+}
+
+/**
+ * The single price point to feature prominently for a promotion
+ * (homepage hero, share cards): the entry flagged `featured`, falling
+ * back to the first discounted entry, then the first entry — the
+ * previous implicit behaviour, preserved for promotions without a flag.
+ */
+export function getFeaturedPricePoint(
+  promotion: Promotion,
+): PromotionPricePoint | undefined {
+  return (
+    promotion.pricing.find((p) => p.featured) ??
+    promotion.pricing.find((p) => p.promotional) ??
+    promotion.pricing[0]
+  );
 }
 
 export function getActivePromotions(today: string = todayISO()): Promotion[] {

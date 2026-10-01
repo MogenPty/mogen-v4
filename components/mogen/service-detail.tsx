@@ -18,6 +18,7 @@ import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
 import ServiceQuoteForm from "@/components/mogen/service-quote-form";
 import { getService, SERVICES } from "@/data/services";
+import { siteConfig } from "@/data/site";
 
 interface Props {
   serviceSlug: string;
@@ -53,7 +54,7 @@ export default function ServiceDetail({
       provider: {
         "@type": "Organization",
         name: "Mogen",
-        url: "https://www.mogen.co.za",
+        url: siteConfig.url,
       },
       areaServed: "Pretoria, Gauteng, South Africa",
       description: service.tagline,

@@ -9,7 +9,6 @@ import {
 } from "@/data/promotions";
 import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
 
-const BEFORE_SPROUT = "2026-09-28";
 const SPROUT_LIVE = "2026-10-15";
 const AFTER_SEED = "2026-11-01";
 
@@ -65,25 +64,27 @@ describe("promotion discovery — footer", () => {
 
 describe("promotion discovery — featured promotion", () => {
   it("homepage receives the explicitly featured promotion from central data", () => {
-    const featured = getFeaturedPromotion(BEFORE_SPROUT, false);
-    expect(featured?.slug).toBe("mogen-seed-r99");
+    const featured = getFeaturedPromotion(SPROUT_LIVE, false);
+    expect(featured?.slug).toBe("mogen-sprout-first-100");
     expect(featured?.isFeatured).toBe(true);
-    expect(getEffectiveStatus(featured!, BEFORE_SPROUT)).toBe("active");
+    expect(getEffectiveStatus(featured!, SPROUT_LIVE)).toBe("active");
   });
 
-  it("does not automatically feature Sprout merely because it becomes active", () => {
+  it("features Sprout explicitly once live (Seed is no longer featured)", () => {
     const sprout = getPromotionBySlug("mogen-sprout-first-100")!;
     expect(getEffectiveStatus(sprout, SPROUT_LIVE)).toBe("active");
-    expect(sprout.isFeatured).toBe(false);
-    // Seed is still the featured promotion while both are active.
+    expect(sprout.isFeatured).toBe(true);
+    // Sprout is the featured promotion while both are active.
     expect(getFeaturedPromotion(SPROUT_LIVE, false)?.slug).toBe(
-      "mogen-seed-r99",
+      "mogen-sprout-first-100",
     );
   });
 
   it("does not select an active promotion via sortOrder as a substitute for isFeatured", () => {
-    // After Seed expires, Sprout is active but unfeatured → no featured promotion.
-    expect(getFeaturedPromotion(AFTER_SEED, false)).toBeUndefined();
+    // Selection is driven by the explicit flag: whatever is returned
+    // without fallback must itself be flagged — sortOrder never substitutes.
+    const selected = getFeaturedPromotion(AFTER_SEED, false);
+    expect(selected?.isFeatured).toBe(true);
   });
 
   it("never features an expired promotion", () => {
@@ -110,7 +111,7 @@ describe("promotion discovery — homepage CTA and detail link", () => {
   });
 
   it("featured promotion CTA derives service + slug via the shared enquiry helper", () => {
-    const featured = getFeaturedPromotion(BEFORE_SPROUT, false)!;
+    const featured = getFeaturedPromotion(SPROUT_LIVE, false)!;
     const href = buildEnquiryHref({
       service: featured.relatedService,
       promotion: featured.slug,
@@ -143,7 +144,7 @@ describe("promotion discovery — homepage CTA and detail link", () => {
     for (const field of [
       "promo.name",
       "promo.shortDescription",
-      "promo.pricing",
+      "getFeaturedPricePoint",
       "promo.included",
     ]) {
       expect(source).toContain(field);

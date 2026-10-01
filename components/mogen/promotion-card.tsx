@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   getEffectiveStatus,
   getPromotionStatusLabel,
+  needsCadenceSuffix,
   type Promotion,
 } from "@/data/promotions";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
@@ -47,7 +48,7 @@ function PriceSummary({ promotion }: { promotion: Promotion }) {
             <>
               <span className="font-display text-3xl font-black text-catalyst">
                 {p.promotional}
-                {p.cadence && (
+                {needsCadenceSuffix(p.promotional, p.cadence) && (
                   <span className="text-base font-bold text-ink/50 group-hover:text-bone/50">
                     {" "}
                     {p.cadence}
@@ -62,7 +63,7 @@ function PriceSummary({ promotion }: { promotion: Promotion }) {
           ) : (
             <span className="font-display text-3xl font-black text-ink group-hover:text-bone">
               {p.regular}
-              {p.cadence && (
+              {needsCadenceSuffix(p.regular, p.cadence) && (
                 <span className="text-base font-bold text-ink/50 group-hover:text-bone/50">
                   {" "}
                   {p.cadence}

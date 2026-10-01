@@ -28,11 +28,17 @@
   --color-bone: hsl(var(--bone));
   --color-ink: hsl(var(--ink));
   --color-catalyst: hsl(var(--catalyst));
+  --color-catalyst-hover: hsl(var(--catalyst-hover));
   --color-store: hsl(var(--store));
   --color-seo: hsl(var(--seo));
   --color-obsidian: hsl(var(--obsidian));
   --color-steel: hsl(var(--steel));
   --color-volt: hsl(var(--volt));
+
+  /* Accent semantic tokens — driven by [data-accent] (green default, orange optional) */
+  --color-accent-hover: hsl(var(--accent-hover));
+  --color-accent-muted: hsl(var(--accent-muted));
+  --color-accent-border: hsl(var(--accent-border));
 
   /* Radius scale (derived from --radius) */
   --radius-sm: calc(var(--radius) - 4px);
@@ -59,19 +65,33 @@
   --secondary-foreground: 240 2% 10%;
   --muted: 60 6% 93%;
   --muted-foreground: 240 3% 35%;
-  --accent: 22 100% 50%;
+
+  /* Accent — one shared Mogen leafy green (Task 7C).
+   * --accent-green (#247F52) is the single base green in BOTH light and
+   * dark modes. There are deliberately no separate light/dark base greens:
+   * white text on #247F52 is ~5:1 contrast, so solid accent buttons keep
+   * white text regardless of the global theme or local container surface.
+   * --accent-muted/--accent-border remain surface-tuned tints (not base
+   * greens) so subtle fills stay visible on light vs dark surfaces.
+   * Orange remains available via [data-accent="orange"] below. */
+  --accent-green: 150 56% 32%;
+  --accent: var(--accent-green);
   --accent-foreground: 0 0% 100%;
+  --accent-hover: 150 60% 26%;
+  --accent-muted: 150 35% 92%;
+  --accent-border: 150 35% 62%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
   --border: 240 5% 86%;
   --input: 240 5% 86%;
-  --ring: 22 100% 50%;
+  --ring: var(--accent-green);
   --radius: 0.25rem;
-  
+
   /* Mogen brand tokens */
   --bone: 60 14% 97%;
   --ink: 240 2% 10%;
-  --catalyst: 22 100% 50%;
+  --catalyst: var(--accent-green);
+  --catalyst-hover: 150 60% 26%;
   --store: 0 0% 44%;
   --seo: 0 0% 88%;
   --volt: 75, 100%, 50%;
@@ -82,6 +102,18 @@
   --font-body: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Archivo', ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Orange accent — retained as the selectable alternative to green. */
+:root[data-accent="orange"] {
+  --accent: 22 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --accent-hover: 22 100% 42%;
+  --accent-muted: 22 100% 94%;
+  --accent-border: 22 85% 66%;
+  --ring: 22 100% 50%;
+  --catalyst: 22 100% 50%;
+  --catalyst-hover: 22 100% 42%;
 }
 
 .dark {
@@ -97,21 +129,59 @@
     --secondary-foreground: 60 8% 94%;
     --muted: 240 5% 16%;
     --muted-foreground: 60 5% 65%;
-    --accent: 73 100% 50%;
-    --accent-foreground: 240 5% 9%;
+    /* Dark mode uses the SAME base green (#247F52) — no separate
+    * dark-mode green. Solid accent buttons keep white text in both modes
+    * (~5:1 contrast), so hover/focus/active never depend on the global
+    * theme, only on the local container surface (see .surface-light /
+    * .surface-dark and MagneticButton). */
+    --accent: var(--accent-green);
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 150 60% 26%;
+    --accent-muted: 150 30% 16%;
+    --accent-border: 150 35% 38%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 60 8% 94%;
     --border: 240 5% 20%;
     --input: 240 5% 20%;
-    --ring: 73 100% 50%;
+    --ring: var(--accent-green);
 
-    /* Mogen brand tokens — dark: bone↔ink invert, catalyst → volt green */
+    /* Mogen brand tokens — dark: bone↔ink invert, catalyst follows accent */
     --bone: 240 5% 11%;
     --ink: 60 8% 94%;
-    --catalyst: 22 100% 50%;
+    --catalyst: var(--accent-green);
+    --catalyst-hover: 150 60% 26%;
     --store: 0 0% 70%;
     --seo: 240 5% 22%;
   }
+
+/* Dark-mode orange — brightened so the alternative accent stays visible. */
+.dark[data-accent="orange"] {
+  --accent: 24 100% 60%;
+  --accent-foreground: 240 5% 9%;
+  --accent-hover: 24 100% 55%;
+  --accent-muted: 22 60% 18%;
+  --accent-border: 22 70% 42%;
+  --ring: 24 100% 60%;
+  --catalyst: 24 100% 60%;
+  --catalyst-hover: 24 100% 55%;
+}
+
+/* Explicit surface contexts (Task 7B §6).
+ * A container pinned to .surface-light keeps light-surface tokens even
+ * when the global theme is dark (and vice versa), so buttons using
+ * surface tokens (bg-ink/text-bone/border-ink) hover against the LOCAL
+ * container instead of the global page background. */
+.surface-light {
+  color-scheme: light;
+  --bone: 60 14% 97%;
+  --ink: 240 2% 10%;
+}
+
+.surface-dark {
+  color-scheme: dark;
+  --bone: 240 5% 11%;
+  --ink: 60 8% 94%;
+}
 
 @layer base {
   * {

@@ -2,14 +2,31 @@
  * Central site configuration for Mogen v4.
  * All homepage identity, SEO, and branding values flow from here.
  * Do not invent business information — only values verified from repo or legacy site.
+ *
+ * The public site URL is environment-driven (Task 7B): the same build can
+ * be deployed to another domain without modifying source code.
+ * - Production: NEXT_PUBLIC_SITE_URL=https://www.mogen.co.za (or unset → default below)
+ * - Development/preview: NEXT_PUBLIC_SITE_URL=https://mogen-v4.vercel.app
  */
+
+function resolveSiteUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
+  if (fromEnv) return fromEnv;
+  return "https://www.mogen.co.za";
+}
+
+export function getSiteUrl(): string {
+  return resolveSiteUrl();
+}
 
 export const siteConfig = {
   name: "Mogen",
   tradingName: "Mogen Pty Ltd",
   legalName: "Motsoane Global Enterprise (Pty) Ltd",
-  // Production canonical — Vercel deployment must NEVER become canonical
-  url: "https://www.mogen.co.za",
+  // Canonical public URL — resolved from NEXT_PUBLIC_SITE_URL when set,
+  // otherwise the production default. Never hardcode another host elsewhere;
+  // always derive canonical/OG/sitemap/robots/JSON-LD URLs from siteConfig.url.
+  url: resolveSiteUrl(),
   // Staging URL (for reference only — never used as canonical)
   stagingUrl: "https://mogen-v4.vercel.app",
   title: "Mogen | Digital Services for South African Businesses",
