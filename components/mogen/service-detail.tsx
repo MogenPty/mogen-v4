@@ -199,7 +199,6 @@ export default function ServiceDetail({
               </div>
               <ServicePricing
                 pricing={service.pricing}
-                serviceSlug={service.slug}
                 attribution={attribution}
               />
             </div>

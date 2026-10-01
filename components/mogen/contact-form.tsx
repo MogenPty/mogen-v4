@@ -3,6 +3,8 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Script from "next/script";
 import { type FormEvent, useRef, useState } from "react";
+import { getPackage } from "@/data/packages";
+import { SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
@@ -42,6 +44,12 @@ interface ContactFormProps {
    */
   initialService?: string;
   /**
+   * Resolved package identifier from `?package=` (or inferred from
+   * `?promotion=`). Submitted with the enquiry as resolved context —
+   * the visitor never types it.
+   */
+  initialPackage?: string;
+  /**
    * Editable starter message generated from `?promotion=` data.
    * Used only as the initial value — visitor edits are never
    * overwritten.
@@ -57,6 +65,11 @@ interface ContactFormProps {
    */
   initialServiceNotice?: string;
   /**
+   * Non-blocking explanation when the promotion adjusted the package
+   * (e.g. contradictory package + promotion in the URL).
+   */
+  initialPackageNotice?: string;
+  /**
    * Attribution carried through the enquiry journey. Rendered as
    * hidden fields and sent with the submission for later use — never
    * injected into the visitor-facing message.
@@ -66,15 +79,18 @@ interface ContactFormProps {
 
 export default function ContactForm({
   initialService,
+  initialPackage,
   initialMessage,
   initialPromotionName,
   initialServiceNotice,
+  initialPackageNotice,
   initialAttribution,
 }: Readonly<ContactFormProps> = {}) {
   const resolvedService =
     initialService && CONTACT_SERVICES.includes(initialService)
       ? initialService
       : "";
+  const resolvedPackage = getPackage(initialPackage)?.id ?? "";
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -82,6 +98,9 @@ export default function ContactForm({
     businessName: "",
     service: resolvedService,
     otherServiceDetail: "",
+    // Resolved enquiry context (package identifier) — submitted as-is,
+    // never edited by the visitor.
+    package: resolvedPackage,
     message: initialMessage ?? "",
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
@@ -266,15 +285,30 @@ export default function ContactForm({
           id={"service"}
           name="service"
           value={form.service}
-          onChange={(e) =>
-            setForm((prev) => ({
-              ...prev,
-              service: e.target.value,
-              // Drop stale hidden data when leaving "Other".
-              otherServiceDetail:
-                e.target.value === "Other" ? prev.otherServiceDetail : "",
-            }))
-          }
+          onChange={(e) => {
+            const nextService = e.target.value;
+            setForm((prev) => {
+              // Keep the resolved package only when the newly selected
+              // service owns it; otherwise clear it so the panel and the
+              // submitted context never disagree.
+              const pkg = getPackage(prev.package);
+              const serviceSlug = SERVICES.find(
+                (s) => s.name === nextService,
+              )?.slug;
+              const keepPackage =
+                pkg !== undefined &&
+                serviceSlug !== undefined &&
+                pkg.serviceSlug === serviceSlug;
+              return {
+                ...prev,
+                service: nextService,
+                // Drop stale hidden data when leaving "Other".
+                otherServiceDetail:
+                  nextService === "Other" ? prev.otherServiceDetail : "",
+                package: keepPackage ? prev.package : "",
+              };
+            });
+          }}
           required
           aria-required="true"
           className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark"
@@ -288,14 +322,27 @@ export default function ContactForm({
             </option>
           ))}
         </select>
-        {initialPromotionName && (
+        {(initialPromotionName || form.package) && (
           <div className="mt-3 border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/70">
-            <p>
-              Promotion:{" "}
-              <span className="font-semibold text-ink">
-                {initialPromotionName}
-              </span>
-            </p>
+            {form.package && (
+              <p>
+                Package:{" "}
+                <span className="font-semibold text-ink">
+                  {getPackage(form.package)?.name ?? form.package}
+                </span>
+              </p>
+            )}
+            {initialPromotionName && (
+              <p>
+                Promotion:{" "}
+                <span className="font-semibold text-ink">
+                  {initialPromotionName}
+                </span>
+              </p>
+            )}
+            {initialPackageNotice && (
+              <p className="mt-1">{initialPackageNotice}</p>
+            )}
             {initialServiceNotice && (
               <p className="mt-1">{initialServiceNotice}</p>
             )}
@@ -362,6 +409,9 @@ export default function ContactForm({
       </div>
       {/* Attribution carried through the enquiry (tracking metadata only) */}
       <div className="hidden" aria-hidden="true">
+        {form.package && (
+          <input name="package" type="hidden" value={form.package} readOnly />
+        )}
         {Object.entries(attribution).map(([key, value]) => (
           <input
             key={key}

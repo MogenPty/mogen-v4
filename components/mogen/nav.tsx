@@ -11,9 +11,9 @@ import ThemeToggle from "./theme-toggle";
 
 const SERVICES_SUB = [
   { label: "Web Development", href: "/services/web-development" },
-  { label: "Business Documentation", href: "/services/business-documentation" },
-  { label: "Digital Marketing", href: "/services/digital-marketing" },
   { label: "SEO", href: "/services/seo" },
+  { label: "Digital Marketing", href: "/services/digital-marketing" },
+  { label: "Business Documentation", href: "/services/business-documentation" },
 ];
 
 const NAV = [

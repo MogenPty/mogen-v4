@@ -18,13 +18,14 @@ interface Props {
 }
 
 /**
- * Promotion enquiry CTA (Task 03).
+ * Promotion enquiry CTA (Task 03, minimal-context Task 7A).
  *
- * Routes to `/contact` with both the promotion context and its
- * associated service context, derived from the central promotion data
- * (`promotion.slug` / `promotion.relatedService`) via the shared
- * Task 01 `buildEnquiryHref` helper — never hardcoded per promotion
- * and never carrying business data beyond the identifiers.
+ * Routes to `/contact` with the promotion identifier only, derived from
+ * the central promotion data (`promotion.slug`) via the shared
+ * `buildEnquiryHref` helper — never hardcoded per promotion and never
+ * carrying business data beyond the identifier. The Contact layer
+ * resolves the complete context (promotion → package → service)
+ * centrally, so the service slug is not repeated here.
  */
 export default function PromotionEnquiryCta({
   promotion,
@@ -33,7 +34,6 @@ export default function PromotionEnquiryCta({
   className,
 }: Readonly<Props>) {
   const href = buildEnquiryHref({
-    service: promotion.relatedService,
     promotion: promotion.slug,
     attribution,
   });

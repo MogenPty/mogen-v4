@@ -105,15 +105,15 @@ describe("main campaign journey (promotion CTA)", () => {
     const sprout = getPromotionBySlug(SPROUT_SLUG)!;
     // Visitor lands on the campaign URL; the page parses attribution.
     const attribution = parseEnquiryAttribution(campaignQuery);
-    // Promotion CTA click → Contact.
+    // Promotion CTA click → Contact (promotion slug only — the Contact
+    // layer resolves package + service centrally).
     const href = buildEnquiryHref({
-      service: sprout.relatedService,
       promotion: sprout.slug,
       attribution,
     });
     const params = paramsOf(href);
     expect(href.startsWith("/contact?")).toBe(true);
-    expect(params.get("service")).toBe("web-development");
+    expect(params.has("service")).toBe(false);
     expect(params.get("promotion")).toBe(SPROUT_SLUG);
     expect(params.get("utm_source")).toBe("whatsapp");
     expect(params.get("utm_medium")).toBe("organic_social");
@@ -124,7 +124,6 @@ describe("main campaign journey (promotion CTA)", () => {
   it("resolves the Contact URL to Web Development + Sprout + message", () => {
     const sprout = getPromotionBySlug(SPROUT_SLUG)!;
     const href = buildEnquiryHref({
-      service: sprout.relatedService,
       promotion: sprout.slug,
       attribution: parseEnquiryAttribution(campaignQuery),
     });
@@ -132,6 +131,8 @@ describe("main campaign journey (promotion CTA)", () => {
       parseEnquiryContext(paramsOf(href)),
     );
     expect(details.serviceName).toBe("Web Development");
+    expect(details.package?.id).toBe("sprout");
+    expect(details.packageName).toBe("Sprout");
     expect(details.promotion?.name).toBe("Mogen Sprout Website");
     expect(details.message).toContain("Mogen Sprout Website");
     expect(details.attribution).toEqual(campaignQuery);

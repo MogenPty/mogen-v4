@@ -115,9 +115,11 @@ export default async function ContactPage({
       <Contact
         numbering={8}
         initialService={details.serviceName}
+        initialPackage={details.package?.id}
         initialMessage={details.message}
         initialPromotionName={details.promotion?.name}
         initialServiceNotice={details.serviceNotice}
+        initialPackageNotice={details.packageNotice}
         initialAttribution={details.attribution}
       />
     </>

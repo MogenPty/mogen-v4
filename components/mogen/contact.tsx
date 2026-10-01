@@ -13,14 +13,18 @@ import Nav from "@/components/mogen/nav";
 
 interface Props {
   numbering?: number;
-  /** Preselected service display name from `?service=` (default, editable). */
+  /** Preselected service display name from resolved enquiry context (default, editable). */
   initialService?: string;
+  /** Resolved package identifier (`package=` or inferred from `promotion=`). */
+  initialPackage?: string;
   /** Editable starter message from `?promotion=` (absent without promotion). */
   initialMessage?: string;
   /** Display name of the recognised promotion, if any. */
   initialPromotionName?: string;
-  /** Non-blocking explanation when the promotion adjusted the service. */
+  /** Non-blocking explanation when the context adjusted the service. */
   initialServiceNotice?: string;
+  /** Non-blocking explanation when the promotion adjusted the package. */
+  initialPackageNotice?: string;
   /** Attribution carried through the enquiry journey (never shown in copy). */
   initialAttribution?: EnquiryAttribution;
 }
@@ -28,9 +32,11 @@ interface Props {
 export default function Contact({
   numbering = 1,
   initialService,
+  initialPackage,
   initialMessage,
   initialPromotionName,
   initialServiceNotice,
+  initialPackageNotice,
   initialAttribution,
 }: Readonly<Props>) {
   return (
@@ -108,9 +114,11 @@ export default function Contact({
               <div className="bg-bone p-8 lg:p-12">
                 <ContactForm
                   initialService={initialService}
+                  initialPackage={initialPackage}
                   initialMessage={initialMessage}
                   initialPromotionName={initialPromotionName}
                   initialServiceNotice={initialServiceNotice}
+                  initialPackageNotice={initialPackageNotice}
                   initialAttribution={initialAttribution}
                 />
               </div>
