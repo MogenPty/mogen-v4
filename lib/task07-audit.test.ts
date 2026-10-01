@@ -38,7 +38,13 @@ describe("task 07 — public branding and service references", () => {
   });
 
   it("service detail title does not reference an obsolete brand service", () => {
-    const source = readSource("components/mogen/service-detail.tsx");
+    // Title moved to server metadata in Task 8 (`app/services/[slug]`
+    // generateMetadata); the brand descriptor lives in the site config
+    // consumed by the layout default title.
+    const source =
+      readSource("components/mogen/service-detail.tsx") +
+      readSource("app/services/[slug]/page.tsx") +
+      readSource("data/site.ts");
     expect(source).not.toContain("Brand & SEO Agency");
     expect(source).toContain("Digital Services for South African Businesses");
   });

@@ -1,7 +1,16 @@
 import { ArrowRight, Code2, PenTool, Search, TrendingUp } from "lucide-react";
+import type { Metadata } from "next";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  path: "/process",
+  title: "Process",
+  description:
+    "How Mogen works — discover, architect, build and grow. A deliberate process that takes local businesses from invisible to in-demand.",
+});
 
 const PHASES = [
   {

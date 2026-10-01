@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import PageShell from "@/components/mogen/page-shell";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  path: "/terms-of-service",
+  title: "Terms of Service",
+  description:
+    "The terms governing Mogen's web development, documentation, SEO and marketing services under South African law.",
+});
 
 const SECTIONS = [
   {

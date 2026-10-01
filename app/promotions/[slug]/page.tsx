@@ -42,14 +42,32 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const promo = getPromotionBySlug(slug);
-  if (!promo) return { title: "Promotion not found — Mogen" };
+  if (!promo) return { title: "Promotion not found" };
+  const canonical = `${siteConfig.url}/promotions/${promo.slug}`;
   return {
-    title: `${promo.name} — Mogen`,
+    title: promo.name,
     description: promo.shortDescription,
+    alternates: { canonical },
     openGraph: {
-      title: `${promo.name} — Mogen`,
+      type: "website",
+      url: canonical,
+      siteName: siteConfig.name,
+      title: promo.name,
       description: promo.shortDescription,
-      url: `${siteConfig.url}/promotions/${promo.slug}`,
+      images: [
+        {
+          url: siteConfig.ogImage,
+          width: siteConfig.ogImageWidth,
+          height: siteConfig.ogImageHeight,
+          alt: siteConfig.ogImageAlt,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: promo.name,
+      description: promo.shortDescription,
+      images: [siteConfig.ogImage],
     },
   };
 }
@@ -73,8 +91,62 @@ function formatDate(iso: string): string {
   return `${d} ${months[m - 1]} ${y}`;
 }
 
-function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {
-  const status = getEffectiveStatus(promo);
+function PromotionJsonLd({ promo }: Readonly<{ promo: Promotion }>) {
+  const organizationId = `${siteConfig.url}/#organization`;
+  const websiteId = `${siteConfig.url}/#website`;
+  const pageUrl = `${siteConfig.url}/promotions/${promo.slug}`;
+  // WebPage + BreadcrumbList only — no Offer/rating/price schema. Display
+  // prices carry cadence notes (e.g. "R299/month") that do not map cleanly
+  // to schema.org numeric prices, so no fabricated Offer is emitted.
+  const graph = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${pageUrl}#webpage`,
+        url: pageUrl,
+        name: `${promo.name} | ${siteConfig.name}`,
+        description: promo.shortDescription,
+        isPartOf: { "@id": websiteId },
+        about: { "@id": organizationId },
+        publisher: { "@id": organizationId },
+        inLanguage: siteConfig.lang,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: `${siteConfig.url}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Promotions",
+            item: `${siteConfig.url}/promotions`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: promo.name,
+            item: pageUrl,
+          },
+        ],
+      },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: No workaround for JSON-LD injection
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+    />
+  );
+}
+
+function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {  const status = getEffectiveStatus(promo);
   if (status === "expired") {
     return (
       <div className="border-y-2 border-catalyst bg-ink px-6 py-4 text-center">
@@ -180,6 +252,7 @@ export default async function PromotionDetailPage({
 
   return (
     <div className="bg-bone">
+      <PromotionJsonLd promo={promo} />
       <Nav />
       <main>
         {/* HERO */}

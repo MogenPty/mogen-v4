@@ -212,20 +212,28 @@ describe("task 7B — environment-driven public URL", () => {
       "app/robots.ts",
       "app/sitemap.ts",
       "app/layout.tsx",
-      "app/page.tsx",
+      "app/services/[slug]/page.tsx",
+      "app/blog/[slug]/page.tsx",
+      "app/promotions/[slug]/page.tsx",
       "components/mogen/json-ld.tsx",
-      "components/mogen/service-detail.tsx",
       "lib/campaign/campaign.ts",
     ]) {
       expect(readSource(file)).toContain("siteConfig.url");
     }
+    // Homepage and shared pages derive URLs via the lib/seo.ts helper,
+    // which itself reads the environment-driven site URL at call time.
+    expect(readSource("lib/seo.ts")).toContain("getSiteUrl");
+    expect(readSource("app/page.tsx")).toContain("pageMetadata");
     // No reusable SEO infrastructure hardcodes the production host.
     for (const file of [
       "app/robots.ts",
       "app/sitemap.ts",
       "app/layout.tsx",
+      "lib/seo.ts",
+      "app/services/[slug]/page.tsx",
+      "app/blog/[slug]/page.tsx",
+      "app/promotions/[slug]/page.tsx",
       "components/mogen/json-ld.tsx",
-      "components/mogen/service-detail.tsx",
       "lib/campaign/campaign.ts",
     ]) {
       expect(readSource(file)).not.toContain("https://www.mogen.co.za");

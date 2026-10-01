@@ -25,8 +25,8 @@ const PROJECTS = [
   },
   {
     name: "Lighters of the World",
-    category: "Mogen Subsidiary Project",
-    desc: "Website demonstration developed within the Mogen ecosystem.",
+    category: "Demonstration · Community Project",
+    desc: "Demonstration website illustrating donation and documentation structure.",
     img: "https://media.base44.com/images/public/6a9593f32823a9ba2917bec0/545dd9c3f_generated_e75836b5.jpg",
     image: "/images/545dd9c3f_generated_e75836b5.jpg",
     tags: ["Web Development", "Donations", "Business Documentation"],

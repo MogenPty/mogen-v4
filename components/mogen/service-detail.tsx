@@ -2,7 +2,6 @@
 
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import {
   buildEnquiryHref,
@@ -18,7 +17,6 @@ import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
 import ServiceQuoteForm from "@/components/mogen/service-quote-form";
 import { getService, SERVICES } from "@/data/services";
-import { siteConfig } from "@/data/site";
 
 interface Props {
   serviceSlug: string;
@@ -37,33 +35,6 @@ export default function ServiceDetail({
   attribution,
 }: Readonly<Props>) {
   const service = getService(serviceSlug);
-
-  useEffect(() => {
-    if (!service) return;
-    document.title = `${service.name} | Mogen — Digital Services for South African Businesses`;
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", service.tagline);
-
-    const ld = document.createElement("script");
-    ld.type = "application/ld+json";
-    ld.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Service",
-      name: service.name,
-      serviceType: service.name,
-      provider: {
-        "@type": "Organization",
-        name: "Mogen",
-        url: siteConfig.url,
-      },
-      areaServed: "Pretoria, Gauteng, South Africa",
-      description: service.tagline,
-    });
-    document.head.appendChild(ld);
-    return () => {
-      ld.remove();
-    };
-  }, [service]);
 
   if (!service) {
     return (

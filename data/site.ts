@@ -9,8 +9,16 @@
  * - Development/preview: NEXT_PUBLIC_SITE_URL=https://mogen-v4.vercel.app
  */
 
+/** Strip trailing slashes with a single linear scan (no regex backtracking). */
+function stripTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === "/") end--;
+  return value.slice(0, end);
+}
+
 function resolveSiteUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
+  const trimmed = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const fromEnv = trimmed ? stripTrailingSlashes(trimmed) : undefined;
   if (fromEnv) return fromEnv;
   return "https://www.mogen.co.za";
 }
@@ -27,8 +35,6 @@ export const siteConfig = {
   // otherwise the production default. Never hardcode another host elsewhere;
   // always derive canonical/OG/sitemap/robots/JSON-LD URLs from siteConfig.url.
   url: resolveSiteUrl(),
-  // Staging URL (for reference only — never used as canonical)
-  stagingUrl: "https://mogen-v4.vercel.app",
   title: "Mogen | Digital Services for South African Businesses",
   description:
     "Mogen helps South African businesses grow with websites, SEO, digital marketing and business documentation. Based in Maboloka, serving Pretoria and Soshanguve.",
