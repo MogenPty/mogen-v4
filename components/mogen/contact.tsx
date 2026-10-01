@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, type LucideProps, Mail, MapPin } from "lucide-react";
+import { Clock, type LucideProps, Mail, MapPin, Phone } from "lucide-react";
 import type React from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import { formatNumber } from "@/lib/utils";
@@ -68,6 +68,18 @@ export default function Contact({
                     label="Email"
                     value={siteConfig.email}
                     href={`mailto:${siteConfig.email}`}
+                  />
+                  <Detail
+                    icon={Phone}
+                    label="Phone"
+                    value={siteConfig.telephoneDisplay}
+                    href={`tel:${siteConfig.telephone}`}
+                  />
+                  <Detail
+                    icon={Phone}
+                    label="Alternative phone"
+                    value={siteConfig.alternativeTelephoneDisplay}
+                    href={`tel:${siteConfig.alternativeTelephone}`}
                   />
                   <Detail
                     icon={MapPin}

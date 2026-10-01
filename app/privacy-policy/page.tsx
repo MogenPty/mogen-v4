@@ -28,7 +28,7 @@ const SECTIONS = [
   },
   {
     h: "7. Your rights",
-    p: "Under POPIA you have the right to access, correct or delete your personal information, and to object to certain processing. To exercise these rights, contact us at hello@mogen.co.za.",
+    p: "Under POPIA you have the right to access, correct or delete your personal information, and to object to certain processing. To exercise these rights, contact us at info@mogen.co.za.",
   },
   {
     h: "8. Cookies",
@@ -40,7 +40,7 @@ const SECTIONS = [
   },
   {
     h: "10. Contact us",
-    p: "If you have any questions about this Privacy Policy or how we handle your data, email hello@mogen.co.za.",
+    p: "If you have any questions about this Privacy Policy or how we handle your data, email info@mogen.co.za.",
   },
 ];
 

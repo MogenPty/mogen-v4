@@ -13,15 +13,6 @@ import { useRouter } from "next/navigation";
 import { type SubmitEvent, useState } from "react";
 import { SERVICES } from "@/data/services";
 import { formatNumber } from "@/lib/utils";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 
@@ -41,7 +32,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
     email: "",
     phone: "",
     business_name: "",
-    service_interest: "Full Growth Package",
+    service_interest: "web-development",
   });
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
@@ -54,7 +45,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
     setScanning(true);
     setStep(1);
     setTimeout(() => {
-      const s = Math.floor(38 + Math.random() * 22); //TODO: 38–59 — room to grow
+      const s = Math.floor(38 + Math.random() * 22);
       setScore(s);
       setScanning(false);
       setStep(2);
@@ -333,22 +324,6 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                         </option>
                       ))}
                     </select>
-                    <Select>
-                      <SelectTrigger className="mt-2 w-full border border-white/30 bg-white/5 px-4 py-3 text-white focus:outline-none dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 dark:text-secondary-foreground">
-                        <SelectValue placeholder="Service interest" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Service Interest</SelectLabel>
-                          <SelectItem value="1">Test</SelectItem>
-                          {SERVICES.map((s) => (
-                            <SelectItem key={s.name} value={s.slug}>
-                              {s.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
                   </div>
                   {error && <p className="text-sm text-catalyst">{error}</p>}
                   <MagneticButton
@@ -418,13 +393,15 @@ function Field({
   onChange,
   type = "text",
 }: Readonly<FieldProps>) {
+  const id = `audit-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div>
-      <label htmlFor={value} className="small-caps text-white/70 dark:text-secondary-foreground/70">
+      <label htmlFor={id} className="small-caps text-white/70 dark:text-secondary-foreground/70">
         {label}
       </label>
       <input
-        name={value}
+        id={id}
+        name={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}

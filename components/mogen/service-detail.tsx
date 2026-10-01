@@ -39,7 +39,7 @@ export default function ServiceDetail({
 
   useEffect(() => {
     if (!service) return;
-    document.title = `${service.name} | Mogen — Pretoria Web, Brand & SEO Agency`;
+    document.title = `${service.name} | Mogen — Digital Services for South African Businesses`;
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", service.tagline);
 

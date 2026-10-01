@@ -40,7 +40,7 @@ export default function ServiceQuoteForm({ serviceName }: Readonly<Props>) {
     } catch {
       setSaving(false);
       setError(
-        "Something went wrong. Please try again or email hello@mogen.co.za.",
+        "Something went wrong. Please try again or email info@mogen.co.za.",
       );
     }
   };
