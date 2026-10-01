@@ -110,7 +110,7 @@ export const SERVICES: Service[] = [
           "R1,200 once-off setup fee",
           "Professionally designed starter website",
           "Hosting, maintenance and ongoing support",
-          "Mogen email services available",
+          "Up to 5 email accounts",
           "Launch-ready structure for SEO and growth",
         ],
       },
@@ -128,7 +128,7 @@ export const SERVICES: Service[] = [
           "Priority support",
           "Dedicated project lead",
           "Hosting, maintenance and ongoing support",
-          "Mogen email services available",
+          "Up to 5 email accounts",
         ],
       },
     ],
@@ -136,7 +136,7 @@ export const SERVICES: Service[] = [
       {
         name: "Extra page",
         price: "R650",
-        desc: "Additional bespoke page beyond your package.",
+        desc: "Additional bespoke page beyond your package. Once-off cost — not a monthly charge.",
       },
       {
         name: "Blog setup",

@@ -15,6 +15,7 @@ import {
   getEffectiveStatus,
   getPromotionBySlug,
   getPromotions,
+  needsCadenceSuffix,
   type Promotion,
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
@@ -135,7 +136,10 @@ function PricingSection({
                     {p.regular}
                   </span>
                 )}
-                {p.cadence && (
+                {needsCadenceSuffix(
+                  p.promotional ?? p.regular,
+                  p.cadence,
+                ) && (
                   <span className="text-sm font-semibold text-ink/50">
                     {p.cadence}
                   </span>

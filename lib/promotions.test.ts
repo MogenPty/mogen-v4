@@ -68,14 +68,16 @@ describe("getEffectiveStatus", () => {
 });
 
 describe("promotion data", () => {
-  it("exposes Seed as the effectively-active featured promotion before Sprout starts", () => {
-    const featured = getFeaturedPromotion(BEFORE_SPROUT, false);
-    expect(featured?.slug).toBe("mogen-seed-r99");
+  it("exposes Sprout as the effectively-active featured promotion once live", () => {
+    // Seed is no longer featured; before Sprout starts nothing qualifies.
+    expect(getFeaturedPromotion(BEFORE_SPROUT, false)).toBeUndefined();
+    const featured = getFeaturedPromotion(SPROUT_LIVE, false);
+    expect(featured?.slug).toBe("mogen-sprout-first-100");
   });
 
-  it("keeps Sprout unfeatured with a 100-customer cap and 1 Oct start", () => {
+  it("keeps Sprout explicitly featured with a 100-customer cap and 1 Oct start", () => {
     const sprout = getPromotionBySlug("mogen-sprout-first-100");
-    expect(sprout?.isFeatured).toBe(false);
+    expect(sprout?.isFeatured).toBe(true);
     expect(sprout?.startDate).toBe("2026-10-01");
     expect(sprout?.maximumCustomers).toBe(100);
   });
@@ -103,8 +105,10 @@ describe("promotion data", () => {
 });
 
 describe("getFeaturedPromotion fallback", () => {
-  it("returns undefined after Seed ends when Sprout is unfeatured and fallback is off", () => {
-    expect(getFeaturedPromotion(AFTER_SEED, false)).toBeUndefined();
+  it("returns the explicitly featured Sprout after Seed ends, even with fallback off", () => {
+    expect(getFeaturedPromotion(AFTER_SEED, false)?.slug).toBe(
+      "mogen-sprout-first-100",
+    );
   });
 
   it("returns Sprout after Seed ends when fallback is explicitly enabled", () => {

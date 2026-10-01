@@ -1,6 +1,8 @@
 import Link from "next/link";
 import {
+  getFeaturedPricePoint,
   getFeaturedPromotion,
+  needsCadenceSuffix,
   type Promotion as PromotionData,
 } from "@/data/promotions";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
@@ -36,7 +38,7 @@ export default function Promotion({
   const promo = promotionProp ?? getFeaturedPromotion();
   if (!promo) return null;
 
-  const headline = promo.pricing.find((p) => p.promotional) ?? promo.pricing[0];
+  const headline = getFeaturedPricePoint(promo);
 
   return (
     <BlueprintGrid id={"promotion"} className="bg-bone py-24 lg:py-32">
@@ -59,6 +61,15 @@ export default function Promotion({
                 <div className="mt-8 flex items-baseline gap-4">
                   <span className="font-display text-5xl font-black text-catalyst lg:text-6xl">
                     {headline.promotional ?? headline.regular}
+                    {needsCadenceSuffix(
+                      headline.promotional ?? headline.regular,
+                      headline.cadence,
+                    ) && (
+                      <span className="text-2xl font-bold text-ink/50 lg:text-3xl">
+                        {" "}
+                        {headline.cadence}
+                      </span>
+                    )}
                   </span>
                   {headline.promotional && (
                     <span className="text-xl text-ink/40 line-through">

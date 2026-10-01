@@ -116,7 +116,8 @@ describe("promotion CTA enquiry routing (Task 03)", () => {
   });
 
   it("routes the featured promotion CTA with the featured slug only", () => {
-    const featured = getFeaturedPromotion(BEFORE_SPROUT, false)!;
+    // Sprout is the explicitly featured promotion once live.
+    const featured = getFeaturedPromotion("2026-10-15", false)!;
     expect(featured).toBeDefined();
     const params = new URLSearchParams(
       promotionCtaHref(featured.slug).split("?")[1],

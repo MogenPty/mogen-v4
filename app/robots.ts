@@ -3,9 +3,10 @@ import { siteConfig } from "@/data/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    // Canonical host is always production; Vercel is never canonical (see layout canonical)
+    // Canonical host comes from configuration (siteConfig.url), so the same
+    // build can deploy to another domain without source changes.
     // We intentionally keep index:true for now to allow testing search metadata on Vercel.
-    // The canonical signal prevents Vercel from competing with www.mogen.co.za as a duplicate.
+    // The canonical signal prevents non-production hosts competing as duplicates.
     // If staging isolation becomes stricter, consider environment-aware noindex:
     //   index: process.env.VERCEL_ENV === "production" && !process.env.VERCEL_URL?.includes("vercel.app")
     rules: {
