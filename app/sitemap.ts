@@ -20,7 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/resources",
     "/partners",
     "/success-stories",
-    "/blog",
+    "/articles",
     "/promotions",
     "/contact",
     "/privacy-policy",
@@ -34,8 +34,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: getRoutePriority(route),
   }));
 
-  const blogEntries: MetadataRoute.Sitemap = POSTS.map((post) => ({
-    url: `${base}/blog/${post.slug}`,
+  const articleEntries: MetadataRoute.Sitemap = POSTS.map((post) => ({
+    url: `${base}/articles/${post.slug}`,
     lastModified: new Date(post.date),
     changeFrequency: "monthly" as const,
     priority: 0.6,
@@ -48,7 +48,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticEntries, ...blogEntries, ...promotionEntries];
+  return [...staticEntries, ...articleEntries, ...promotionEntries];
 }
 
 function getRoutePriority(route: string) {

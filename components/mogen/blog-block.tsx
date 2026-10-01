@@ -28,7 +28,7 @@ export default function BlogBlock({ numbering = 1 }: Readonly<Props>) {
   return (
     <PageShell
       index={`// ${formatNumber(numbering)} — Insights`}
-      label="Blog & Insights"
+      label="Articles & Insights"
       title={
         <>
           Growth, <span className="text-catalyst">decoded.</span> Posts:{" "}
@@ -41,7 +41,7 @@ export default function BlogBlock({ numbering = 1 }: Readonly<Props>) {
       <BlueprintGrid id={"featured_post"} className="bg-bone pb-16">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <Link
-            href={`/blog/${featured.slug}`}
+            href={`/articles/${featured.slug}`}
             className="group grid grid-cols-1 gap-8 border border-ink/10 bg-bone p-6 transition-colors hover:bg-ink hover:text-bone lg:grid-cols-2 lg:p-10"
           >
             <div className="flex flex-col justify-between">
@@ -100,7 +100,7 @@ export default function BlogBlock({ numbering = 1 }: Readonly<Props>) {
             {list.map((p) => (
               <Link
                 key={p.slug}
-                href={`/blog/${p.slug}`}
+                href={`/articles/${p.slug}`}
                 className="group flex flex-col bg-bone p-8 transition-colors hover:bg-ink hover:text-bone"
               >
                 <span className="small-caps text-catalyst">{p.category}</span>

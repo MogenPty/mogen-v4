@@ -14,7 +14,7 @@ export default function ArticleNotFound({ numbering = 1 }: Readonly<Props>) {
   return (
     <PageShell
       index={`// ${formatNumber(numbering)} — Insights`}
-      label="Blog"
+      label="Articles"
       title={
         <>
           Article <span className="text-catalyst">not found.</span>
@@ -26,11 +26,11 @@ export default function ArticleNotFound({ numbering = 1 }: Readonly<Props>) {
           <p className="text-ink/70">We couldn&apos;t find that article.</p>
           <MagneticButton
             as="a"
-            href="/blog"
+            href="/articles"
             variant="outline"
             className="mt-6"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to blog
+            <ArrowLeft className="h-4 w-4" /> Back to articles
           </MagneticButton>
         </div>
       </BlueprintGrid>

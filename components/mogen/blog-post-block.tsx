@@ -34,10 +34,10 @@ export default function BlogPostBlock({
       <BlueprintGrid className="bg-bone pb-20">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <Link
-            href="/blog"
+            href="/articles"
             className="small-caps inline-flex items-center gap-2 text-ink/60 hover:text-catalyst"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to blog
+            <ArrowLeft className="h-4 w-4" /> Back to articles
           </Link>
         </div>
       </BlueprintGrid>
@@ -80,7 +80,7 @@ export default function BlogPostBlock({
             {related.map((p) => (
               <Link
                 key={p.slug}
-                href={`/blog/${p.slug}`}
+                href={`/articles/${p.slug}`}
                 className="group flex flex-col bg-bone p-6 transition-colors hover:bg-ink hover:text-bone"
               >
                 <span className="small-caps text-catalyst">{p.category}</span>

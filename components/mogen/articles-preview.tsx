@@ -38,7 +38,7 @@ export default function ArticlesPreview({ numbering = 1 }: Readonly<Props>) {
           {preview.map((p) => (
             <Link
               key={p.slug}
-              href={`/blog/${p.slug}`}
+              href={`/articles/${p.slug}`}
               className="group flex flex-col bg-bone p-8 transition-colors hover:bg-ink hover:text-bone"
             >
               <span className="small-caps text-catalyst">{p.category}</span>
@@ -60,7 +60,7 @@ export default function ArticlesPreview({ numbering = 1 }: Readonly<Props>) {
         </div>
 
         <div className="mt-12 flex flex-wrap gap-4">
-          <MagneticButton as="a" href="/blog" variant="outline">
+          <MagneticButton as="a" href="/articles" variant="outline">
             View all articles →
           </MagneticButton>
         </div>
