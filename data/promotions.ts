@@ -82,6 +82,14 @@ export interface Promotion {
 
   cta: PromotionCta;
   relatedService?: string;
+  /**
+   * Package this promotion discounts or features, resolved through the
+   * central package registry (`data/packages.ts`). Establishes the
+   * promotion → package → service chain so promotion CTAs only need to
+   * carry the promotion slug. Omit when the promotion is not tied to a
+   * specific package.
+   */
+  relatedPackage?: string;
 
   /**
    * Allocation cap for capacity-limited campaigns (e.g. first 100
@@ -132,6 +140,7 @@ export const PROMOTIONS: Promotion[] = [
     images: [],
     cta: { label: "Claim Mogen Seed", href: "/contact" },
     relatedService: "web-development",
+    relatedPackage: "seed",
     included: [
       "Starter website structure tailored to your business",
       "Mobile-first, fast and structured for discovery",
@@ -187,6 +196,7 @@ export const PROMOTIONS: Promotion[] = [
     images: [],
     cta: { label: "Claim Sprout Offer", href: "/contact" },
     relatedService: "web-development",
+    relatedPackage: "sprout",
     maximumCustomers: 100,
     promoDurationMonths: 12,
     included: [

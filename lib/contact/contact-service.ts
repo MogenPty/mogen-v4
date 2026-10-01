@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getPackage } from "@/data/packages";
 import { SERVICES } from "@/data/services";
 import type { MailProvider } from "@/lib/mail/mail-provider";
 import type { MailResult, MailMessage as Message } from "@/lib/mail/mail-types";
@@ -47,6 +48,14 @@ export const contactInputSchema = z
     phone: z.string().trim().max(40).optional().default(""),
     businessName: z.string().trim().max(160).optional().default(""),
     service: z.enum(CONTACT_SERVICES),
+    /**
+     * Resolved package identifier (`seed`, `sprout`, `vegetative`,
+     * `ignition`) carried from the enquiry URL. Never typed by the
+     * visitor — validated and normalised on submission (unknown values
+     * dropped, dropped when the visitor corrected the service away from
+     * the package's service, always dropped for `Other`).
+     */
+    package: z.string().trim().max(80).optional().default(""),
     /**
      * Free-text specification required only when service is "Other".
      * Never part of enquiry URLs — user-entered form data only.
@@ -127,6 +136,24 @@ export function buildContactSubject(
   return `New Mogen enquiry — ${sanitizeHeader(input.service)}`;
 }
 
+/**
+ * Normalise the submitted package against the central package registry.
+ * Unknown identifiers are dropped; a package is also dropped when the
+ * submitted service does not belong to the package's service (the visitor
+ * corrected the preselected service — their correction wins) and always
+ * for `Other`, which has no packages. Returns the package id or "".
+ */
+export function resolveSubmissionPackage(
+  input: Pick<ContactInput, "service" | "package">,
+): string {
+  const pkg = getPackage(input.package);
+  if (!pkg) return "";
+  if (input.service === "Other") return "";
+  const serviceEntry = SERVICES.find((s) => s.name === input.service);
+  if (!serviceEntry || serviceEntry.slug !== pkg.serviceSlug) return "";
+  return pkg.id;
+}
+
 export function buildContactText(
   input: ContactInput,
   submittedAt: string,
@@ -134,6 +161,8 @@ export function buildContactText(
   const attribution = attributionEntries(input).map(
     ({ label, value }) => `${label}: ${value}`,
   );
+  const packageId = resolveSubmissionPackage(input);
+  const packageName = packageId ? (getPackage(packageId)?.name ?? packageId) : "";
   const lines = [
     "New enquiry from mogen.co.za/contact",
     "",
@@ -142,6 +171,7 @@ export function buildContactText(
     ...(input.phone ? [`Phone: ${input.phone}`] : []),
     ...(input.businessName ? [`Business: ${input.businessName}`] : []),
     `Service: ${input.service}`,
+    ...(packageName ? [`Package: ${packageName}`] : []),
     ...(input.service === "Other" && input.otherServiceDetail
       ? [`Service detail: ${input.otherServiceDetail}`]
       : []),
@@ -160,12 +190,15 @@ export function buildContactHtml(
 ): string {
   const row = (label: string, value: string) =>
     `<tr><td style="padding:4px 12px 4px 0;color:#666">${escapeHtml(label)}</td><td style="padding:4px 0">${escapeHtml(value)}</td></tr>`;
+  const packageId = resolveSubmissionPackage(input);
+  const packageName = packageId ? (getPackage(packageId)?.name ?? packageId) : "";
   const optional = [
     input.phone ? row("Phone", input.phone) : "",
     input.businessName ? row("Business", input.businessName) : "",
     input.service === "Other" && input.otherServiceDetail
       ? row("Service detail", input.otherServiceDetail)
       : "",
+    packageName ? row("Package", packageName) : "",
   ].join("");
   const attributionRows = attributionEntries(input)
     .map(({ label, value }) => row(label, value))

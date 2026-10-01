@@ -102,14 +102,13 @@ describe("task 07 — sprout promotion data unchanged", () => {
     expect(sprout.savingsCallout).toContain("R1,500");
   });
 
-  it("routes the sprout CTA with web-development service context", () => {
+  it("routes the sprout CTA with promotion-only context resolving to web-development", () => {
     const sprout = getPromotionBySlug("mogen-sprout-first-100")!;
     const href = buildEnquiryHref({
-      service: sprout.relatedService,
       promotion: sprout.slug,
     });
     const params = new URLSearchParams(href.split("?")[1]);
-    expect(params.get("service")).toBe("web-development");
     expect(params.get("promotion")).toBe("mogen-sprout-first-100");
+    expect(params.has("service")).toBe(false);
   });
 });

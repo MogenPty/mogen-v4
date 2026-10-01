@@ -1,3 +1,4 @@
+import { getPackage, type ServicePackage } from "@/data/packages";
 import { getPromotionBySlug, type Promotion } from "@/data/promotions";
 import { getService } from "@/data/services";
 
@@ -6,8 +7,10 @@ import { getService } from "@/data/services";
  *
  * Two categories of URL information are kept distinct:
  *
- * - Business context (`service`, `promotion`) tells Mogen what the
- *   visitor is enquiring about.
+ * - Business context (`service`, `package`, `promotion`) tells Mogen what the
+ *   visitor is enquiring about. Only the most specific identifier needs to
+ *   travel in the URL — promotion implies its package and service, and a
+ *   package implies its service (see `data/packages.ts`).
  * - Marketing attribution (`utm_*`) tells analytics where the visitor
  *   came from. Attribution is tracking metadata — never customer-facing
  *   copy and never personal information.
@@ -15,6 +18,7 @@ import { getService } from "@/data/services";
 
 export interface EnquiryContext {
   service?: string;
+  package?: string;
   promotion?: string;
 
   utm_source?: string;
@@ -70,8 +74,10 @@ export function parseEnquiryContext(searchParams: RawSearchParams): EnquiryConte
 
   const context: EnquiryContext = {};
   const service = get("service");
+  const pkg = get("package");
   const promotion = get("promotion");
   if (service) context.service = service;
+  if (pkg) context.package = pkg;
   if (promotion) context.promotion = promotion;
   for (const key of ATTRIBUTION_KEYS) {
     const value = get(key);
@@ -127,6 +133,20 @@ export function resolveEnquiryService(
 }
 
 /**
+ * Resolve a package identifier (e.g. `sprout`, `ignition`) through the
+ * central package registry (`data/packages.ts`). Returns undefined for
+ * missing/unknown identifiers — callers fall back to service-only or
+ * generic context, never render an invalid package as valid.
+ */
+export function resolveEnquiryPackage(
+  id: string | undefined,
+): ServicePackage | undefined {
+  const cleaned = clean(id);
+  if (!cleaned) return undefined;
+  return getPackage(cleaned);
+}
+
+/**
  * Resolve a promotion slug (e.g. `mogen-sprout-first-100`) through the
  * central promotion data. Status is deliberately NOT checked here: a
  * scheduled (not yet active) promotion still contextualises an enquiry;
@@ -179,9 +199,12 @@ export function buildPromotionEnquiryMessage(promotion: Promotion): string {
 
 export interface ResolvedEnquiry {
   service: EnquiryService | undefined;
+  package: ServicePackage | undefined;
   promotion: Promotion | undefined;
   /** Display name to preselect in the service selector, if valid. */
   serviceName: string | undefined;
+  /** Display name of the resolved package, if any. */
+  packageName: string | undefined;
   /** Editable starter message, present only when valid promotion context exists. */
   message: string | undefined;
   attribution: EnquiryAttribution;
@@ -189,21 +212,32 @@ export interface ResolvedEnquiry {
   serviceAdjusted: boolean;
   /** Non-blocking explanation shown when serviceAdjusted is true. */
   serviceNotice: string | undefined;
+  /** True when an explicit package was overridden by the promotion's package. */
+  packageAdjusted: boolean;
+  /** Non-blocking explanation shown when packageAdjusted is true. */
+  packageNotice: string | undefined;
 }
 
 /**
- * Resolve a parsed context into service/promotion data + form defaults.
+ * Resolve a parsed context into package/service/promotion data + form defaults.
  *
- * The promotion's `relatedService` is the source of truth for the
- * promotion: a promotion without an explicit service selects its
- * associated service, and a contradictory explicit service is adjusted
- * to the promotion's service with a non-blocking notice — never
- * submitted as contradictory business context.
+ * The canonical chain is promotion → package → service, resolved centrally
+ * so CTAs only carry the most specific identifier:
+ *
+ * - The promotion's `relatedPackage` is the source of truth for the
+ *   promotion: a contradictory explicit package is adjusted to the
+ *   promotion's package with a non-blocking notice.
+ * - A resolved package infers its service: `package=sprout` resolves to
+ *   Web Development, `package=ignition` to SEO. A contradictory explicit
+ *   service is adjusted to the package's service with a non-blocking
+ *   notice — never submitted as contradictory business context.
+ * - A service-only context remains valid when no package can be inferred.
  */
 export function resolveEnquiryDetails(
   context: EnquiryContext,
 ): ResolvedEnquiry {
   const service = resolveEnquiryService(context.service);
+  const explicitPackage = resolveEnquiryPackage(context.package);
   const promotion = resolveEnquiryPromotion(context.promotion);
   const attribution: EnquiryAttribution = {};
   for (const key of ATTRIBUTION_KEYS) {
@@ -211,6 +245,26 @@ export function resolveEnquiryDetails(
   }
   const promotionService = promotion?.relatedService
     ? resolveEnquiryService(promotion.relatedService)
+    : undefined;
+  const promotionPackage = promotion?.relatedPackage
+    ? resolveEnquiryPackage(promotion.relatedPackage)
+    : undefined;
+
+  let effectivePackage = explicitPackage;
+  let packageAdjusted = false;
+  let packageNotice: string | undefined;
+  if (promotion && promotionPackage) {
+    if (!effectivePackage) {
+      effectivePackage = promotionPackage;
+    } else if (effectivePackage.id !== promotionPackage.id) {
+      effectivePackage = promotionPackage;
+      packageAdjusted = true;
+      packageNotice = `This promotion applies to the ${promotionPackage.name} package, so the package selection has been adjusted.`;
+    }
+  }
+
+  const packageService = effectivePackage
+    ? resolveEnquiryService(effectivePackage.serviceSlug)
     : undefined;
   let effectiveService = service;
   let serviceAdjusted = false;
@@ -223,15 +277,27 @@ export function resolveEnquiryDetails(
       serviceAdjusted = true;
       serviceNotice = `This promotion applies to ${promotionService.name}, so the service selection has been adjusted.`;
     }
+  } else if (packageService) {
+    if (!effectiveService) {
+      effectiveService = packageService;
+    } else if (effectiveService.slug !== packageService.slug) {
+      effectiveService = packageService;
+      serviceAdjusted = true;
+      serviceNotice = `The ${effectivePackage!.name} package applies to ${packageService.name}, so the service selection has been adjusted.`;
+    }
   }
   return {
     service: effectiveService,
+    package: effectivePackage,
     promotion,
     serviceName: effectiveService?.name,
+    packageName: effectivePackage?.name,
     message: promotion ? buildPromotionEnquiryMessage(promotion) : undefined,
     attribution,
     serviceAdjusted,
     serviceNotice,
+    packageAdjusted,
+    packageNotice,
   };
 }
 
@@ -250,6 +316,7 @@ export function preferExistingMessage(
 
 export interface BuildEnquiryHrefInput {
   service?: string;
+  package?: string;
   promotion?: string;
   attribution?: EnquiryAttribution;
   /**
@@ -265,6 +332,10 @@ export interface BuildEnquiryHrefInput {
  * Build a `/contact` URL carrying business context + attribution.
  * Uses URLSearchParams (correct encoding), omits undefined/empty
  * values, and never embeds business data beyond the identifiers.
+ *
+ * Pass the most specific identifier available — the Contact layer
+ * resolves the complete context (`promotion` implies its package and
+ * service; `package` implies its service).
  */
 export function buildEnquiryHref(input: BuildEnquiryHrefInput): string {
   const existing = input.existingSearchParams
@@ -272,10 +343,12 @@ export function buildEnquiryHref(input: BuildEnquiryHrefInput): string {
     : {};
 
   const service = clean(input.service) ?? existing.service;
+  const pkg = clean(input.package) ?? existing.package;
   const promotion = clean(input.promotion) ?? existing.promotion;
 
   const params = new URLSearchParams();
   if (service) params.set("service", service);
+  if (pkg) params.set("package", pkg);
   if (promotion) params.set("promotion", promotion);
 
   for (const key of ATTRIBUTION_KEYS) {

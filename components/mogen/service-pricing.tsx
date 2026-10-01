@@ -10,10 +10,9 @@ import { Pricing } from "@/data/services";
 
 interface Props {
   pricing: Pricing[];
-  serviceSlug: string;
   /**
    * Attribution carried from the service page URL (utm_* only).
-   * Forwarded into enquiry CTAs via the shared Task 01 helper —
+   * Forwarded into enquiry CTAs via the shared helper —
    * never rendered as copy.
    */
   attribution?: EnquiryAttribution;
@@ -21,7 +20,6 @@ interface Props {
 
 export default function ServicePricing({
   pricing,
-  serviceSlug,
   attribution,
 }: Readonly<Props>) {
   return (
@@ -69,7 +67,7 @@ export default function ServicePricing({
           <MagneticButton
             as="a"
             href={buildEnquiryHref({
-              service: serviceSlug,
+              package: t.packageId,
               attribution,
             })}
             variant={t.featured ? "catalyst" : "outline"}
