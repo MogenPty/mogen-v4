@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Script from "next/script";
 import { type FormEvent, useRef, useState } from "react";
 import { getPackage } from "@/data/packages";
+import { SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
@@ -284,15 +285,30 @@ export default function ContactForm({
           id={"service"}
           name="service"
           value={form.service}
-          onChange={(e) =>
-            setForm((prev) => ({
-              ...prev,
-              service: e.target.value,
-              // Drop stale hidden data when leaving "Other".
-              otherServiceDetail:
-                e.target.value === "Other" ? prev.otherServiceDetail : "",
-            }))
-          }
+          onChange={(e) => {
+            const nextService = e.target.value;
+            setForm((prev) => {
+              // Keep the resolved package only when the newly selected
+              // service owns it; otherwise clear it so the panel and the
+              // submitted context never disagree.
+              const pkg = getPackage(prev.package);
+              const serviceSlug = SERVICES.find(
+                (s) => s.name === nextService,
+              )?.slug;
+              const keepPackage =
+                pkg !== undefined &&
+                serviceSlug !== undefined &&
+                pkg.serviceSlug === serviceSlug;
+              return {
+                ...prev,
+                service: nextService,
+                // Drop stale hidden data when leaving "Other".
+                otherServiceDetail:
+                  nextService === "Other" ? prev.otherServiceDetail : "",
+                package: keepPackage ? prev.package : "",
+              };
+            });
+          }}
           required
           aria-required="true"
           className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark"
@@ -306,13 +322,13 @@ export default function ContactForm({
             </option>
           ))}
         </select>
-        {(initialPromotionName || resolvedPackage) && (
+        {(initialPromotionName || form.package) && (
           <div className="mt-3 border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/70">
-            {resolvedPackage && (
+            {form.package && (
               <p>
                 Package:{" "}
                 <span className="font-semibold text-ink">
-                  {getPackage(resolvedPackage)?.name ?? resolvedPackage}
+                  {getPackage(form.package)?.name ?? form.package}
                 </span>
               </p>
             )}
