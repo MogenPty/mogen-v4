@@ -4,6 +4,7 @@ import ServiceDetail from "@/components/mogen/service-detail";
 import { getService, SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
+import { pageMetadata } from "@/lib/seo";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -18,33 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const service = getService(slug);
   if (!service) return { title: "Service not found" };
-  const canonical = `${siteConfig.url}/services/${service.slug}`;
-  return {
+  return pageMetadata({
+    path: `/services/${service.slug}`,
     title: service.name,
     description: service.tagline,
-    alternates: { canonical },
-    openGraph: {
-      type: "website",
-      url: canonical,
-      siteName: siteConfig.name,
-      title: service.name,
-      description: service.tagline,
-      images: [
-        {
-          url: siteConfig.ogImage,
-          width: siteConfig.ogImageWidth,
-          height: siteConfig.ogImageHeight,
-          alt: siteConfig.ogImageAlt,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: service.name,
-      description: service.tagline,
-      images: [siteConfig.ogImage],
-    },
-  };
+  });
 }
 
 function ServiceJsonLd({ slug }: Readonly<{ slug: string }>) {
