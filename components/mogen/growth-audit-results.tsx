@@ -267,7 +267,7 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
             </MagneticButton>
             <MagneticButton
               as="a"
-              href="/#pricing"
+              href="/pricing"
               variant="outline"
               className="border-bone/40 text-bone hover:bg-bone hover:text-ink"
             >

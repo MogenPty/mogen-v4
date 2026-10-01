@@ -44,7 +44,7 @@ const SECTIONS = [
   },
   {
     h: "11. Contact",
-    p: "Questions about these Terms can be sent to hello@mogen.co.za.",
+    p: "Questions about these Terms can be sent to info@mogen.co.za.",
   },
 ];
 

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   // form is used for Open Graph / Twitter titles below.
   title: "About Mogen",
   description:
-    "Mogen Pty Ltd (Motsoane Global Enterprise) is a South African digital services business based in Maboloka, North West — web development, SEO, digital marketing and business documentation for businesses across South Africa.",
+    "Mogen is a South African digital services business based in Maboloka, North West — web development, SEO, digital marketing and business documentation for businesses across South Africa.",
   alternates: {
     canonical: PAGE_URL,
   },
