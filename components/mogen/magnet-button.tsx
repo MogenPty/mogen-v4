@@ -76,13 +76,16 @@ export default function MagneticButton({
   const variants: Record<string, string> = {
     solid: "bg-ink text-bone hover:bg-catalyst hover:text-white",
     // Context-safe primary CTA (Task 7C): the base green is the single
-    // shared #247F52 in both modes and white text on it is ~5:1 contrast,
-    // so text stays white and hover deepens the accent itself. No `dark:`
-    // global-theme override: the button resolves identically on light
-    // containers in dark pages and dark containers in light pages. Pin a
-    // local surface via `surface="light" | "dark"` where the container
-    // differs from the page theme.
-    catalyst: "bg-catalyst text-white hover:bg-catalyst-hover hover:text-white",
+    // shared #247F52 in both modes and hover deepens the accent itself.
+    // Text uses the configured accent foreground token (white on green)
+    // rather than a forced color, so contrast stays correct under every
+    // accent/mode combination. No `dark:` global-theme override: the
+    // button resolves identically on light containers in dark pages and
+    // dark containers in light pages. Pin a local surface via
+    // `surface="light" | "dark"` where the container differs from the
+    // page theme.
+    catalyst:
+      "bg-catalyst text-accent-foreground hover:bg-catalyst-hover hover:text-accent-foreground",
     volt: "bg-volt text-obsidian hover:bg-ink hover:text-volt",
     outline: "border border-ink text-ink hover:bg-ink hover:text-bone",
     ghost: "text-ink hover:text-catalyst",
@@ -91,13 +94,13 @@ export default function MagneticButton({
     "solid-on-light":
       "surface-light bg-ink text-bone hover:bg-catalyst hover:text-white",
     "catalyst-on-light":
-      "surface-light bg-catalyst text-white hover:bg-catalyst-hover hover:text-white",
+      "surface-light bg-catalyst text-accent-foreground hover:bg-catalyst-hover hover:text-accent-foreground",
     "outline-on-light":
       "surface-light border border-ink text-ink hover:bg-ink hover:text-bone",
     "solid-on-dark":
       "surface-dark bg-ink text-bone hover:bg-catalyst hover:text-white",
     "catalyst-on-dark":
-      "surface-dark bg-catalyst text-white hover:bg-catalyst-hover hover:text-white",
+      "surface-dark bg-catalyst text-accent-foreground hover:bg-catalyst-hover hover:text-accent-foreground",
     "outline-on-dark":
       "surface-dark border border-ink text-ink hover:bg-ink hover:text-bone",
   };

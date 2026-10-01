@@ -331,9 +331,15 @@ describe("task 7B — green default accent, orange retained", () => {
     // No global-theme (`dark:`) override on the green CTA: the shared
     // #247F52 keeps white text (~5:1) in both modes, so the button resolves
     // against its local container surface, not the page theme.
+    // Text uses the configured accent foreground token rather than a
+    // forced color, so contrast holds under every accent/mode combination.
     const catalystLine = button
       .split("\n")
-      .find((line) => line.includes("bg-catalyst text-white hover:bg-catalyst-hover"));
+      .find((line) =>
+        line.includes(
+          "bg-catalyst text-accent-foreground hover:bg-catalyst-hover hover:text-accent-foreground",
+        ),
+      );
     expect(catalystLine).toBeDefined();
     expect(catalystLine).not.toContain("dark:");
     // Explicit surface contexts pin the local container (light card in
