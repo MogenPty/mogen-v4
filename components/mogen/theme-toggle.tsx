@@ -6,8 +6,10 @@ import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
-  getStoredAccent,
+  DEFAULT_ACCENT,
+  getAccentSnapshot,
   setStoredAccent,
+  subscribeAccent,
   type Accent,
 } from "@/lib/accent";
 
@@ -55,9 +57,15 @@ export default function ThemeToggle() {
     () => false,
   );
   const [open, setOpen] = useState(false);
-  // Lazy init reads localStorage (client) or the default (server) with no
-  // post-hydration cascading render.
-  const [accent, setAccent] = useState<Accent>(() => getStoredAccent());
+  // Shared reactive accent state (see lib/accent): every mounted
+  // ThemeToggle (desktop + mobile header) renders from the same snapshot,
+  // so changing the accent in one selector updates the other. Server
+  // snapshot is the default — no post-hydration cascading render.
+  const accent = React.useSyncExternalStore(
+    subscribeAccent,
+    getAccentSnapshot,
+    () => DEFAULT_ACCENT,
+  );
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -73,7 +81,6 @@ export default function ThemeToggle() {
   const CurrentIcon = mounted ? current.icon : Sun;
 
   const chooseAccent = (value: Accent) => {
-    setAccent(value);
     setStoredAccent(value);
   };
 

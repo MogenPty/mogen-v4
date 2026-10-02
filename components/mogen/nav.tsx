@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnchorHref } from "@/lib/use-anchor-href";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -31,6 +31,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const anchorHref = useAnchorHref();
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -41,7 +42,12 @@ export default function Nav() {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        // Return focus to the trigger: the menu unmounts on close, so
+        // focus would otherwise be lost to the document body.
+        menuButtonRef.current?.focus();
+      }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -141,6 +147,7 @@ export default function Nav() {
         <div className="flex shrink-0 items-center gap-2 lg:hidden">
           <ThemeToggle />
           <Button
+            ref={menuButtonRef}
             variant="ghost"
             size="icon-lg"
             className="h-11 w-11 text-ink hover:text-catalyst"

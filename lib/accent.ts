@@ -47,7 +47,38 @@ export function setStoredAccent(accent: Accent): void {
       // Persistence is best-effort; the attribute still applies for this session.
     }
     document.documentElement.dataset.accent = normalized;
+    notifyAccentListeners();
   }
+}
+
+/**
+ * Shared reactive accent state.
+ *
+ * Multiple ThemeToggle instances are mounted at once (desktop + mobile
+ * header — one is CSS-hidden, not unmounted), so per-component useState
+ * goes stale: changing the accent in one selector leaves the other's
+ * active checkmark behind. Components subscribe via
+ * `useSyncExternalStore` instead, so every instance re-renders from the
+ * same snapshot whenever the accent changes.
+ */
+type AccentListener = () => void;
+
+const accentListeners = new Set<AccentListener>();
+
+function notifyAccentListeners(): void {
+  for (const listener of accentListeners) listener();
+}
+
+export function subscribeAccent(listener: AccentListener): () => void {
+  accentListeners.add(listener);
+  return () => {
+    accentListeners.delete(listener);
+  };
+}
+
+/** Snapshot for `useSyncExternalStore` (safe on server). */
+export function getAccentSnapshot(): Accent {
+  return getStoredAccent();
 }
 
 /**
