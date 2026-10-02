@@ -24,7 +24,7 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-6rem)] max-w-[1600px] flex-col justify-center px-6 py-12 lg:px-12 lg:py-20">
         <div className="mx-auto w-full max-w-4xl">
-          <div className="mb-6 flex items-center gap-3">
+          <div className="mb-6 flex min-w-0 flex-wrap items-center gap-3">
             <span
               className="h-2 w-2 bg-catalyst animate-pulse"
               aria-hidden="true"

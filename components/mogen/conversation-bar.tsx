@@ -39,11 +39,14 @@ export default function ConversionBar({
       )}
       aria-label="Conversion readiness"
     >
-      <div className="mx-auto max-w-[1600px] px-4 pb-4">
-        <div className="flex items-center justify-between gap-4 border border-ink/15 bg-bone/90 px-4 py-3 backdrop-blur-md sm:px-6">
-          <div className="flex items-center gap-3">
-            <span className="small-caps text-muted-foreground">
+      <div className="mx-auto max-w-[1600px] px-3 pb-3 sm:px-4 sm:pb-4">
+        <div className="flex items-center justify-between gap-3 border border-ink/15 bg-bone/90 px-3 py-3 backdrop-blur-md sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <span className="small-caps shrink-0 truncate text-muted-foreground max-[380px]:hidden">
               Conversion Readiness
+            </span>
+            <span className="small-caps shrink-0 text-muted-foreground min-[381px]:hidden">
+              Ready
             </span>
             <div
               className="hidden h-2 w-32 bg-ink/10 sm:block"
@@ -54,13 +57,13 @@ export default function ConversionBar({
                 style={{ width: `${ready}%` }}
               />
             </div>
-            <span className="font-display text-sm font-black text-ink">
+            <span className="font-display shrink-0 text-sm font-black text-ink">
               {ready}%
             </span>
           </div>
           <Link
             href={auditHref}
-            className="small-caps bg-catalyst px-5 py-2 text-white transition-colors hover:bg-ink dark:hover:text-black"
+            className="small-caps shrink-0 whitespace-nowrap bg-catalyst px-4 py-2 text-white transition-colors hover:bg-ink sm:px-5 dark:hover:text-black"
             aria-label="Get your free growth audit now"
           >
             Get Free Audit →
