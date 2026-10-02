@@ -48,7 +48,7 @@ describe("task 8 — environment-driven site URL", () => {
       "app/robots.ts",
       "app/sitemap.ts",
       "app/services/[slug]/page.tsx",
-      "app/blog/[slug]/page.tsx",
+      "app/articles/[slug]/page.tsx",
       "app/promotions/[slug]/page.tsx",
     ]) {
       const source = readSource(file);
@@ -80,7 +80,7 @@ describe("task 8 — sitemap generation", () => {
       "/services/digital-marketing",
       "/services/business-documentation",
       "/promotions",
-      "/blog",
+      "/articles",
       "/contact",
     ]) {
       expect(source).toContain(route);
@@ -119,7 +119,7 @@ describe("task 8 — title generation (no Mogen | Mogen)", () => {
       ["app/services/page.tsx", '"Services"'],
       ["app/promotions/page.tsx", '"Promotions"'],
       ["app/pricing/page.tsx", '"Pricing"'],
-      ["app/blog/page.tsx", '"Blog"'],
+      ["app/articles/page.tsx", '"Articles"'],
     ] as const) {
       const source = readSource(file);
       expect(source).toContain(`title: ${title}`);
@@ -137,7 +137,7 @@ describe("task 8 — title generation (no Mogen | Mogen)", () => {
     expect(readSource("app/services/[slug]/page.tsx")).toContain(
       "generateMetadata",
     );
-    expect(readSource("app/blog/[slug]/page.tsx")).toContain(
+    expect(readSource("app/articles/[slug]/page.tsx")).toContain(
       "generateMetadata",
     );
     // No client-side document.title overrides remain.
@@ -178,7 +178,7 @@ describe("task 8 — promotion metadata", () => {
 
 describe("task 8 — article metadata", () => {
   it("emits canonical + article OG + Article JSON-LD per post", () => {
-    const source = readSource("app/blog/[slug]/page.tsx");
+    const source = readSource("app/articles/[slug]/page.tsx");
     expect(source).toContain("alternates");
     expect(source).toContain("canonical");
     expect(source).toContain('"article"');
@@ -202,7 +202,7 @@ describe("task 8 — invalid dynamic routes return not-found", () => {
     expect(getPromotionBySlug("nonexistent-promotion")).toBeUndefined();
     for (const file of [
       "app/services/[slug]/page.tsx",
-      "app/blog/[slug]/page.tsx",
+      "app/articles/[slug]/page.tsx",
       "app/promotions/[slug]/page.tsx",
     ]) {
       expect(readSource(file)).toContain("notFound()");

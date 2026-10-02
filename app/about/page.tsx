@@ -289,10 +289,10 @@ export default function About() {
             — only the work itself. For practical notes on websites, local SEO,
             and digital marketing, see the{" "}
             <Link
-              href="/blog"
+              href="/articles"
               className="small-caps text-ink hover:text-catalyst"
             >
-              blog →
+              articles →
             </Link>
           </p>
         </div>

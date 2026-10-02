@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
-import { getPost, POSTS } from "@/data/blog";
+import { getPost, POSTS, sortPostsByDateDesc } from "@/data/blog";
 import { formatNumber } from "@/lib/utils";
 import ArticleNotFound from "./article-not-found";
 
@@ -22,7 +22,9 @@ export default function BlogPostBlock({
   const post = getPost(slug);
   if (!post) return <ArticleNotFound numbering={numbering} />;
 
-  const related = POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
+  const related = sortPostsByDateDesc(
+    POSTS.filter((p) => p.slug !== post.slug),
+  ).slice(0, 3);
 
   return (
     <PageShell
@@ -34,10 +36,10 @@ export default function BlogPostBlock({
       <BlueprintGrid className="bg-bone pb-20">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <Link
-            href="/blog"
+            href="/articles"
             className="small-caps inline-flex items-center gap-2 text-ink/60 hover:text-catalyst"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to blog
+            <ArrowLeft className="h-4 w-4" /> Back to articles
           </Link>
         </div>
       </BlueprintGrid>
@@ -80,7 +82,7 @@ export default function BlogPostBlock({
             {related.map((p) => (
               <Link
                 key={p.slug}
-                href={`/blog/${p.slug}`}
+                href={`/articles/${p.slug}`}
                 className="group flex flex-col bg-bone p-6 transition-colors hover:bg-ink hover:text-bone"
               >
                 <span className="small-caps text-catalyst">{p.category}</span>

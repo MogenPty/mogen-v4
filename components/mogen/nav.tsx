@@ -21,7 +21,7 @@ const NAV = [
   { label: "Growth Audit", href: "/#audit" },
   { label: "Promotions", href: "/promotions" },
   { label: "Work", href: "/#work" },
-  { label: "Articles", href: "/blog" },
+  { label: "Articles", href: "/articles" },
   { label: "Contact", href: "/contact" },
 ];
 

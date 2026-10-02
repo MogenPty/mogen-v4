@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return { title: "Article not found" };
-  const canonical = `${siteConfig.url}/blog/${post.slug}`;
+  const canonical = `${siteConfig.url}/articles/${post.slug}`;
   return {
     title: post.title,
     description: post.excerpt,
@@ -50,7 +50,7 @@ function ArticleJsonLd({ slug }: Readonly<{ slug: string }>) {
   if (!post) return null;
   const organizationId = `${siteConfig.url}/#organization`;
   const websiteId = `${siteConfig.url}/#website`;
-  const pageUrl = `${siteConfig.url}/blog/${post.slug}`;
+  const pageUrl = `${siteConfig.url}/articles/${post.slug}`;
   // Article schema mirrors visible content only: headline, description,
   // dates, author name and publisher. No invented ratings or counts.
   const graph = {
@@ -81,8 +81,8 @@ function ArticleJsonLd({ slug }: Readonly<{ slug: string }>) {
           {
             "@type": "ListItem",
             position: 2,
-            name: "Blog",
-            item: `${siteConfig.url}/blog`,
+            name: "Articles",
+            item: `${siteConfig.url}/articles`,
           },
           {
             "@type": "ListItem",
