@@ -6,8 +6,10 @@ import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
-  getStoredAccent,
+  DEFAULT_ACCENT,
+  getAccentSnapshot,
   setStoredAccent,
+  subscribeAccent,
   type Accent,
 } from "@/lib/accent";
 
@@ -17,10 +19,22 @@ const OPTIONS = [
   { value: "system", label: "System", icon: Monitor },
 ];
 
-const ACCENT_OPTIONS: { value: Accent; label: string; swatch: string }[] = [
-  { value: "green", label: "Green", swatch: "bg-catalyst" },
-  { value: "orange", label: "Orange", swatch: "" },
+const ACCENT_OPTIONS: { value: Accent; label: string }[] = [
+  { value: "green", label: "Green" },
+  { value: "orange", label: "Orange" },
 ];
+
+/** Fixed representative swatches — these identify the option, so they must
+ *  not follow the currently-selected accent. Green is the shared #247F52. */
+function GreenSwatch() {
+  return (
+    <span
+      className="h-4 w-4 shrink-0 rounded-full"
+      style={{ backgroundColor: "#247F52" }}
+      aria-hidden="true"
+    />
+  );
+}
 
 function OrangeSwatch() {
   return (
@@ -43,9 +57,15 @@ export default function ThemeToggle() {
     () => false,
   );
   const [open, setOpen] = useState(false);
-  // Lazy init reads localStorage (client) or the default (server) with no
-  // post-hydration cascading render.
-  const [accent, setAccent] = useState<Accent>(() => getStoredAccent());
+  // Shared reactive accent state (see lib/accent): every mounted
+  // ThemeToggle (desktop + mobile header) renders from the same snapshot,
+  // so changing the accent in one selector updates the other. Server
+  // snapshot is the default — no post-hydration cascading render.
+  const accent = React.useSyncExternalStore(
+    subscribeAccent,
+    getAccentSnapshot,
+    () => DEFAULT_ACCENT,
+  );
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,7 +81,6 @@ export default function ThemeToggle() {
   const CurrentIcon = mounted ? current.icon : Sun;
 
   const chooseAccent = (value: Accent) => {
-    setAccent(value);
     setStoredAccent(value);
   };
 
@@ -126,13 +145,7 @@ export default function ThemeToggle() {
                     {o.value === "orange" ? (
                       <OrangeSwatch />
                     ) : (
-                      <span
-                        className={cn(
-                          "h-4 w-4 shrink-0 rounded-full",
-                          o.swatch,
-                        )}
-                        aria-hidden="true"
-                      />
+                      <GreenSwatch />
                     )}
                     {o.label}
                     {active && (

@@ -47,8 +47,8 @@ export default function Promotion({
           index={`// ${formatNumber(numbering)} — Promotion`}
           title="Current Offer"
         />
-        <div className="grid grid-cols-1 gap-px bg-ink/10 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="bg-bone p-8 lg:p-12">
+        <div className="grid min-w-0 grid-cols-1 gap-px bg-ink/10 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="min-w-0 bg-bone p-8 lg:p-12">
             <span className="small-caps text-catalyst">Featured</span>
             <h2 className="mt-3 font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
               {promo.name}
@@ -58,21 +58,21 @@ export default function Promotion({
             </p>
             {headline && (
               <>
-                <div className="mt-8 flex items-baseline gap-4">
-                  <span className="font-display text-5xl font-black text-catalyst lg:text-6xl">
+                <div className="mt-8 flex min-w-0 flex-col gap-1">
+                  <span className="font-display text-4xl font-black leading-none break-words text-catalyst sm:text-5xl lg:text-6xl">
                     {headline.promotional ?? headline.regular}
                     {needsCadenceSuffix(
                       headline.promotional ?? headline.regular,
                       headline.cadence,
                     ) && (
-                      <span className="text-2xl font-bold text-ink/50 lg:text-3xl">
+                      <span className="text-xl font-bold text-ink/50 sm:text-2xl lg:text-3xl">
                         {" "}
                         {headline.cadence}
                       </span>
                     )}
                   </span>
                   {headline.promotional && (
-                    <span className="text-xl text-ink/40 line-through">
+                    <span className="text-lg break-words text-ink/40 line-through sm:text-xl">
                       {headline.regular}
                     </span>
                   )}
@@ -99,7 +99,7 @@ export default function Promotion({
               </MagneticButton>
             </div>
           </div>
-          <div className="flex flex-col justify-between bg-ink p-8 text-bone lg:p-12">
+          <div className="flex min-w-0 flex-col justify-between bg-ink p-8 text-bone lg:p-12">
             <div>
               <h3 className="font-display text-xl font-black">
                 What&apos;s included

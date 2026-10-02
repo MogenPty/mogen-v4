@@ -29,17 +29,6 @@ const COLS: Column[] = [
     ],
   },
   {
-    title: "Ecosystem",
-    links: [
-      {
-        label: "Mogen Store",
-        href: "https://store.mogen.co.za",
-        external: true,
-      },
-      { label: "Mogen SEO", href: "https://seo.mogen.co.za", external: true },
-    ],
-  },
-  {
     title: "Company",
     links: [
       { label: "About", href: "/about" },
@@ -62,6 +51,17 @@ const COLS: Column[] = [
       },
     ],
   },
+  {
+    title: "Ecosystem",
+    links: [
+      {
+        label: "Mogen Store",
+        href: "https://store.mogen.co.za",
+        external: true,
+      },
+      { label: "Mogen SEO", href: "https://seo.mogen.co.za", external: true },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -69,9 +69,9 @@ export default function Footer() {
 
   return (
     <footer className="bg-bone text-foreground">
-      <div className="mx-auto max-w-[1600px] px-6 py-16 lg:px-10">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1.5fr]">
-          <div>
+      <div className="mx-auto max-w-[1600px] px-6 pt-16 pb-32 sm:pb-28 lg:px-10">
+        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1.5fr]">
+          <div className="order-1 lg:order-none">
             <Link
               href="/"
               className="flex items-center gap-2"
@@ -88,6 +88,11 @@ export default function Footer() {
             </p>
           </div>
 
+          {/* Link columns: stacked on mobile, 2-up on small screens,
+              4-across below the brand/contact row on tablet, and
+              individual cells of the 6-column grid on desktop
+              (lg:contents dissolves the wrapper). */}
+          <div className="order-2 grid grid-cols-1 gap-12 sm:order-3 sm:col-span-2 sm:grid-cols-2 md:grid-cols-4 md:gap-8 lg:contents">
           {COLS.map((c) => (
             <div key={c.title}>
               <h3 className="small-caps text-foreground/50">{c.title}</h3>
@@ -110,15 +115,16 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+          </div>
 
-          <div>
+          <div className="order-3 sm:order-2 sm:justify-self-end lg:order-none lg:justify-self-auto">
             <h3 className="small-caps text-foreground/50">Contact</h3>
             <ul className="mt-4 space-y-3 text-sm text-foreground/80">
-              <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-catalyst" aria-hidden="true" />
+              <li className="flex min-w-0 items-center gap-2">
+                <Mail className="h-4 w-4 shrink-0 text-catalyst" aria-hidden="true" />
                 <a
                   href={`mailto:${siteConfig.email}`}
-                  className="hover:text-catalyst"
+                  className="min-w-0 break-all hover:text-catalyst"
                 >
                   {siteConfig.email}
                 </a>

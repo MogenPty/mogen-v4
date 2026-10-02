@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnchorHref } from "@/lib/use-anchor-href";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -31,11 +31,36 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const anchorHref = useAnchorHref();
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        // Return focus to the trigger: the menu unmounts on close, so
+        // focus would otherwise be lost to the document body.
+        menuButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open ]);
+
+  // Close the mobile menu when resizing up to desktop so it never
+  // lingers open underneath the desktop navigation.
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1024) setOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   return (
@@ -53,7 +78,7 @@ export default function Nav() {
       >
         <Link
           href="/"
-          className="flex items-center gap-2"
+          className="flex min-w-0 shrink-0 items-center gap-2"
           aria-label="Mogen home"
         >
           <span className="font-display text-2xl font-black tracking-tight text-ink">
@@ -119,37 +144,47 @@ export default function Nav() {
           </MagneticButton>
         </div>
 
-        <Button
-          className="lg:hidden p-2"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-          aria-expanded={open}
-        >
-          <div className="space-y-1.5">
-            <span
-              className={cn(
-                "block h-0.5 w-6 bg-ink transition",
-                open && "translate-y-2 rotate-45",
-              )}
-            />
-            <span
-              className={cn(
-                "block h-0.5 w-6 bg-ink transition",
-                open && "opacity-0",
-              )}
-            />
-            <span
-              className={cn(
-                "block h-0.5 w-6 bg-ink transition",
-                open && "-translate-y-2 -rotate-45",
-              )}
-            />
-          </div>
-        </Button>
+        <div className="flex shrink-0 items-center gap-2 lg:hidden">
+          <ThemeToggle />
+          <Button
+            ref={menuButtonRef}
+            variant="ghost"
+            size="icon-lg"
+            className="h-11 w-11 text-ink hover:text-catalyst"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+          >
+            <span className="space-y-1.5" aria-hidden="true">
+              <span
+                className={cn(
+                  "block h-0.5 w-6 bg-current transition",
+                  open && "translate-y-2 rotate-45",
+                )}
+              />
+              <span
+                className={cn(
+                  "block h-0.5 w-6 bg-current transition",
+                  open && "opacity-0",
+                )}
+              />
+              <span
+                className={cn(
+                  "block h-0.5 w-6 bg-current transition",
+                  open && "-translate-y-2 -rotate-45",
+                )}
+              />
+            </span>
+          </Button>
+        </div>
       </nav>
 
       {open && (
-        <div className="lg:hidden border-t border-ink/10 bg-bone/95 backdrop-blur-md">
+        <div
+          id="mobile-menu"
+          className="border-t border-ink/10 bg-bone/95 backdrop-blur-md lg:hidden"
+        >
           <div className="flex flex-col px-6 py-4">
             {NAV.map((n) =>
               n.children ? (

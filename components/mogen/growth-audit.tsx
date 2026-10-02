@@ -174,10 +174,10 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                 <label htmlFor="audit-url" className="small-caps text-white/70 dark:text-secondary-foreground/70">
                   Enter your website URL
                 </label>
-                <div className="mt-4 flex gap-3">
-                  <div className="flex flex-1 items-center gap-2 border border-white/30 dark:border-secondary-foreground/40 bg-white/5 dark:bg-secondary-foreground/10 px-4">
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <div className="flex min-w-0 flex-1 items-center gap-2 border border-white/30 dark:border-secondary-foreground/40 bg-white/5 dark:bg-secondary-foreground/10 px-4">
                     <Search
-                      className="h-5 w-5 text-white/70 dark:text-secondary-foreground/70"
+                      className="h-5 w-5 shrink-0 text-white/70 dark:text-secondary-foreground/70"
                       aria-hidden="true"
                     />
                     <input
@@ -186,7 +186,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       placeholder="yourbusiness.co.za"
-                      className="w-full bg-transparent py-4 text-white placeholder:text-white/60 focus:outline-none dark:text-secondary-foreground dark:placeholder:text-secondary-foreground/60"
+                      className="w-full min-w-0 bg-transparent py-4 text-white placeholder:text-white/60 focus:outline-none dark:text-secondary-foreground dark:placeholder:text-secondary-foreground/60"
                     />
                   </div>
                   <MagneticButton
@@ -208,12 +208,12 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
             {/* STEP 1 — scanning */}
             {step === 1 && (
               <div className="relative min-h-70">
-                <div className="flex items-center gap-3 text-white/70 dark:text-secondary-foreground/70">
+                <div className="flex min-w-0 items-center gap-3 text-white/70 dark:text-secondary-foreground/70">
                   <Loader2
-                    className="h-5 w-5 animate-spin text-catalyst"
+                    className="h-5 w-5 shrink-0 animate-spin text-catalyst"
                     aria-hidden="true"
                   />
-                  <span className="small-caps">Scanning {url}</span>
+                  <span className="small-caps min-w-0 truncate">Scanning {url}</span>
                 </div>
                 <div className="relative mt-6 h-55 overflow-hidden border border-white/30 dark:border-secondary-foreground/40">
                   <div
@@ -259,9 +259,9 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
             {/* STEP 2 — report + form */}
             {step === 2 && (
               <div>
-                <div className="flex items-center justify-between">
-                  <span className="small-caps text-white/70 dark:text-secondary-foreground/70">Growth Score</span>
-                  <span className="small-caps text-white/70 dark:text-secondary-foreground/70">{url}</span>
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <span className="small-caps shrink-0 text-white/70 dark:text-secondary-foreground/70">Growth Score</span>
+                  <span className="small-caps min-w-0 truncate text-white/70 dark:text-secondary-foreground/70">{url}</span>
                 </div>
                 <div className="mt-4 flex items-end gap-4">
                   <span className="font-display text-7xl font-black text-catalyst">
