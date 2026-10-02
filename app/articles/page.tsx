@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import BlogBlock from "@/components/mogen/blog-block";
-import { parsePageParam } from "@/data/blog";
+import { getArticles, parsePageParam } from "@/data/blog";
 import { getSiteUrl } from "@/data/site";
 import { pageMetadata } from "@/lib/seo";
 
@@ -29,8 +29,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   });
   // First page stays canonical at /articles; deeper pages are distinct
   // paginated listing URLs (never injected into the article sitemap).
-  if (page > 1) {
-    const canonical = `${getSiteUrl()}/articles?page=${page}`;
+  // Use the clamped page so the canonical always matches rendered content.
+  const { currentPage } = getArticles({ page });
+  if (currentPage > 1) {
+    const canonical = `${getSiteUrl()}/articles?page=${currentPage}`;
     return { ...base, alternates: { canonical } };
   }
   return base;
