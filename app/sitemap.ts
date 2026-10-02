@@ -23,6 +23,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/articles",
     "/promotions",
     "/contact",
+    "/locations/maboloka",
+    "/locations/soshanguve",
     "/privacy-policy",
     "/terms-of-service",
   ];

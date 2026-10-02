@@ -51,18 +51,31 @@ const COLS: Column[] = [
       },
     ],
   },
-  {
-    title: "Ecosystem",
-    links: [
-      {
-        label: "Mogen Store",
-        href: "https://store.mogen.co.za",
-        external: true,
-      },
-      { label: "Mogen SEO", href: "https://seo.mogen.co.za", external: true },
-    ],
-  },
 ];
+
+/**
+ * Locations and Ecosystem share a single footer column, with Locations
+ * above Ecosystem — on every breakpoint, including tablet.
+ */
+const LOCATIONS_COL: Column = {
+  title: "Locations",
+  links: [
+    { label: "Maboloka", href: "/locations/maboloka" },
+    { label: "Soshanguve", href: "/locations/soshanguve" },
+  ],
+};
+
+const ECOSYSTEM_COL: Column = {
+  title: "Ecosystem",
+  links: [
+    {
+      label: "Mogen Store",
+      href: "https://store.mogen.co.za",
+      external: true,
+    },
+    { label: "Mogen SEO", href: "https://seo.mogen.co.za", external: true },
+  ],
+};
 
 export default function Footer() {
   const anchorHref = useAnchorHref();
@@ -89,9 +102,11 @@ export default function Footer() {
           </div>
 
           {/* Link columns: stacked on mobile, 2-up on small screens,
-              4-across below the brand/contact row on tablet, and
-              individual cells of the 6-column grid on desktop
-              (lg:contents dissolves the wrapper). */}
+              3-across plus the stacked Locations/Ecosystem column below the
+              brand/contact row on tablet, and individual cells of the
+              6-column grid on desktop (lg:contents dissolves the wrapper).
+              Locations and Ecosystem always share one column, Locations
+              above Ecosystem. */}
           <div className="order-2 grid grid-cols-1 gap-12 sm:order-3 sm:col-span-2 sm:grid-cols-2 md:grid-cols-4 md:gap-8 lg:contents">
           {COLS.map((c) => (
             <div key={c.title}>
@@ -115,6 +130,33 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+            <div className="space-y-12">
+              {[LOCATIONS_COL, ECOSYSTEM_COL].map((c) => (
+                <div key={c.title}>
+                  <h3 className="small-caps text-foreground/50">{c.title}</h3>
+                  <ul className="mt-4 space-y-2">
+                    {c.links.map((l) => (
+                      <li key={l.label}>
+                        <Link
+                          href={anchorHref(l.href)}
+                          target={l.external ? "_blank" : undefined}
+                          rel={l.external ? "noopener noreferrer" : undefined}
+                          className="flex items-center gap-1 text-sm text-foreground/80 hover:text-catalyst"
+                        >
+                          {l.label}
+                          {l.external && (
+                            <ArrowUpRight
+                              className="h-3 w-3"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="order-3 sm:order-2 sm:justify-self-end lg:order-none lg:justify-self-auto">
