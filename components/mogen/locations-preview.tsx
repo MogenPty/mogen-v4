@@ -63,7 +63,9 @@ export default function LocationsPreview({ numbering = 1 }: Readonly<Props>) {
                 href={loc.href}
                 className="mt-6 inline-flex small-caps text-ink hover:text-catalyst"
               >
-                Get in touch →
+                {loc.href.startsWith("/locations/")
+                  ? "View location →"
+                  : "Get in touch →"}
               </Link>
             </article>
           ))}

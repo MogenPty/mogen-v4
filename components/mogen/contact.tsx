@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, type LucideProps, Mail, MapPin, Phone } from "lucide-react";
+import Link from "next/link";
 import type React from "react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import { formatNumber } from "@/lib/utils";
@@ -108,6 +109,24 @@ export default function Contact({
                     {siteConfig.email}
                   </a>{" "}
                   with a few lines about your business and what you need.
+                </p>
+
+                <p className="mt-6 text-sm leading-relaxed text-ink/60">
+                  Mogen&apos;s primary operating location is in{" "}
+                  <Link
+                    href="/locations/maboloka"
+                    className="font-semibold text-ink hover:text-catalyst"
+                  >
+                    Maboloka
+                  </Link>
+                  , with a satellite office in{" "}
+                  <Link
+                    href="/locations/soshanguve"
+                    className="font-semibold text-ink hover:text-catalyst"
+                  >
+                    Soshanguve
+                  </Link>{" "}
+                  — visits at both locations are by appointment.
                 </p>
               </div>
 
