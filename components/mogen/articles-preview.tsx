@@ -1,6 +1,6 @@
 import { ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
-import { POSTS } from "@/data/blog";
+import { POSTS, sortPostsByDateDesc } from "@/data/blog";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
@@ -11,8 +11,8 @@ interface Props {
 
 export default function ArticlesPreview({ numbering = 1 }: Readonly<Props>) {
   // Select 3 factual educational articles — exclude any unsupported claim articles
-  // Current data is clean; pick most recent 3
-  const preview = POSTS.slice(0, 3);
+  // Current data is clean; pick most recent 3 (newest-first by date).
+  const preview = sortPostsByDateDesc(POSTS).slice(0, 3);
 
   return (
     <BlueprintGrid id="articles" className="bg-bone py-24 lg:py-32">

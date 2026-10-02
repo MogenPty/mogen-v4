@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
-import { getPost, POSTS } from "@/data/blog";
+import { getPost, POSTS, sortPostsByDateDesc } from "@/data/blog";
 import { formatNumber } from "@/lib/utils";
 import ArticleNotFound from "./article-not-found";
 
@@ -22,7 +22,9 @@ export default function BlogPostBlock({
   const post = getPost(slug);
   if (!post) return <ArticleNotFound numbering={numbering} />;
 
-  const related = POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
+  const related = sortPostsByDateDesc(
+    POSTS.filter((p) => p.slug !== post.slug),
+  ).slice(0, 3);
 
   return (
     <PageShell
