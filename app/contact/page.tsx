@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Contact from "@/components/mogen/contact";
 import { siteConfig } from "@/data/site";
 import {
+  buildAuditEnquiryMessage,
   parseEnquiryContext,
   resolveEnquiryDetails,
 } from "@/lib/enquiry/enquiry";
@@ -116,7 +117,9 @@ export default async function ContactPage({
         numbering={8}
         initialService={details.serviceName}
         initialPackage={details.package?.id}
-        initialMessage={details.message}
+        initialMessage={
+          details.message ?? buildAuditEnquiryMessage(details.website)
+        }
         initialPromotionName={details.promotion?.name}
         initialServiceNotice={details.serviceNotice}
         initialPackageNotice={details.packageNotice}
