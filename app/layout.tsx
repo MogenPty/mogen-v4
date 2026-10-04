@@ -75,6 +75,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         {/* Apply the persisted accent before first paint (no flash). */}
+        {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Using this to inject an HTML */}
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
