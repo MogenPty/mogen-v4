@@ -20,6 +20,12 @@ export interface EnquiryContext {
   service?: string;
   package?: string;
   promotion?: string;
+  /**
+   * Website analysed by the SEO analyser (e.g. `https://example.co.za`).
+   * Carried into the enquiry so the analysed domain travels with the lead;
+   * rendered as an editable starter message, never as a locked field.
+   */
+  website?: string;
 
   utm_source?: string;
   utm_medium?: string;
@@ -76,9 +82,11 @@ export function parseEnquiryContext(searchParams: RawSearchParams): EnquiryConte
   const service = get("service");
   const pkg = get("package");
   const promotion = get("promotion");
+  const website = get("website");
   if (service) context.service = service;
   if (pkg) context.package = pkg;
   if (promotion) context.promotion = promotion;
+  if (website) context.website = website;
   for (const key of ATTRIBUTION_KEYS) {
     const value = get(key);
     if (value) context[key] = value;
@@ -201,6 +209,8 @@ export interface ResolvedEnquiry {
   service: EnquiryService | undefined;
   package: ServicePackage | undefined;
   promotion: Promotion | undefined;
+  /** Analysed website carried from the SEO analyser, if present. */
+  website: string | undefined;
   /** Display name to preselect in the service selector, if valid. */
   serviceName: string | undefined;
   /** Display name of the resolved package, if any. */
@@ -290,6 +300,7 @@ export function resolveEnquiryDetails(
     service: effectiveService,
     package: effectivePackage,
     promotion,
+    website: clean(context.website),
     serviceName: effectiveService?.name,
     packageName: effectivePackage?.name,
     message: promotion ? buildPromotionEnquiryMessage(promotion) : undefined,
@@ -299,6 +310,19 @@ export function resolveEnquiryDetails(
     packageAdjusted,
     packageNotice,
   };
+}
+
+/**
+ * Build the editable starter message for an enquiry arriving from the SEO
+ * analyser. Used only when no promotion message exists — promotion context
+ * always wins. Returns undefined when no website is present.
+ */
+export function buildAuditEnquiryMessage(
+  website: string | undefined,
+): string | undefined {
+  const cleaned = clean(website);
+  if (!cleaned) return undefined;
+  return `I ran the free SEO Growth Audit on ${cleaned}. Please send me the prioritised blueprint and next steps.`;
 }
 
 /**
@@ -318,6 +342,8 @@ export interface BuildEnquiryHrefInput {
   service?: string;
   package?: string;
   promotion?: string;
+  /** Analysed website carried from the SEO analyser. */
+  website?: string;
   attribution?: EnquiryAttribution;
   /**
    * Existing params to extend (e.g. the current page's search params).
@@ -345,11 +371,13 @@ export function buildEnquiryHref(input: BuildEnquiryHrefInput): string {
   const service = clean(input.service) ?? existing.service;
   const pkg = clean(input.package) ?? existing.package;
   const promotion = clean(input.promotion) ?? existing.promotion;
+  const website = clean(input.website) ?? existing.website;
 
   const params = new URLSearchParams();
   if (service) params.set("service", service);
   if (pkg) params.set("package", pkg);
   if (promotion) params.set("promotion", promotion);
+  if (website) params.set("website", website);
 
   for (const key of ATTRIBUTION_KEYS) {
     const value = clean(input.attribution?.[key]) ?? existing[key];

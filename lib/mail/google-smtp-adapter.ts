@@ -69,6 +69,15 @@ export class GoogleSmtpAdapter implements MailProvider {
         ...(message.text ? { text: message.text } : {}),
         ...(message.html ? { html: message.html } : {}),
         ...(message.replyTo ? { replyTo: message.replyTo } : {}),
+        ...(message.attachments && message.attachments.length > 0
+          ? {
+              attachments: message.attachments.map((a) => ({
+                filename: a.filename,
+                content: Buffer.from(a.content, "base64"),
+                contentType: a.contentType,
+              })),
+            }
+          : {}),
       });
       return {
         success: true,

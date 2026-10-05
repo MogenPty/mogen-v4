@@ -3,6 +3,13 @@
  * No Resend / Nodemailer / Google types may leak through this module.
  */
 
+export interface MailAttachment {
+  filename: string;
+  contentType: string;
+  /** Base64-encoded file content (provider adapters decode as needed). */
+  content: string;
+}
+
 export interface MailMessage {
   from: string;
   to: string | string[];
@@ -10,6 +17,7 @@ export interface MailMessage {
   text?: string;
   html?: string;
   replyTo?: string;
+  attachments?: MailAttachment[];
 }
 
 export type MailErrorCode =

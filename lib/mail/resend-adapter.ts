@@ -57,6 +57,14 @@ export class ResendAdapter implements MailProvider {
         ...(message.text ? { text: message.text } : {}),
         ...(message.html ? { html: message.html } : {}),
         ...(message.replyTo ? { replyTo: message.replyTo } : {}),
+        ...(message.attachments && message.attachments.length > 0
+          ? {
+              attachments: message.attachments.map((a) => ({
+                filename: a.filename,
+                content: a.content,
+              })),
+            }
+          : {}),
       });
       if (error) {
         return mailFailure(

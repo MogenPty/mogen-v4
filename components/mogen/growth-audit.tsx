@@ -1,22 +1,48 @@
 "use client";
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  Loader2,
-  Search,
-  ShieldCheck,
-} from "lucide-react";
-// import { useNavigate } from "react-router-dom";
-// import { Image } from "@/components/ui/image";
+import { ArrowRight, CheckCircle2, Loader2, Search, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type SubmitEvent, useState } from "react";
+import Script from "next/script";
+import { type SubmitEvent, useEffect, useRef, useState } from "react";
 import { SERVICES } from "@/data/services";
+import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
+import type { AuditResult } from "@/lib/audit/types";
+import { prevalidateUrl } from "@/lib/audit/prevalidate";
 
 const STEPS = ["URL", "Scan", "Report", "Unlock"];
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+
+type TurnstileWidgetId = string;
+interface TurnstileApi {
+  render: (
+    container: HTMLElement,
+    options: {
+      sitekey: string;
+      action: string;
+      theme: "light" | "dark" | "auto";
+      callback: (token: string) => void;
+      "expired-callback"?: () => void;
+      "error-callback"?: () => void;
+    },
+  ) => TurnstileWidgetId;
+  reset: (widgetId: TurnstileWidgetId) => void;
+}
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi;
+  }
+}
+
+interface WidgetSlot {
+  id: TurnstileWidgetId | null;
+  /** Container element the widget was rendered into (remounts need a fresh render). */
+  el: HTMLElement | null;
+}
 
 interface Props {
   numbering?: number;
@@ -26,66 +52,220 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
   const [step, setStep] = useState(0);
   const [url, setUrl] = useState("");
   const [scanning, setScanning] = useState(false);
-  const [score, setScore] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [audit, setAudit] = useState<AuditResult | null>(null);
+  const [auditId, setAuditId] = useState<string | null>(null);
+  const [apiError, setApiError] = useState("");
+  const [scanToken, setScanToken] = useState("");
+  const [leadToken, setLeadToken] = useState("");
+  const scanContainer = useRef<HTMLDivElement>(null);
+  const leadContainer = useRef<HTMLDivElement>(null);
+  const scanSlot = useRef<WidgetSlot>({ id: null, el: null });
+  const leadSlot = useRef<WidgetSlot>({ id: null, el: null });
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     business_name: "",
-    service_interest: "web-development",
+    service_interest: "seo",
+    // Honeypot — hidden from humans, bots fill it in.
+    companyWebsite: "",
   });
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
-  // const navigate = useNavigate();
   const router = useRouter();
 
-  const runScan = () => {
-    if (!url.trim()) return;
+  // Live elapsed counter while the real request is in flight.
+  useEffect(() => {
+    if (!scanning) return;
+    const started = Date.now();
+    const timer = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - started) / 1000));
+    }, 500);
+    return () => clearInterval(timer);
+  }, [scanning]);
+
+  function renderWidget(
+    container: React.RefObject<HTMLDivElement | null>,
+    slot: React.MutableRefObject<WidgetSlot>,
+    action: string,
+    callback: (token: string) => void,
+  ) {
+    if (
+      !TURNSTILE_SITE_KEY ||
+      !container.current ||
+      typeof window.turnstile === "undefined"
+    ) {
+      return;
+    }
+    // A stored ID is only proof for the container it was rendered into:
+    // step changes unmount/remount the container, which needs a fresh widget.
+    if (slot.current.id !== null && slot.current.el === container.current) {
+      return;
+    }
+    slot.current = {
+      id: window.turnstile.render(container.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        action,
+        theme: "auto",
+        callback,
+        "expired-callback": () => callback(""),
+        "error-callback": () => callback(""),
+      }),
+      el: container.current,
+    };
+  }
+
+  function resetWidget(slot: React.MutableRefObject<WidgetSlot>, clear: () => void) {
+    try {
+      if (slot.current.id !== null && typeof window.turnstile !== "undefined") {
+        window.turnstile.reset(slot.current.id);
+      }
+    } catch {
+      // Detached widget (container unmounted) — a fresh render follows on remount.
+    }
+    clear();
+  }
+
+  const runScan = async () => {
+    const problem = prevalidateUrl(url);
+    if (problem) {
+      setApiError(problem);
+      setStep(0);
+      return;
+    }
+    if (scanning) return;
+    const target = url.trim();
+    setElapsed(0);
     setScanning(true);
+    setApiError("");
+    setAudit(null);
+    setAuditId(null);
     setStep(1);
-    setTimeout(() => {
-      const s = Math.floor(38 + Math.random() * 22);
-      setScore(s);
+    try {
+      const res = await fetch("/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // Client-side cap so the UI can never spin forever.
+        signal: AbortSignal.timeout(120_000),
+        body: JSON.stringify({
+          url: target,
+          ...(scanToken ? { turnstileToken: scanToken } : {}),
+        }),
+      });
+      let data: { ok: boolean; error?: string; audit?: AuditResult; auditId?: string };
+      try {
+        data = (await res.json()) as typeof data;
+      } catch {
+        throw new Error("unparseable");
+      }
+      if (!res.ok || !data.ok || !data.audit || typeof data.auditId !== "string") {
+        throw new Error(data.error ?? "The website could not be analysed.");
+      }
+      setAudit(data.audit);
+      setAuditId(data.auditId);
       setScanning(false);
       setStep(2);
-    }, 2200);
+    } catch (err) {
+      const message =
+        err instanceof DOMException && err.name === "TimeoutError"
+          ? "The analysis took too long. Please check the address and try again."
+          : err instanceof Error && err.message !== "unparseable"
+            ? err.message
+            : "The website could not be analysed. Please check the address and try again.";
+      setApiError(message);
+      resetWidget(scanSlot, () => setScanToken(""));
+      setScanning(false);
+      setStep(0);
+    }
   };
 
   const submit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!form.name || !form.email) {
-      setError("Name and email are required to unlock your report.");
+    if (!form.name.trim() || !form.email.trim()) {
+      setError("Name and email are required to receive your report.");
+      return;
+    }
+    if (!audit || !auditId) {
+      setError("Please run the website scan first.");
       return;
     }
     setSaving(true);
     setError("");
     try {
-      // await base44.entities.Lead.create({
-      //   ...form,
-      //   website_url: url,
-      //   audit_score: score,
-      //   status: "new",
-      // });
-      sessionStorage.setItem(
-        "mogen_audit",
-        JSON.stringify({
-          url,
-          score,
-          name: form.name,
-          email: form.email,
-          business: form.business_name,
-          service: form.service_interest,
+      const res = await fetch("/api/audit/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(120_000),
+        body: JSON.stringify({
+          lead: {
+            name: form.name.trim(),
+            email: form.email.trim(),
+            phone: form.phone.trim(),
+            business: form.business_name.trim(),
+            service: form.service_interest,
+            companyWebsite: form.companyWebsite,
+          },
+          auditId,
+          ...(leadToken ? { turnstileToken: leadToken } : {}),
         }),
-      );
+      });
+      let data: { ok: boolean; error?: string };
+      try {
+        data = (await res.json()) as typeof data;
+      } catch {
+        throw new Error("unparseable");
+      }
+      if (!res.ok || !data.ok) {
+        throw new Error(
+          data.error ?? "Something went wrong. Please try again or email us directly.",
+        );
+      }
+      try {
+        sessionStorage.setItem(
+          "mogen_audit",
+          JSON.stringify({
+            url: audit.site.finalUrl,
+            submittedUrl: audit.site.submittedUrl,
+            score: audit.summary.score,
+            provisional: audit.summary.provisional,
+            coverage: audit.summary.coverage,
+            passed: audit.summary.passed,
+            warnings: audit.summary.warnings,
+            failed: audit.summary.failed,
+            notAssessed: audit.summary.notAssessed,
+            assessed: audit.summary.assessed,
+            applicable: audit.summary.applicable,
+            quadrants: audit.quadrants,
+            crawl: audit.crawl,
+            name: form.name,
+            email: form.email,
+            business: form.business_name,
+            service: form.service_interest,
+            reportEmailed: true,
+          }),
+        );
+      } catch {
+        // Storage failure must not block the success state — the PDF is emailed.
+      }
       setSaving(false);
       setStep(3);
       setDone(true);
-    } catch {
+    } catch (err) {
       setSaving(false);
-      setError("Something went wrong. Please try again or email us directly.");
+      resetWidget(leadSlot, () => setLeadToken(""));
+      setError(
+        err instanceof Error && err.message !== "unparseable"
+          ? err.message
+          : "Something went wrong. Please try again or email us directly.",
+      );
     }
   };
+
+  const score = audit?.summary.score;
+  const coveragePct =
+    audit !== null ? Math.round(audit.summary.coverage * 100) : 0;
 
   return (
     <BlueprintGrid
@@ -113,17 +293,16 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
               <span className="text-catalyst">Growth Audit.</span>
             </h2>
             <p className="mt-6 max-w-md text-lg text-white/70 dark:text-secondary-foreground/70">
-              Enter your website URL. We scan it against the Mogen 37-step
-              framework — scoring SEO, speed, conversions and local visibility —
-              then send you a prioritised blueprint to rank and grow.
+              Enter your website URL. We fetch and measure it against the Mogen 37-step
+              framework — then email you a personalised PDF report with the results.
             </p>
 
             <div className="mt-10 space-y-4">
               {[
                 "Technical SEO & indexation health",
-                "Core Web Vitals & page speed",
-                "Local SEO & Google Business Profile",
-                "Conversion path & lead capture",
+                "On-page content & metadata",
+                "Structured data & social tags",
+                "Local business signals",
               ].map((f) => (
                 <div key={f} className="flex items-center gap-3 text-white/80 dark:text-secondary-foreground/80">
                   <CheckCircle2
@@ -157,7 +336,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
             </div>
           </div>
 
-          {/* RIGHT — interactive schematic */}
+          {/* RIGHT — interactive panel */}
           <div className="relative border border-white/30 bg-white/5 p-6 dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 lg:p-8">
             <div
               className="absolute left-0 top-0 h-6 w-px bg-catalyst"
@@ -184,8 +363,19 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       id={"audit-url"}
                       type="text"
                       value={url}
-                      onChange={(e) => setUrl(e.target.value)}
+                      onChange={(e) => {
+                        setUrl(e.target.value);
+                        if (apiError) setApiError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          runScan();
+                        }
+                      }}
                       placeholder="yourbusiness.co.za"
+                      aria-invalid={apiError ? true : undefined}
+                      aria-describedby={apiError ? "audit-url-error" : undefined}
                       className="w-full min-w-0 bg-transparent py-4 text-white placeholder:text-white/60 focus:outline-none dark:text-secondary-foreground dark:placeholder:text-secondary-foreground/60"
                     />
                   </div>
@@ -198,14 +388,43 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                     Scan
                   </MagneticButton>
                 </div>
+                {TURNSTILE_SITE_KEY ? (
+                  <>
+                    <Script
+                      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+                      strategy="afterInteractive"
+                      onReady={() =>
+                        renderWidget(scanContainer, scanSlot, "audit", setScanToken)
+                      }
+                    />
+                    <div ref={scanContainer} className="mt-4" />
+                  </>
+                ) : null}
+                {apiError && (
+                  <div
+                    id="audit-url-error"
+                    role="alert"
+                    className="mt-4 border border-catalyst/60 bg-catalyst/10 px-4 py-3"
+                  >
+                    <p className="text-sm font-semibold text-catalyst">
+                      We couldn&apos;t analyse that address.
+                    </p>
+                    <p className="mt-1 text-sm text-white/80 dark:text-secondary-foreground/80">
+                      {apiError}
+                    </p>
+                    <p className="mt-2 text-xs text-white/60 dark:text-secondary-foreground/60">
+                      Check the spelling and try again — e.g. yourbusiness.co.za
+                    </p>
+                  </div>
+                )}
                 <p className="mt-4 text-xs text-white/70 dark:text-secondary-foreground/70">
-                  No signup required for the scan. Unlock the full report with
-                  your details.
+                  No signup required for the scan. Add your details afterwards and
+                  we&apos;ll email you the PDF report.
                 </p>
               </div>
             )}
 
-            {/* STEP 1 — scanning */}
+            {/* STEP 1 — scanning (real request in flight) */}
             {step === 1 && (
               <div className="relative min-h-70">
                 <div className="flex min-w-0 items-center gap-3 text-white/70 dark:text-secondary-foreground/70">
@@ -213,7 +432,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                     className="h-5 w-5 shrink-0 animate-spin text-catalyst"
                     aria-hidden="true"
                   />
-                  <span className="small-caps min-w-0 truncate">Scanning {url}</span>
+                  <span className="small-caps min-w-0 truncate">Scanning {url.trim()}</span>
                 </div>
                 <div className="relative mt-6 h-55 overflow-hidden border border-white/30 dark:border-secondary-foreground/40">
                   <div
@@ -230,54 +449,48 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                     ))}
                   </div>
                   <div className="absolute bottom-3 left-3 right-3 space-y-1.5 text-xs text-white/70 dark:text-secondary-foreground/70">
-                    <div className="animate-pulse">
-                      › analysing crawl budget…
-                    </div>
-                    <div
-                      className="animate-pulse"
-                      style={{ animationDelay: "0.3s" }}
-                    >
-                      › checking indexation…
-                    </div>
-                    <div
-                      className="animate-pulse"
-                      style={{ animationDelay: "0.6s" }}
-                    >
-                      › measuring Core Web Vitals…
-                    </div>
-                    <div
-                      className="animate-pulse"
-                      style={{ animationDelay: "0.9s" }}
-                    >
-                      › mapping local grid…
-                    </div>
+                    <div>› fetching website server-side…</div>
+                    <div>› crawling same-origin pages (max 10)…</div>
+                    <div>› checking robots.txt &amp; sitemap…</div>
+                    <div>› running 37 deterministic checks…</div>
                   </div>
                 </div>
+                <p className="mt-4 text-xs text-white/70 dark:text-secondary-foreground/70" role="status">
+                  Analysis running — {elapsed}s elapsed. Most sites take 10–60 seconds.
+                </p>
               </div>
             )}
 
-            {/* STEP 2 — report + form */}
-            {step === 2 && (
+            {/* STEP 2 — score + lead form (detail lives in the emailed PDFs) */}
+            {step === 2 && audit !== null && (
               <div>
                 <div className="flex min-w-0 items-center justify-between gap-3">
-                  <span className="small-caps shrink-0 text-white/70 dark:text-secondary-foreground/70">Growth Score</span>
-                  <span className="small-caps min-w-0 truncate text-white/70 dark:text-secondary-foreground/70">{url}</span>
+                  <span className="small-caps shrink-0 text-white/70 dark:text-secondary-foreground/70">
+                    SEO Health Score{audit.summary.provisional ? " (Provisional)" : ""}
+                  </span>
+                  <span className="small-caps min-w-0 truncate text-white/70 dark:text-secondary-foreground/70">{audit.site.finalUrl}</span>
                 </div>
                 <div className="mt-4 flex items-end gap-4">
                   <span className="font-display text-7xl font-black text-catalyst">
-                    {score}
+                    {score ?? "—"}
                   </span>
                   <span className="mb-3 text-white/70 dark:text-secondary-foreground/70">/ 100</span>
                 </div>
                 <div className="mt-3 h-2 w-full bg-white/10 dark:bg-secondary-foreground/10">
                   <div
                     className="h-full bg-catalyst transition-all duration-1000"
-                    style={{ width: `${score}%` }}
+                    style={{ width: `${score ?? 0}%` }}
                   />
                 </div>
                 <p className="mt-4 text-sm text-white/70 dark:text-secondary-foreground/70">
-                  Your site has clear growth headroom. Unlock the full
-                  prioritised blueprint — enter your details below.
+                  Measured across {audit.summary.assessed} of {audit.summary.applicable}{" "}
+                  applicable checks ({coveragePct}% coverage) on {audit.crawl.pagesAnalysed}{" "}
+                  page{audit.crawl.pagesAnalysed === 1 ? "" : "s"}
+                  {audit.summary.provisional ? " — coverage is low, so this score is provisional" : ""}.
+                </p>
+                <p className="mt-2 text-sm text-white/70 dark:text-secondary-foreground/70">
+                  The full breakdown is in your PDF report — add your details below
+                  and we&apos;ll email it to you.
                 </p>
 
                 <form onSubmit={submit} className="mt-6 space-y-3">
@@ -325,15 +538,40 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       ))}
                     </select>
                   </div>
-                  {error && <p className="text-sm text-catalyst">{error}</p>}
+                  {/* Honeypot — invisible to humans */}
+                  <div className="hidden" aria-hidden="true">
+                    <label htmlFor="audit-company-website">Company website</label>
+                    <input
+                      id={"audit-company-website"}
+                      name="companyWebsite"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={form.companyWebsite}
+                      onChange={(e) => setForm({ ...form, companyWebsite: e.target.value })}
+                    />
+                  </div>
+                  {TURNSTILE_SITE_KEY ? (
+                    <>
+                      <Script
+                        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+                        strategy="afterInteractive"
+                        onReady={() =>
+                          renderWidget(leadContainer, leadSlot, "audit-lead", setLeadToken)
+                        }
+                      />
+                      <div ref={leadContainer} />
+                    </>
+                  ) : null}
+                  {error && <p className="text-sm text-catalyst" role="alert">{error}</p>}
                   <MagneticButton
                     type="submit"
                     variant="catalyst"
                     className="w-full text-black hover:bg-ink hover:text-white dark:hover:text-black"
                     disabled={saving}
-                    aria-label="Unlock full growth report"
+                    aria-label="Email me the PDF report"
                   >
-                    {saving ? "Unlocking…" : "Unlock Full Report"}
+                    {saving ? "Sending…" : "Email Me the PDF Report"}
                     {!saving && <ArrowRight className="h-4 w-4" />}
                   </MagneticButton>
                 </form>
@@ -348,11 +586,11 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                   aria-hidden="true"
                 />
                 <h3 className="mt-6 font-display text-3xl font-black">
-                  Report unlocked.
+                  Report sent.
                 </h3>
                 <p className="mt-3 max-w-sm text-white/70 dark:text-secondary-foreground/70">
                   Thanks{form.name ? `, ${form.name.split(" ")[0]}` : ""}. Your
-                  full Growth Audit blueprint is on its way to{" "}
+                  personalised PDF report is on its way to{" "}
                   <span className="text-catalyst">{form.email}</span>. A Mogen
                   strategist will reach out within 24 hours.
                 </p>
@@ -361,20 +599,28 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                   variant="catalyst"
                   className="mt-8 w-full text-black hover:bg-ink hover:text-white dark:hover:text-black"
                 >
-                  View Full Results <ArrowRight className="h-4 w-4" />
+                  View My Score <ArrowRight className="h-4 w-4" />
                 </MagneticButton>
                 <MagneticButton
                   as="a"
-                  href="#services"
+                  href={buildEnquiryHref({
+                    service: "seo",
+                    website: audit?.site.finalUrl ?? url.trim(),
+                  })}
                   variant="outline"
                   className="mt-3 w-full border-white/40 text-white hover:bg-white hover:text-ink dark:border-secondary-foreground/40 dark:text-secondary-foreground dark:hover:bg-secondary-foreground dark:hover:text-secondary"
                 >
-                  View services
+                  Discuss my SEO results
                 </MagneticButton>
               </div>
             )}
           </div>
         </div>
+        <p className="mt-8 text-xs text-white/40">
+          Measured from your public website HTML, robots.txt and sitemap only. Rankings, traffic,
+          backlinks and Google data are marked “not assessed” unless those sources are connected —{" "}
+          technical SEO never invents them.
+        </p>
       </div>
     </BlueprintGrid>
   );
