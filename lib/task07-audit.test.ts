@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { getPromotionBySlug } from "@/data/promotions";
-import { SERVICES } from "@/data/services";
 import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
 
 function readSource(relativePath: string): string {
@@ -51,13 +50,12 @@ describe("task 07 — public branding and service references", () => {
 });
 
 describe("task 07 — growth audit controls", () => {
-  it("defaults service interest to a valid public service slug", () => {
+  it("defaults SEO audit service interest to blank so a package must be chosen", () => {
     const source = readSource("components/mogen/growth-audit.tsx");
     expect(source).not.toContain("Full Growth Package");
-    const slugs = SERVICES.map((s) => s.slug);
-    const match = source.match(/service_interest:\s*"([^"]+)"/);
-    expect(match).not.toBeNull();
-    expect(slugs).toContain(match![1]);
+    expect(source).toContain('service_interest: ""');
+    expect(source).toContain("Select an SEO package");
+    expect(source).toContain("Please select an SEO package.");
   });
 
   it("has no non-functional duplicate service selector", () => {

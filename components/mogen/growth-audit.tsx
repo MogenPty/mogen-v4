@@ -1,16 +1,22 @@
 "use client";
 
-import { ArrowRight, CheckCircle2, Loader2, Search, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  Search,
+  ShieldCheck,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
-import { type SubmitEvent, useEffect, useRef, useState } from "react";
-import { SERVICES } from "@/data/services";
+import { type SubmitEvent, useEffect, useMemo, useRef, useState } from "react";
+import { getService } from "@/data/services";
+import { prevalidateUrl } from "@/lib/audit/prevalidate";
+import type { AuditResult } from "@/lib/audit/types";
 import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
-import type { AuditResult } from "@/lib/audit/types";
-import { prevalidateUrl } from "@/lib/audit/prevalidate";
 
 const STEPS = ["URL", "Scan", "Report", "Unlock"];
 
@@ -67,10 +73,19 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
     email: "",
     phone: "",
     business_name: "",
-    service_interest: "seo",
+    // SEO Audit enquiry: blank by default to force an explicit SEO package
+    // selection. The Service Interest field acts as the SEO package selector.
+    service_interest: "",
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
   });
+  // Single source of truth for the selected SEO package: derived from the
+  // Service Interest value, drives both the select and the offer display.
+  const seoPackages = useMemo(() => getService("seo")?.pricing ?? [], []);
+  const selectedSeoPackage = useMemo(
+    () => seoPackages.find((p) => p.packageId === form.service_interest),
+    [seoPackages, form.service_interest],
+  );
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -117,7 +132,10 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
     };
   }
 
-  function resetWidget(slot: React.MutableRefObject<WidgetSlot>, clear: () => void) {
+  function resetWidget(
+    slot: React.MutableRefObject<WidgetSlot>,
+    clear: () => void,
+  ) {
     try {
       if (slot.current.id !== null && typeof window.turnstile !== "undefined") {
         window.turnstile.reset(slot.current.id);
@@ -154,13 +172,23 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
           ...(scanToken ? { turnstileToken: scanToken } : {}),
         }),
       });
-      let data: { ok: boolean; error?: string; audit?: AuditResult; auditId?: string };
+      let data: {
+        ok: boolean;
+        error?: string;
+        audit?: AuditResult;
+        auditId?: string;
+      };
       try {
         data = (await res.json()) as typeof data;
       } catch {
         throw new Error("unparseable");
       }
-      if (!res.ok || !data.ok || !data.audit || typeof data.auditId !== "string") {
+      if (
+        !res.ok ||
+        !data.ok ||
+        !data.audit ||
+        typeof data.auditId !== "string"
+      ) {
         throw new Error(data.error ?? "The website could not be analysed.");
       }
       setAudit(data.audit);
@@ -185,6 +213,10 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) {
       setError("Name and email are required to receive your report.");
+      return;
+    }
+    if (!form.service_interest) {
+      setError("Please select an SEO package.");
       return;
     }
     if (!audit || !auditId) {
@@ -219,7 +251,8 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
       }
       if (!res.ok || !data.ok) {
         throw new Error(
-          data.error ?? "Something went wrong. Please try again or email us directly.",
+          data.error ??
+            "Something went wrong. Please try again or email us directly.",
         );
       }
       try {
@@ -281,7 +314,9 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
             className="h-px flex-1 max-w-30 bg-white/30 dark:bg-secondary-foreground/30"
             aria-hidden="true"
           />
-          <span className="small-caps text-white/70 dark:text-secondary-foreground/70">Mogen Growth Audit</span>
+          <span className="small-caps text-white/70 dark:text-secondary-foreground/70">
+            Mogen Growth Audit
+          </span>
         </div>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
@@ -293,8 +328,9 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
               <span className="text-catalyst">Growth Audit.</span>
             </h2>
             <p className="mt-6 max-w-md text-lg text-white/70 dark:text-secondary-foreground/70">
-              Enter your website URL. We fetch and measure it against the Mogen 37-step
-              framework — then email you a personalised PDF report with the results.
+              Enter your website URL. We fetch and measure it against the Mogen
+              37-step framework — then email you a personalised PDF report with
+              the results.
             </p>
 
             <div className="mt-10 space-y-4">
@@ -304,7 +340,10 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                 "Structured data & social tags",
                 "Local business signals",
               ].map((f) => (
-                <div key={f} className="flex items-center gap-3 text-white/80 dark:text-secondary-foreground/80">
+                <div
+                  key={f}
+                  className="flex items-center gap-3 text-white/80 dark:text-secondary-foreground/80"
+                >
                   <CheckCircle2
                     className="h-5 w-5 text-catalyst"
                     aria-hidden="true"
@@ -329,7 +368,10 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                     {s}
                   </span>
                   {i < STEPS.length - 1 && (
-                    <span className="h-px w-6 bg-white/20 dark:bg-secondary-foreground/20" aria-hidden="true" />
+                    <span
+                      className="h-px w-6 bg-white/20 dark:bg-secondary-foreground/20"
+                      aria-hidden="true"
+                    />
                   )}
                 </div>
               ))}
@@ -350,7 +392,10 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
             {/* STEP 0 — URL */}
             {step === 0 && (
               <div>
-                <label htmlFor="audit-url" className="small-caps text-white/70 dark:text-secondary-foreground/70">
+                <label
+                  htmlFor="audit-url"
+                  className="small-caps text-white/70 dark:text-secondary-foreground/70"
+                >
                   Enter your website URL
                 </label>
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row">
@@ -375,7 +420,9 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       }}
                       placeholder="yourbusiness.co.za"
                       aria-invalid={apiError ? true : undefined}
-                      aria-describedby={apiError ? "audit-url-error" : undefined}
+                      aria-describedby={
+                        apiError ? "audit-url-error" : undefined
+                      }
                       className="w-full min-w-0 bg-transparent py-4 text-white placeholder:text-white/60 focus:outline-none dark:text-secondary-foreground dark:placeholder:text-secondary-foreground/60"
                     />
                   </div>
@@ -394,7 +441,12 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
                       strategy="afterInteractive"
                       onReady={() =>
-                        renderWidget(scanContainer, scanSlot, "audit", setScanToken)
+                        renderWidget(
+                          scanContainer,
+                          scanSlot,
+                          "audit",
+                          setScanToken,
+                        )
                       }
                     />
                     <div ref={scanContainer} className="mt-4" />
@@ -402,7 +454,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                 ) : null}
                 {apiError && (
                   <div
-                    id="audit-url-error"
+                    id={"audit-url-error"}
                     role="alert"
                     className="mt-4 border border-catalyst/60 bg-catalyst/10 px-4 py-3"
                   >
@@ -418,8 +470,8 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                   </div>
                 )}
                 <p className="mt-4 text-xs text-white/70 dark:text-secondary-foreground/70">
-                  No signup required for the scan. Add your details afterwards and
-                  we&apos;ll email you the PDF report.
+                  No signup required for the scan. Add your details afterwards
+                  and we&apos;ll email you the PDF report.
                 </p>
               </div>
             )}
@@ -432,7 +484,9 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                     className="h-5 w-5 shrink-0 animate-spin text-catalyst"
                     aria-hidden="true"
                   />
-                  <span className="small-caps min-w-0 truncate">Scanning {url.trim()}</span>
+                  <span className="small-caps min-w-0 truncate">
+                    Scanning {url.trim()}
+                  </span>
                 </div>
                 <div className="relative mt-6 h-55 overflow-hidden border border-white/30 dark:border-secondary-foreground/40">
                   <div
@@ -455,8 +509,12 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                     <div>› running 37 deterministic checks…</div>
                   </div>
                 </div>
-                <p className="mt-4 text-xs text-white/70 dark:text-secondary-foreground/70" role="status">
-                  Analysis running — {elapsed}s elapsed. Most sites take 10–60 seconds.
+                <p
+                  className="mt-4 text-xs text-white/70 dark:text-secondary-foreground/70"
+                  role="status"
+                >
+                  Analysis running — {elapsed}s elapsed. Most sites take 10-60
+                  seconds.
                 </p>
               </div>
             )}
@@ -466,15 +524,20 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
               <div>
                 <div className="flex min-w-0 items-center justify-between gap-3">
                   <span className="small-caps shrink-0 text-white/70 dark:text-secondary-foreground/70">
-                    SEO Health Score{audit.summary.provisional ? " (Provisional)" : ""}
+                    SEO Health Score
+                    {audit.summary.provisional ? " (Provisional)" : ""}
                   </span>
-                  <span className="small-caps min-w-0 truncate text-white/70 dark:text-secondary-foreground/70">{audit.site.finalUrl}</span>
+                  <span className="small-caps min-w-0 truncate text-white/70 dark:text-secondary-foreground/70">
+                    {audit.site.finalUrl}
+                  </span>
                 </div>
                 <div className="mt-4 flex items-end gap-4">
                   <span className="font-display text-7xl font-black text-catalyst">
                     {score ?? "—"}
                   </span>
-                  <span className="mb-3 text-white/70 dark:text-secondary-foreground/70">/ 100</span>
+                  <span className="mb-3 text-white/70 dark:text-secondary-foreground/70">
+                    / 100
+                  </span>
                 </div>
                 <div className="mt-3 h-2 w-full bg-white/10 dark:bg-secondary-foreground/10">
                   <div
@@ -483,14 +546,18 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                   />
                 </div>
                 <p className="mt-4 text-sm text-white/70 dark:text-secondary-foreground/70">
-                  Measured across {audit.summary.assessed} of {audit.summary.applicable}{" "}
-                  applicable checks ({coveragePct}% coverage) on {audit.crawl.pagesAnalysed}{" "}
-                  page{audit.crawl.pagesAnalysed === 1 ? "" : "s"}
-                  {audit.summary.provisional ? " — coverage is low, so this score is provisional" : ""}.
+                  Measured across {audit.summary.assessed} of{" "}
+                  {audit.summary.applicable} applicable checks ({coveragePct}%
+                  coverage) on {audit.crawl.pagesAnalysed} page
+                  {audit.crawl.pagesAnalysed === 1 ? "" : "s"}
+                  {audit.summary.provisional
+                    ? " — coverage is low, so this score is provisional"
+                    : ""}
+                  .
                 </p>
                 <p className="mt-2 text-sm text-white/70 dark:text-secondary-foreground/70">
-                  The full breakdown is in your PDF report — add your details below
-                  and we&apos;ll email it to you.
+                  The full breakdown is in your PDF report — add your details
+                  below and we&apos;ll email it to you.
                 </p>
 
                 <form onSubmit={submit} className="mt-6 space-y-3">
@@ -520,7 +587,10 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                     />
                   </div>
                   <div>
-                    <label htmlFor="svc" className="small-caps text-white/70 dark:text-secondary-foreground/70">
+                    <label
+                      htmlFor="svc"
+                      className="small-caps text-white/70 dark:text-secondary-foreground/70"
+                    >
                       Service interest
                     </label>
                     <select
@@ -529,18 +599,64 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       onChange={(e) =>
                         setForm({ ...form, service_interest: e.target.value })
                       }
-                      className="mt-2 w-full border border-white/30 bg-white/5 px-4 py-3 text-white focus:outline-none dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 dark:text-secondary-foreground"
+                      aria-describedby={
+                        selectedSeoPackage
+                          ? "seo-package-offer"
+                          : "seo-package-hint"
+                      }
+                      className="mt-2 w-full border border-white/30 bg-white/5 px-4 py-3 text-white scheme-light dark:scheme-dark focus:outline-none dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 dark:text-secondary-foreground"
                     >
-                      {SERVICES.map((s) => (
-                        <option key={s.name} value={s.slug}>
-                          {s.name}
+                      <option value="" className="bg-bone text-ink">
+                        Select an SEO package
+                      </option>
+                      {seoPackages.map((p) => (
+                        <option
+                          key={p.packageId}
+                          value={p.packageId}
+                          className="bg-bone text-ink"
+                        >
+                          SEO - {p.name}
                         </option>
                       ))}
                     </select>
+                    {selectedSeoPackage ? (
+                      <div
+                        id={"seo-package-offer"}
+                        className="mt-3 border border-white/30 bg-white/5 px-4 py-4 dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10"
+                      >
+                        <p className="font-display text-lg font-black text-white dark:text-secondary-foreground">
+                          SEO - {selectedSeoPackage.name}
+                        </p>
+                        <p className="mt-1 text-sm text-white/70 dark:text-secondary-foreground/70">
+                          {selectedSeoPackage.price}{" "}
+                          {selectedSeoPackage.cadence}
+                        </p>
+                        <ul className="mt-3 space-y-1.5 text-sm text-white/80 dark:text-secondary-foreground/80">
+                          {selectedSeoPackage.features.map((f) => (
+                            <li key={f} className="flex items-start gap-2">
+                              <CheckCircle2
+                                className="mt-0.5 h-4 w-4 shrink-0 text-catalyst"
+                                aria-hidden="true"
+                              />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p
+                        id={"seo-package-hint"}
+                        className="mt-2 text-sm text-white/60 dark:text-secondary-foreground/60"
+                      >
+                        Select an SEO package to continue.
+                      </p>
+                    )}
                   </div>
                   {/* Honeypot — invisible to humans */}
                   <div className="hidden" aria-hidden="true">
-                    <label htmlFor="audit-company-website">Company website</label>
+                    <label htmlFor="audit-company-website">
+                      Company website
+                    </label>
                     <input
                       id={"audit-company-website"}
                       name="companyWebsite"
@@ -548,7 +664,9 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       tabIndex={-1}
                       autoComplete="off"
                       value={form.companyWebsite}
-                      onChange={(e) => setForm({ ...form, companyWebsite: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, companyWebsite: e.target.value })
+                      }
                     />
                   </div>
                   {TURNSTILE_SITE_KEY ? (
@@ -557,13 +675,22 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                         src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
                         strategy="afterInteractive"
                         onReady={() =>
-                          renderWidget(leadContainer, leadSlot, "audit-lead", setLeadToken)
+                          renderWidget(
+                            leadContainer,
+                            leadSlot,
+                            "audit-lead",
+                            setLeadToken,
+                          )
                         }
                       />
                       <div ref={leadContainer} />
                     </>
                   ) : null}
-                  {error && <p className="text-sm text-catalyst" role="alert">{error}</p>}
+                  {error && (
+                    <p className="text-sm text-catalyst" role="alert">
+                      {error}
+                    </p>
+                  )}
                   <MagneticButton
                     type="submit"
                     variant="catalyst"
@@ -617,9 +744,9 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
           </div>
         </div>
         <p className="mt-8 text-xs text-white/40">
-          Measured from your public website HTML, robots.txt and sitemap only. Rankings, traffic,
-          backlinks and Google data are marked “not assessed” unless those sources are connected —{" "}
-          technical SEO never invents them.
+          Measured from your public website HTML, robots.txt and sitemap only.
+          Rankings, traffic, backlinks and Google data are marked “not assessed”
+          unless those sources are connected — technical SEO never invents them.
         </p>
       </div>
     </BlueprintGrid>
@@ -642,7 +769,10 @@ function Field({
   const id = `audit-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div>
-      <label htmlFor={id} className="small-caps text-white/70 dark:text-secondary-foreground/70">
+      <label
+        htmlFor={id}
+        className="small-caps text-white/70 dark:text-secondary-foreground/70"
+      >
         {label}
       </label>
       <input

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FakeMailProvider } from "@/lib/mail/fake-mail-provider";
-import { processAuditLead } from "./lead-service";
+import { processAuditLead, resolveLeadServiceName } from "./lead-service";
 import { runChecks, type AnalysisInput } from "./checks";
 import { parsePage } from "./parser";
 import { scoreFindings, scoreQuadrants } from "./scoring";
@@ -57,6 +57,21 @@ function sampleAudit(): AuditResult {
     findings,
   };
 }
+
+describe("lead service display names", () => {
+  it("resolves service slugs directly", () => {
+    expect(resolveLeadServiceName("seo")).toBe("SEO");
+  });
+
+  it("labels packages with their owning service, not a hardcoded prefix", () => {
+    expect(resolveLeadServiceName("ignition")).toBe("SEO - Ignition");
+    expect(resolveLeadServiceName("sprout")).toBe("Web Development - Sprout");
+  });
+
+  it("passes unknown values through unchanged", () => {
+    expect(resolveLeadServiceName("something-else")).toBe("something-else");
+  });
+});
 
 describe("lead processing", () => {
   it("sends both emails with server-computed numbers", async () => {

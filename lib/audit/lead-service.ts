@@ -4,6 +4,7 @@
  * module owns validation-independent email delivery.
  */
 
+import { getPackage } from "@/data/packages";
 import { getService } from "@/data/services";
 import type { MailProvider } from "@/lib/mail/mail-provider";
 import {
@@ -35,6 +36,22 @@ const INTERNAL_ERROR =
   "Something went wrong saving your details. Please try again or email info@mogen.co.za.";
 
 /**
+ * Resolve a lead `service` value to a visitor-facing display name.
+ * Direct service slugs resolve via the service data; package identifiers
+ * resolve through the package registry, labelled with their owning
+ * service's name (derived from the package's `serviceSlug`, never
+ * hardcoded). Unknown values pass through unchanged.
+ */
+export function resolveLeadServiceName(service: string): string {
+  const direct = getService(service)?.name;
+  if (direct) return direct;
+  const pkg = getPackage(service);
+  if (!pkg) return service;
+  const owner = getService(pkg.serviceSlug)?.name;
+  return owner ? `${owner} - ${pkg.name}` : pkg.name;
+}
+
+/**
  * Send the client PDF to the visitor and the technical PDF + lead details
  * to the inbox. The internal email is sent FIRST so a client-email failure
  * can never swallow the lead — the caller still reports the client failure.
@@ -62,7 +79,7 @@ export async function processAuditLead(
   };
 
   const serviceName = input.lead.service
-    ? (getService(input.lead.service)?.name ?? input.lead.service)
+    ? resolveLeadServiceName(input.lead.service)
     : undefined;
   const leadInfo: LeadInfo = {
     name: input.lead.name,
