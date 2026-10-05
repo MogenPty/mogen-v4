@@ -2,16 +2,9 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getService } from "@/data/services";
-import { scoreFindings } from "@/lib/audit/scoring";
+import { getAudit } from "@/lib/audit/audit-store";
+import { processAuditLead } from "@/lib/audit/lead-service";
 import { getMailProvider } from "@/lib/mail/provider-factory";
-import {
-  getAuditMailConfig,
-  sendClientReportEmail,
-  sendInternalAuditEmail,
-  type LeadInfo,
-} from "@/lib/audit/notify";
-import type { AuditResult, Finding, FindingStatus } from "@/lib/audit/types";
 import {
   parseExpectedHostnames,
   verifyTurnstileToken,
@@ -20,96 +13,13 @@ import {
 /**
  * POST /api/audit/lead — visitor completed the audit lead form.
  *
- * Body: { lead: { name, email, phone?, business?, service? }, audit: AuditResult }
+ * Body: { lead: { name, email, phone?, business?, service? }, auditId: string }
  *
- * The client re-submits the audit it received; the server re-validates its
- * shape and recomputes the score from the findings so emailed numbers
- * cannot be tampered with. Sends the simplified PDF to the visitor and the
- * full technical PDF (with lead details) to Mogen's inbox.
+ * The audit is retrieved from short-lived server storage by server-issued
+ * ID — caller-submitted findings are never trusted, so fabricated evidence
+ * cannot reach the emailed PDFs. Sends the simplified PDF to the visitor and
+ * the full technical PDF (with lead details) to Mogen's inbox.
  */
-
-const STATUSES: FindingStatus[] = [
-  "PASS", "FAIL", "WARN", "NOT_ASSESSED", "NOT_APPLICABLE", "HISTORICAL", "INFERRED",
-];
-
-const evidenceSchema = z.object({
-  source: z.string(),
-  observedAt: z.string(),
-  url: z.string().optional(),
-  value: z.unknown().optional(),
-  expected: z.unknown().optional(),
-  details: z.string().optional(),
-});
-
-const findingSchema = z.object({
-  ruleId: z.string().min(1).max(80),
-  status: z.enum(STATUSES as [FindingStatus, ...FindingStatus[]]),
-  summary: z.string().max(2000),
-  evidence: z.array(evidenceSchema).max(50),
-  recommendation: z.string().max(2000).optional(),
-});
-
-const auditSchema = z.object({
-  id: z.string().max(100),
-  version: z.string().max(20),
-  engineVersion: z.string().max(20),
-  ruleSetVersion: z.string().max(40),
-  generatedAt: z.string().max(40),
-  site: z.object({
-    submittedUrl: z.string().max(2048),
-    finalUrl: z.string().max(2048),
-    domain: z.string().max(253),
-  }),
-  crawl: z.object({
-    submittedUrl: z.string().max(2048),
-    finalUrl: z.string().max(2048),
-    domain: z.string().max(253),
-    redirects: z.array(z.object({ url: z.string().max(2048), status: z.number() })).max(10),
-    pagesRequested: z.number(),
-    pagesAnalysed: z.number(),
-    analysedUrls: z.array(z.string().max(2048)).max(20),
-  }),
-  robots: z.object({
-    url: z.string().max(2048),
-    status: z.number().nullable(),
-    contentType: z.string().max(200).nullable(),
-    body: z.string().max(20000).nullable(),
-    sitemapRefs: z.array(z.string().max(500)).max(10),
-    disallowRules: z.array(z.string().max(200)).max(50),
-    llmsTxtDetected: z.boolean(),
-  }),
-  sitemap: z.object({
-    url: z.string().max(2048).nullable(),
-    status: z.number().nullable(),
-    contentType: z.string().max(200).nullable(),
-    validXml: z.boolean(),
-    kind: z.enum(["urlset", "sitemapindex", "unknown"]),
-    discoveredUrls: z.array(z.string().max(2048)).max(300),
-    invalidEntries: z.number(),
-    duplicateUrls: z.number(),
-    offOriginUrls: z.number(),
-  }),
-  summary: z.object({
-    score: z.number().nullable(),
-    provisional: z.boolean(),
-    coverage: z.number(),
-    passed: z.number(),
-    warnings: z.number(),
-    failed: z.number(),
-    notAssessed: z.number(),
-    assessed: z.number(),
-    applicable: z.number(),
-  }),
-  quadrants: z.array(z.object({
-    id: z.string(),
-    label: z.string(),
-    score: z.number().nullable(),
-    coverage: z.number(),
-    assessed: z.number(),
-    applicable: z.number(),
-  })).max(10),
-  findings: z.array(findingSchema).min(1).max(100),
-});
 
 const leadSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -122,7 +32,7 @@ const leadSchema = z.object({
 
 const bodySchema = z.object({
   lead: leadSchema,
-  audit: auditSchema,
+  auditId: z.string().min(1).max(200),
   turnstileToken: z.unknown().optional(),
 });
 
@@ -170,11 +80,6 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });
   }
-  // Bound re-submitted audit payloads (the analyser caps pages at 10 and
-  // evidence is truncated, so legitimate payloads are far below this).
-  if (JSON.stringify(raw ?? {}).length > 2 * 1024 * 1024) {
-    return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });
-  }
 
   const parsed = bodySchema.safeParse(raw);
   if (!parsed.success) {
@@ -183,7 +88,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const { lead, audit, turnstileToken } = parsed.data;
+  const { lead, auditId, turnstileToken } = parsed.data;
 
   // Honeypot — pretend success so bots learn nothing.
   if (lead.companyWebsite) return NextResponse.json({ ok: true });
@@ -210,13 +115,13 @@ export async function POST(req: Request) {
     }
   }
 
-  // Recompute the score from the submitted findings — emailed numbers always
-  // come from the server, never from client-provided totals.
-  const trustedSummary = scoreFindings(audit.findings as Finding[]);
-  const trustedAudit: AuditResult = {
-    ...(audit as AuditResult),
-    summary: { ...trustedSummary, score: trustedSummary.score },
-  };
+  const audit = getAudit(auditId);
+  if (!audit) {
+    return NextResponse.json(
+      { ok: false, error: "Your scan has expired. Please run the scan again." },
+      { status: 410 },
+    );
+  }
 
   let provider;
   try {
@@ -228,45 +133,20 @@ export async function POST(req: Request) {
       { status: 500 },
     );
   }
-  const config = getAuditMailConfig();
-  if (!config.inbox || !config.from) {
-    console.error("[audit-lead] mail recipient/sender is not configured");
-    return NextResponse.json(
-      { ok: false, error: "Something went wrong. Please try again or email info@mogen.co.za." },
-      { status: 500 },
-    );
-  }
 
-  const serviceName = getService(lead.service)?.name ?? lead.service;
-  const leadInfo: LeadInfo = {
-    name: lead.name,
-    email: lead.email,
-    ...(lead.phone ? { phone: lead.phone } : {}),
-    ...(lead.business ? { business: lead.business } : {}),
-    ...(serviceName ? { service: serviceName } : {}),
-  };
-
-  const clientResult = await sendClientReportEmail(provider, config, {
-    audit: trustedAudit,
-    to: lead.email,
-    name: lead.name,
+  const result = await processAuditLead(provider, {
+    lead: {
+      name: lead.name,
+      email: lead.email,
+      ...(lead.phone ? { phone: lead.phone } : {}),
+      ...(lead.business ? { business: lead.business } : {}),
+      ...(lead.service ? { service: lead.service } : {}),
+    },
+    audit,
+    ...(ip === "unknown" ? {} : { ip }),
   });
-  if (!clientResult.success) {
-    console.error(`[audit-lead] client mail failed: ${clientResult.error.code}`);
-    return NextResponse.json(
-      { ok: false, error: "Something went wrong sending your report. Please try again or email info@mogen.co.za." },
-      { status: 502 },
-    );
+  if (!result.ok) {
+    return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
   }
-
-  const internalResult = await sendInternalAuditEmail(provider, config, {
-    audit: trustedAudit,
-    ip: ip === "unknown" ? undefined : ip,
-    lead: leadInfo,
-  });
-  if (!internalResult.success) {
-    console.error(`[audit-lead] internal mail failed: ${internalResult.error.code}`);
-  }
-
   return NextResponse.json({ ok: true });
 }

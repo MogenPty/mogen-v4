@@ -41,6 +41,28 @@ describe("URL validation", () => {
     expect(await codeFor("http://localhost")).toBe("blocked-host");
     expect(await codeFor("http://127.0.0.1")).toBe("blocked-ip");
     expect(await codeFor("http://[::1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[::]/")).toBe("blocked-ip");
+  });
+
+  it("blocks the full fe80::/10 link-local range, not just fe80", async () => {
+    expect(await codeFor("http://[fe80::1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[fe90::1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[febf::1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[FE80::1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[fc00::1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[ff02::1]/")).toBe("blocked-ip");
+  });
+
+  it("decodes embedded IPv4 in mapped, compatible and NAT64 forms", async () => {
+    expect(await codeFor("http://[::ffff:127.0.0.1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[::ffff:7f00:1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[::192.168.1.1]/")).toBe("blocked-ip");
+    expect(await codeFor("http://[64:ff9b::c0a8:101]/")).toBe("blocked-ip");
+  });
+
+  it("accepts public embedded IPv4 without over-blocking", async () => {
+    expect(await codeFor("http://[::ffff:5dB8:d822]/")).toBe("accepted");
+    expect(await codeFor("http://[64:ff9b::5db8:d822]/")).toBe("accepted");
   });
 
   it("rejects private network ranges", async () => {

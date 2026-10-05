@@ -4,11 +4,18 @@
  * Guarantees:
  * - Only http/https URLs validated by `validateUrlForFetch`.
  * - Every redirect hop re-validated (DNS rebinding protection).
+ * - The TCP connection goes only to a validated address: each request uses
+ *   an undici dispatcher whose lookup serves the validated IPs, closing the
+ *   validate-vs-connect DNS race. TLS SNI and the Host header still use the
+ *   original hostname (undici derives those from the URL, not the lookup).
  * - Max 4 redirects, full chain recorded.
  * - Per-response body cap (2 MB default) enforced while streaming.
- * - Request timeout via AbortSignal.
+ * - Per-request timeout, optionally combined with an overall audit deadline.
  */
 
+import dns from "node:dns";
+import net from "node:net";
+import { Agent, fetch as undiciFetch } from "undici";
 import {
   MAX_HTML_BYTES,
   MAX_REDIRECTS,
@@ -27,6 +34,12 @@ export interface FetchedResponse {
   body: string;
   truncated: boolean;
 }
+
+/** fetch-compatible; init may carry an undici dispatcher for IP pinning. */
+export type FetchFunction = (
+  input: string | URL,
+  init?: RequestInit & { dispatcher?: unknown },
+) => Promise<Response>;
 
 export type SafeFetchErrorCode =
   | "invalid-url"
@@ -68,10 +81,12 @@ const BROWSER_UA =
   "Mozilla/5.0 (compatible; MogenSEOAnalyser/1.0; +https://www.mogen.co.za)";
 
 interface FetchDeps {
-  fetchFn?: typeof fetch;
+  fetchFn?: FetchFunction;
   timeoutMs?: number;
   maxBytes?: number;
   maxRedirects?: number;
+  /** Overall deadline (e.g. the whole audit); combined with the per-request timeout. */
+  signal?: AbortSignal;
 }
 
 function toSafeCode(error: unknown): SafeFetchErrorCode {
@@ -80,6 +95,59 @@ function toSafeCode(error: unknown): SafeFetchErrorCode {
     return "unsafe-target";
   }
   return "unreachable";
+}
+
+type LookupCallback = (
+  err: NodeJS.ErrnoException | null,
+  address: string | dns.LookupAddress[],
+  family: number,
+) => void;
+
+/**
+ * DNS lookup that serves ONLY validated addresses and fails closed on
+ * anything else. Undici still derives TLS SNI and the Host header from the
+ * request URL, so the original hostname is preserved end-to-end.
+ */
+export function pinnedLookup(addresses: string[]) {
+  return (
+    hostname: string,
+    options: dns.LookupOptions,
+    callback: LookupCallback,
+  ): void => {
+    const family = typeof options === "number" ? options : (options.family ?? 0);
+    const pool = [
+      ...new Set(
+        addresses.filter((a) => family === 0 || net.isIP(a) === family),
+      ),
+    ];
+    if (pool.length === 0) {
+      const err = new Error(
+        `DNS lookup blocked for ${hostname}`,
+      ) as NodeJS.ErrnoException;
+      err.code = "ENOTFOUND";
+      callback(err, "", 0);
+      return;
+    }
+    if (typeof options === "object" && options.all) {
+      callback(
+        null,
+        pool.map((address) => ({
+          address,
+          family: net.isIP(address) as 4 | 6,
+        })),
+        0,
+      );
+      return;
+    }
+    callback(null, pool[0], net.isIP(pool[0]));
+  };
+}
+
+/** Dispatcher whose connections can only go to validated addresses. */
+export function pinnedDispatcher(addresses: string[]): Agent {
+  return new Agent({
+    connect: { lookup: pinnedLookup(addresses) },
+  });
 }
 
 async function readCappedBody(
@@ -126,18 +194,20 @@ async function readCappedBody(
 }
 
 /**
- * Fetch a URL safely: validates the target, follows up to `maxRedirects`
- * manually (validating each hop), enforces timeout + body cap.
+ * Fetch a URL safely: validates the target, pins the connection to a
+ * validated address, follows up to `maxRedirects` manually (validating each
+ * hop and re-pinning), enforces timeout + body cap.
  */
 export async function safeFetch(
   rawUrl: string,
   deps: FetchDeps = {},
 ): Promise<FetchedResponse> {
   const {
-    fetchFn = fetch,
+    fetchFn = undiciFetch as unknown as FetchFunction,
     timeoutMs = REQUEST_TIMEOUT_MS,
     maxBytes = MAX_HTML_BYTES,
     maxRedirects = MAX_REDIRECTS,
+    signal,
   } = deps;
 
   let current: ValidatedUrl;
@@ -151,14 +221,27 @@ export async function safeFetch(
   let target = current.url;
 
   for (let hop = 0; hop <= maxRedirects; hop += 1) {
+    // Per-hop dispatcher pinned to the addresses validated for this hop.
+    const dispatcher = pinnedDispatcher(current.addresses);
+    const requestSignal =
+      signal !== undefined
+        ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)])
+        : AbortSignal.timeout(timeoutMs);
     let response: Response;
     try {
       response = await fetchFn(target, {
         redirect: "manual",
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: requestSignal,
         headers: { "User-Agent": BROWSER_UA, Accept: "text/html,*/*" },
+        dispatcher,
       });
+      await dispatcher.close();
     } catch (error) {
+      try {
+        await dispatcher.close();
+      } catch {
+        // ignore close errors
+      }
       if (error instanceof SafeFetchError) throw error;
       if (
         error instanceof DOMException &&

@@ -90,19 +90,66 @@ function isBlockedIPv4(ip: string): boolean {
   return false;
 }
 
+/** Expand an IPv6 address to 16 bytes, or null when unparseable. */
+function expandIPv6(ip: string): number[] | null {
+  const addr = ip.toLowerCase().replace(/^\[(.*)\]$/, "$1");
+  let tail: number[] = [];
+  let head = addr;
+  const v4match = addr.match(/:(\d+\.\d+\.\d+\.\d+)$/);
+  if (v4match?.[1]) {
+    const parts = v4match[1].split(".").map(Number);
+    if (
+      parts.length !== 4 ||
+      parts.some((n) => !Number.isInteger(n) || n < 0 || n > 255)
+    ) {
+      return null;
+    }
+    tail = parts;
+    head = addr.slice(0, addr.length - v4match[1].length);
+    if (head.endsWith(":")) head = head.slice(0, -1);
+  }
+  const halves = head.split("::");
+  if (halves.length > 2) return null;
+  const left = halves[0] === "" ? [] : halves[0].split(":");
+  const right = halves.length === 2 ? (halves[1] === "" ? [] : halves[1].split(":")) : [];
+  const groups = [...left, ...right];
+  if (groups.some((g) => !/^[0-9a-f]{1,4}$/.test(g))) return null;
+  const tailGroups = tail.length > 0 ? 2 : 0;
+  if (left.length + right.length + tailGroups > 8) return null;
+  if (halves.length === 1 && left.length + tailGroups !== 8) return null;
+  const zeros = 8 - tailGroups - left.length - right.length;
+  const bytes: number[] = [];
+  for (const g of [...left, ...Array<string>(zeros).fill("0"), ...right]) {
+    const n = parseInt(g, 16);
+    bytes.push((n >> 8) & 0xff, n & 0xff);
+  }
+  return [...bytes, ...tail];
+}
+
 /** IPv6 loopback/link-local/unique-local/multicast/reserved check. */
 function isBlockedIPv6(ip: string): boolean {
-  const lower = ip.toLowerCase();
-  // Expand :: shorthand via Node parsing is complex; use prefix heuristics
-  // on the normalized form plus exact matches. Fail closed on uncertainty.
-  if (lower === "::1" || lower === "::") return true; // loopback / unspecified
-  const stripped = lower.replace(/^\[(.*)\]$/, "$1");
-  if (stripped.startsWith("fe80")) return true; // fe80::/10 link-local
-  if (stripped.startsWith("fc") || stripped.startsWith("fd")) return true; // fc00::/7 unique-local
-  if (stripped.startsWith("ff")) return true; // ff00::/8 multicast
-  // IPv4-mapped IPv6 (e.g. ::ffff:192.168.1.1) — check the embedded IPv4.
-  const mapped = stripped.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-  if (mapped?.[1] && isBlockedIPv4(mapped[1])) return true;
+  const bytes = expandIPv6(ip);
+  if (!bytes) return true; // fail closed on unparseable input
+  if (bytes.every((b) => b === 0)) return true; // ::
+  if (bytes.slice(0, 15).every((b) => b === 0) && bytes[15] === 1) return true; // ::1
+  if (bytes[0] === 0xfe && (bytes[1] & 0xc0) === 0x80) return true; // fe80::/10
+  if ((bytes[0] & 0xfe) === 0xfc) return true; // fc00::/7
+  if (bytes[0] === 0xff) return true; // ff00::/8
+  // Embedded IPv4 in the low 32 bits: mapped (::ffff:0:0/96), compatible
+  // (::/96, deprecated but still parsed), and NAT64 (64:ff9b::/96).
+  const mapped =
+    bytes.slice(0, 10).every((b) => b === 0) && bytes[10] === 0xff && bytes[11] === 0xff;
+  const compatible = bytes.slice(0, 12).every((b) => b === 0);
+  const nat64 =
+    bytes[0] === 0x00 &&
+    bytes[1] === 0x64 &&
+    bytes[2] === 0xff &&
+    bytes[3] === 0x9b &&
+    bytes.slice(4, 12).every((b) => b === 0);
+  if (mapped || compatible || nat64) {
+    const v4 = `${bytes[12]}.${bytes[13]}.${bytes[14]}.${bytes[15]}`;
+    return isBlockedIPv4(v4);
+  }
   return false;
 }
 
@@ -118,6 +165,8 @@ export interface ValidatedUrl {
   url: string;
   hostname: string;
   origin: string;
+  /** DNS addresses validated at check time (used for connection pinning). */
+  addresses: string[];
 }
 
 function validateStructure(raw: string): URL {
@@ -164,8 +213,8 @@ function validateStructure(raw: string): URL {
   return parsed;
 }
 
-async function assertDnsSafe(hostname: string): Promise<void> {
-  if (net.isIP(hostname) !== 0) return; // literal already checked
+async function assertDnsSafe(hostname: string): Promise<dns.LookupAddress[]> {
+  if (net.isIP(hostname) !== 0) return [{ address: hostname, family: net.isIP(hostname) as 4 | 6 }];
   let records: dns.LookupAddress[];
   try {
     records = await dns.promises.lookup(hostname, { all: true });
@@ -178,6 +227,7 @@ async function assertDnsSafe(hostname: string): Promise<void> {
       throw new UrlValidationError("blocked-ip");
     }
   }
+  return records;
 }
 
 /**
@@ -187,11 +237,12 @@ async function assertDnsSafe(hostname: string): Promise<void> {
 export async function validateUrlForFetch(raw: string): Promise<ValidatedUrl> {
   const parsed = validateStructure(raw);
   const hostname = parsed.hostname.toLowerCase().replace(/^\[(.*)\]$/, "$1");
-  await assertDnsSafe(hostname);
+  const records = await assertDnsSafe(hostname);
   parsed.hash = "";
   return {
     url: parsed.toString(),
     hostname: parsed.hostname.toLowerCase(),
     origin: parsed.origin,
+    addresses: records.map((r) => r.address),
   };
 }

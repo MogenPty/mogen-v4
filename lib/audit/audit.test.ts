@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { runAudit } from "./audit";
+import { SafeFetchError } from "./fetcher";
 import { htmlResponse, mockPublicDns, mockResponse } from "./test-helpers";
 
 afterEach(() => {
@@ -59,5 +60,51 @@ describe("runAudit crawl limits", () => {
     expect(a.findings.map((f) => [f.ruleId, f.status])).toEqual(
       b.findings.map((f) => [f.ruleId, f.status]),
     );
+  });
+
+  it("fetches the entry URL only once", async () => {
+    mockPublicDns();
+    const calls: string[] = [];
+    const fetchFn = (async (input: string | URL | Request) => {
+      const url = String(input);
+      calls.push(url);
+      if (new URL(url).pathname !== "/") {
+        return mockResponse("not found", { status: 404, contentType: "text/plain" });
+      }
+      return htmlResponse(
+        pageHtml("Example Business Provides Quality Services Online", []).replace(
+          "CANONICAL",
+          "https://example.com/",
+        ),
+      );
+    }) as typeof fetch;
+    await runAudit("https://example.com/", {
+      fetchFn,
+      now: () => "2026-10-04T00:00:00.000Z" as const,
+    });
+    expect(calls.filter((u) => u === "https://example.com/")).toHaveLength(1);
+  });
+
+  it("aborts the audit when the overall deadline passes", async () => {
+    mockPublicDns();
+    const hanging = (async (_input: string | URL | Request, init?: RequestInit) => {
+      await new Promise<never>((_, reject) => {
+        const onAbort = (): void =>
+          reject(new DOMException("aborted", "AbortError"));
+        if (init?.signal?.aborted === true) {
+          onAbort();
+          return;
+        }
+        init?.signal?.addEventListener("abort", onAbort, { once: true });
+      });
+      throw new Error("unreachable");
+    }) as typeof fetch;
+    await expect(
+      runAudit("https://example.com/", {
+        fetchFn: hanging,
+        now: () => "2026-10-04T00:00:00.000Z" as const,
+        timeoutMs: 50,
+      }),
+    ).rejects.toBeInstanceOf(SafeFetchError);
   });
 });

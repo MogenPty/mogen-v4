@@ -15,16 +15,20 @@ import {
   type RobotsSnapshot,
   type SitemapSnapshot,
 } from "./checks";
-import { safeFetch } from "./fetcher";
+import { SafeFetchError, safeFetch } from "./fetcher";
 import { parsePage, type PageData } from "./parser";
 import { scoreFindings, scoreQuadrants } from "./scoring";
 import { ENGINE_VERSION, RULE_SET_VERSION, type AuditResult } from "./types";
 import { MAX_PAGES, validateUrlForFetch } from "./url-validation";
 
 export interface AuditOptions {
-  fetchFn?: typeof fetch;
+  fetchFn?: import("./fetcher").FetchFunction;
   now?: () => string;
+  /** Overall audit deadline (default 90 s); requests stop starting once reached. */
+  timeoutMs?: number;
 }
+
+export const AUDIT_TIMEOUT_MS = 90_000;
 
 function parseSitemapXml(xml: string, origin: string): Omit<SitemapSnapshot, "url" | "status" | "contentType"> {
   const empty = {
@@ -93,26 +97,44 @@ function parseRobots(body: string): { sitemapRefs: string[]; disallowRules: stri
 }
 
 export async function runAudit(submittedRaw: string, options: AuditOptions = {}): Promise<AuditResult> {
-  const { fetchFn = fetch, now = () => new Date().toISOString() } = options;
+  const {
+    fetchFn,
+    now = () => new Date().toISOString(),
+    timeoutMs = AUDIT_TIMEOUT_MS,
+  } = options;
   const observedAt = now();
+  // Overall deadline for the whole audit; every request combines it with its
+  // own per-request timeout, and optional stages stop starting once reached.
+  const overall = AbortSignal.timeout(timeoutMs);
+  const live = (): boolean => !overall.aborted;
+  const deps = { ...(fetchFn ? { fetchFn } : {}), signal: overall };
 
   const validated = await validateUrlForFetch(submittedRaw);
   const domain = new URL(validated.url).hostname;
 
   // ——— 1. Fetch entry (follows redirects safely) ———
-  const entryRes = await safeFetch(validated.url, { fetchFn });
+  const entryRes = await safeFetch(validated.url, deps);
   const finalUrl = entryRes.finalUrl;
   const finalOrigin = new URL(finalUrl).origin;
 
   const pages: PageData[] = [];
   const analysedUrls: string[] = [];
   const visited = new Set<string>();
-  let pagesRequested = 0;
+  // Reuse the entry response instead of fetching the same URL twice.
+  let pagesRequested = 1;
+  const entryContentType = entryRes.contentType ?? "";
+  if (
+    entryContentType !== "" &&
+    !entryContentType.includes("text/html") &&
+    !entryContentType.includes("application/xhtml")
+  ) {
+    throw new SafeFetchError("unreachable");
+  }
 
   async function fetchPage(url: string): Promise<PageData | null> {
     pagesRequested += 1;
     try {
-      const res = await safeFetch(url, { fetchFn });
+      const res = await safeFetch(url, deps);
       // Only analyse same-origin HTML responses.
       if (new URL(res.finalUrl).origin !== finalOrigin) return null;
       const ct = res.contentType ?? "";
@@ -123,11 +145,7 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
     }
   }
 
-  const entryPage = await fetchPage(finalUrl);
-  if (entryPage === null) {
-    const { SafeFetchError } = await import("./fetcher");
-    throw new SafeFetchError("unreachable");
-  }
+  const entryPage = parsePage(entryRes.finalUrl, entryRes.status, entryRes.body);
   pages.push(entryPage);
   analysedUrls.push(entryPage.url);
   visited.add(entryPage.url);
@@ -140,7 +158,7 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
       return false;
     }
   });
-  while (queue.length > 0 && pages.length < MAX_PAGES) {
+  while (queue.length > 0 && pages.length < MAX_PAGES && live()) {
     const next = queue.shift() as string;
     if (visited.has(next)) continue;
     const page = await fetchPage(next);
@@ -170,10 +188,21 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
     }
   }
 
-  // ——— 3. robots.txt ———
+  // ——— 3. robots.txt (skipped once the overall deadline passes) ———
   let robots: RobotsSnapshot;
-  try {
-    const res = await safeFetch(`${finalOrigin}/robots.txt`, { fetchFn, maxBytes: 512 * 1024 });
+  const robotsFallback: RobotsSnapshot = {
+    url: `${finalOrigin}/robots.txt`,
+    status: null,
+    contentType: null,
+    body: null,
+    sitemapRefs: [],
+    disallowRules: [],
+    llmsTxtDetected: false,
+  };
+  if (!live()) {
+    robots = robotsFallback;
+  } else try {
+    const res = await safeFetch(`${finalOrigin}/robots.txt`, { ...deps, maxBytes: 512 * 1024 });
     const parsed = res.status === 200 ? parseRobots(res.body) : { sitemapRefs: [], disallowRules: [] };
     robots = {
       url: `${finalOrigin}/robots.txt`,
@@ -185,23 +214,17 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
       llmsTxtDetected: false,
     };
   } catch {
-    robots = {
-      url: `${finalOrigin}/robots.txt`,
-      status: null,
-      contentType: null,
-      body: null,
-      sitemapRefs: [],
-      disallowRules: [],
-      llmsTxtDetected: false,
-    };
+    robots = robotsFallback;
   }
 
   // ——— 4. llms.txt (informational only, never scored) ———
-  try {
-    const res = await safeFetch(`${finalOrigin}/llms.txt`, { fetchFn, maxBytes: 64 * 1024 });
-    robots.llmsTxtDetected = res.status === 200 && res.body.trim() !== "";
-  } catch {
-    robots.llmsTxtDetected = false;
+  if (live()) {
+    try {
+      const res = await safeFetch(`${finalOrigin}/llms.txt`, { ...deps, maxBytes: 64 * 1024 });
+      robots.llmsTxtDetected = res.status === 200 && res.body.trim() !== "";
+    } catch {
+      robots.llmsTxtDetected = false;
+    }
   }
 
   // ——— 5. Sitemap (/sitemap.xml + first robots ref) ———
@@ -211,10 +234,11 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
   };
   const sitemapCandidates = [`${finalOrigin}/sitemap.xml`, ...robots.sitemapRefs.slice(0, 1)];
   for (const candidate of sitemapCandidates) {
+    if (!live()) break;
     try {
       const parsed = await validateUrlForFetch(candidate);
       if (new URL(parsed.url).origin !== finalOrigin) continue;
-      const res = await safeFetch(parsed.url, { fetchFn, maxBytes: 1024 * 1024 });
+      const res = await safeFetch(parsed.url, { ...deps, maxBytes: 1024 * 1024 });
       if (res.status !== 200) {
         if (sitemap.url === null) {
           sitemap = { ...sitemap, url: res.finalUrl, status: res.status, contentType: res.contentType };
@@ -250,14 +274,14 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
   }
   let verifyBudget = 5;
   for (const [resolved, pageUrl] of uniqueCanonicals) {
-    if (verifyBudget <= 0) break;
+    if (verifyBudget <= 0 || !live()) break;
     verifyBudget -= 1;
     if (resolved === pageUrl) {
       canonicalTargets.set(resolved, { ok: true, status: 200, sameOrigin: true, selfCanonical: true });
       continue;
     }
     try {
-      const res = await safeFetch(resolved, { fetchFn, maxBytes: 256 * 1024 });
+      const res = await safeFetch(resolved, { ...deps, maxBytes: 256 * 1024 });
       canonicalTargets.set(resolved, {
         ok: res.status >= 200 && res.status < 400,
         status: res.status,

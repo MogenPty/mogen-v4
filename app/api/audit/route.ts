@@ -2,6 +2,7 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { runAudit } from "@/lib/audit/audit";
+import { saveAudit } from "@/lib/audit/audit-store";
 import { safeErrorMessage } from "@/lib/audit/fetcher";
 import {
   getAuditMailConfig,
@@ -123,6 +124,9 @@ export async function POST(req: Request) {
 
   try {
     const result = await runAudit(url);
+    // Persist for the lead step: the client receives only an ID, so emailed
+    // PDFs always derive from this stored audit — never caller input.
+    const auditId = saveAudit(result);
     // Internal notification (domain + IP + technical PDF) even when the
     // visitor never completes the lead form. Email failure must never fail
     // the analysis itself.
@@ -143,7 +147,7 @@ export async function POST(req: Request) {
         `[audit] internal mail error: ${mailError instanceof Error ? mailError.message.slice(0, 200) : "unknown"}`,
       );
     }
-    return NextResponse.json({ ok: true, audit: result });
+    return NextResponse.json({ ok: true, audit: result, auditId });
   } catch (error) {
     if (error instanceof UrlValidationError) {
       console.error(`[audit] validation rejected: ${error.code}`);

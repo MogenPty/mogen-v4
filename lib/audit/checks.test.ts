@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runChecks, type AnalysisInput } from "./checks";
+import { isValidLangTag, runChecks, type AnalysisInput } from "./checks";
 import { parsePage } from "./parser";
 import {
   findingsMissingEvidence,
@@ -120,6 +120,17 @@ describe("scoring model", () => {
     ]);
     expect(summary.provisional).toBe(true);
     expect(summary.coverage).toBeLessThan(0.5);
+  });
+});
+
+describe("language tags", () => {
+  it("accepts BCP 47 shapes and rejects the rest", () => {
+    for (const tag of ["en", "EN", "deu", "pt-BR", "zh-Hans", "zh-Hans-CN", "es-419", "sr-Latn-RS"]) {
+      expect(isValidLangTag(tag)).toBe(true);
+    }
+    for (const tag of ["", "e", "english", "en-", "en--US", "en-USA", "123", "en-4199"]) {
+      expect(isValidLangTag(tag)).toBe(false);
+    }
   });
 });
 

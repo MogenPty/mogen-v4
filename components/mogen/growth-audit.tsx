@@ -38,6 +38,12 @@ declare global {
   }
 }
 
+interface WidgetSlot {
+  id: TurnstileWidgetId | null;
+  /** Container element the widget was rendered into (remounts need a fresh render). */
+  el: HTMLElement | null;
+}
+
 interface Props {
   numbering?: number;
 }
@@ -48,13 +54,14 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
   const [scanning, setScanning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [audit, setAudit] = useState<AuditResult | null>(null);
+  const [auditId, setAuditId] = useState<string | null>(null);
   const [apiError, setApiError] = useState("");
   const [scanToken, setScanToken] = useState("");
   const [leadToken, setLeadToken] = useState("");
   const scanContainer = useRef<HTMLDivElement>(null);
   const leadContainer = useRef<HTMLDivElement>(null);
-  const scanWidgetId = useRef<TurnstileWidgetId | null>(null);
-  const leadWidgetId = useRef<TurnstileWidgetId | null>(null);
+  const scanSlot = useRef<WidgetSlot>({ id: null, el: null });
+  const leadSlot = useRef<WidgetSlot>({ id: null, el: null });
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -81,31 +88,42 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
 
   function renderWidget(
     container: React.RefObject<HTMLDivElement | null>,
-    slot: React.MutableRefObject<TurnstileWidgetId | null>,
+    slot: React.MutableRefObject<WidgetSlot>,
     action: string,
     callback: (token: string) => void,
   ) {
     if (
       !TURNSTILE_SITE_KEY ||
       !container.current ||
-      slot.current !== null ||
       typeof window.turnstile === "undefined"
     ) {
       return;
     }
-    slot.current = window.turnstile.render(container.current, {
-      sitekey: TURNSTILE_SITE_KEY,
-      action,
-      theme: "auto",
-      callback,
-      "expired-callback": () => callback(""),
-      "error-callback": () => callback(""),
-    });
+    // A stored ID is only proof for the container it was rendered into:
+    // step changes unmount/remount the container, which needs a fresh widget.
+    if (slot.current.id !== null && slot.current.el === container.current) {
+      return;
+    }
+    slot.current = {
+      id: window.turnstile.render(container.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        action,
+        theme: "auto",
+        callback,
+        "expired-callback": () => callback(""),
+        "error-callback": () => callback(""),
+      }),
+      el: container.current,
+    };
   }
 
-  function resetWidget(slot: React.MutableRefObject<TurnstileWidgetId | null>, clear: () => void) {
-    if (slot.current !== null && typeof window.turnstile !== "undefined") {
-      window.turnstile.reset(slot.current);
+  function resetWidget(slot: React.MutableRefObject<WidgetSlot>, clear: () => void) {
+    try {
+      if (slot.current.id !== null && typeof window.turnstile !== "undefined") {
+        window.turnstile.reset(slot.current.id);
+      }
+    } catch {
+      // Detached widget (container unmounted) — a fresh render follows on remount.
     }
     clear();
   }
@@ -123,6 +141,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
     setScanning(true);
     setApiError("");
     setAudit(null);
+    setAuditId(null);
     setStep(1);
     try {
       const res = await fetch("/api/audit", {
@@ -135,16 +154,17 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
           ...(scanToken ? { turnstileToken: scanToken } : {}),
         }),
       });
-      let data: { ok: boolean; error?: string; audit?: AuditResult };
+      let data: { ok: boolean; error?: string; audit?: AuditResult; auditId?: string };
       try {
         data = (await res.json()) as typeof data;
       } catch {
         throw new Error("unparseable");
       }
-      if (!res.ok || !data.ok || !data.audit) {
+      if (!res.ok || !data.ok || !data.audit || typeof data.auditId !== "string") {
         throw new Error(data.error ?? "The website could not be analysed.");
       }
       setAudit(data.audit);
+      setAuditId(data.auditId);
       setScanning(false);
       setStep(2);
     } catch (err) {
@@ -155,7 +175,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
             ? err.message
             : "The website could not be analysed. Please check the address and try again.";
       setApiError(message);
-      resetWidget(scanWidgetId, () => setScanToken(""));
+      resetWidget(scanSlot, () => setScanToken(""));
       setScanning(false);
       setStep(0);
     }
@@ -167,7 +187,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
       setError("Name and email are required to receive your report.");
       return;
     }
-    if (!audit) {
+    if (!audit || !auditId) {
       setError("Please run the website scan first.");
       return;
     }
@@ -187,7 +207,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
             service: form.service_interest,
             companyWebsite: form.companyWebsite,
           },
-          audit,
+          auditId,
           ...(leadToken ? { turnstileToken: leadToken } : {}),
         }),
       });
@@ -234,7 +254,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
       setDone(true);
     } catch (err) {
       setSaving(false);
-      resetWidget(leadWidgetId, () => setLeadToken(""));
+      resetWidget(leadSlot, () => setLeadToken(""));
       setError(
         err instanceof Error && err.message !== "unparseable"
           ? err.message
@@ -374,7 +394,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
                       strategy="afterInteractive"
                       onReady={() =>
-                        renderWidget(scanContainer, scanWidgetId, "audit", setScanToken)
+                        renderWidget(scanContainer, scanSlot, "audit", setScanToken)
                       }
                     />
                     <div ref={scanContainer} className="mt-4" />
@@ -537,7 +557,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                         src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
                         strategy="afterInteractive"
                         onReady={() =>
-                          renderWidget(leadContainer, leadWidgetId, "audit-lead", setLeadToken)
+                          renderWidget(leadContainer, leadSlot, "audit-lead", setLeadToken)
                         }
                       />
                       <div ref={leadContainer} />

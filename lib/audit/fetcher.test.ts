@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  pinnedDispatcher,
+  pinnedLookup,
   SafeFetchError,
   safeFetch,
+  type FetchFunction,
 } from "./fetcher";
 import { htmlResponse, mockPublicDns, mockResponse } from "./test-helpers";
 
@@ -57,6 +60,68 @@ describe("safeFetch redirects", () => {
       return htmlResponse("<html></html>");
     }) as typeof fetch;
     expect(await codeFor("https://example.com/", fetchFn)).toBe("unsafe-target");
+  });
+});
+
+describe("connection pinning", () => {
+  it("serves only validated addresses and fails closed otherwise", async () => {
+    const lookup = pinnedLookup(["93.184.216.34"]);
+    const single = await new Promise<{ address: string; family: number }>((resolve, reject) => {
+      lookup("example.com", {}, (err, address, family) => {
+        if (err) reject(err);
+        else resolve({ address: address as string, family });
+      });
+    });
+    expect(single).toEqual({ address: "93.184.216.34", family: 4 });
+
+    const filtered = await new Promise<string>((resolve) => {
+      lookup("example.com", { family: 6 }, (err, address) => {
+        resolve(err?.code ?? String(address));
+      });
+    });
+    expect(filtered).toBe("ENOTFOUND");
+  });
+
+  it("passes a dispatcher to every fetch call", async () => {
+    mockPublicDns();
+    const seen: unknown[] = [];
+    const fetchFn = (async (_input: string | URL, init?: RequestInit & { dispatcher?: unknown }) => {
+      seen.push(init?.dispatcher);
+      return htmlResponse("<html></html>");
+    }) as FetchFunction;
+    await safeFetch("https://example.com/", { fetchFn });
+    expect(seen).toHaveLength(1);
+    expect(seen[0]).toBeDefined();
+  });
+
+  it("pins the TCP connection while preserving hostname (Host/SNI)", async () => {
+    const http = await import("node:http");
+    const { fetch: undiciFetch } = await import("undici");
+    const server = http.createServer((req, res) => {
+      res.setHeader("content-type", "text/html");
+      res.end(`<html><body>host:${req.headers.host}</body></html>`);
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    const port = typeof address === "object" && address !== null ? address.port : 0;
+    try {
+      // Pinned to the server's address: succeeds with the original hostname.
+      const ok = await undiciFetch(`http://localhost:${port}/`, {
+        dispatcher: pinnedDispatcher(["127.0.0.1"]),
+      });
+      expect(ok.status).toBe(200);
+      expect(await ok.text()).toContain(`host:localhost:${port}`);
+
+      // Pinned elsewhere: the connection cannot reach the server.
+      await expect(
+        undiciFetch(`http://localhost:${port}/`, {
+          dispatcher: pinnedDispatcher(["127.0.0.2"]),
+          signal: AbortSignal.timeout(5000),
+        }),
+      ).rejects.toThrow();
+    } finally {
+      server.close();
+    }
   });
 });
 

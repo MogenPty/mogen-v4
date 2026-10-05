@@ -97,6 +97,15 @@ function truncate(value: string, max = 160): string {
   return value.length > max ? `${value.slice(0, max)}…` : value;
 }
 
+/**
+ * BCP 47 shape check (not a full registry validation): 2–3 letter language,
+ * optional 4-letter script, optional 2-letter region or 3-digit region.
+ * Case-insensitive. Null/empty values are rejected by callers.
+ */
+export function isValidLangTag(tag: string): boolean {
+  return /^[a-z]{2,3}(-[a-z]{4})?(-([a-z]{2}|[0-9]{3}))?$/i.test(tag.trim());
+}
+
 export function runChecks(input: AnalysisInput): Finding[] {
   const { now, finalUrl, origin } = input;
   const pages = input.pages;
@@ -312,7 +321,7 @@ export function runChecks(input: AnalysisInput): Finding[] {
   if (!entry) {
     findings.push(finding("html-lang", "NOT_ASSESSED", "No pages analysed.", []));
   } else {
-    const okShare = share(pages, (p) => p.lang !== null && /^[a-z]{2}(-[A-Za-z]{2})?$/.test(p.lang));
+    const okShare = share(pages, (p) => p.lang !== null && isValidLangTag(p.lang));
     findings.push(
       finding("html-lang", aggregateStatus(okShare),
         okShare >= 1 ? "Valid <html lang> on all analysed pages." : `${Math.round(okShare * 100)}% of analysed pages declare a valid <html lang>.`,
