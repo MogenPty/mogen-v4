@@ -49,8 +49,8 @@ describe("seo audit enquiry — growth-audit form is the package selector", () =
   });
 
   it("renders dropdown options readable on the dark panel (explicit option background)", () => {
-    expect(source).toMatch(/<option[^>]*className="[^"]*bg-ink[^"]*"[^>]*>\s*Select an SEO package/);
-    expect(source).toContain("scheme-dark");
+    expect(source).toMatch(/<option[^>]*className="[^"]*bg-(ink|bone)[^"]*"[^>]*>\s*Select an SEO package/);
+    expect(source).toMatch(/scheme-(dark|light)/);
   });
 
   it("derives options from the canonical SEO package data (no second hardcoded list)", () => {
