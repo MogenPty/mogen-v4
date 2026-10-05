@@ -3,8 +3,8 @@
 import { ArrowRight, CheckCircle2, Loader2, Search, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
-import { type SubmitEvent, useEffect, useRef, useState } from "react";
-import { SERVICES } from "@/data/services";
+import { type SubmitEvent, useEffect, useMemo, useRef, useState } from "react";
+import { getService } from "@/data/services";
 import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
@@ -67,10 +67,22 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
     email: "",
     phone: "",
     business_name: "",
-    service_interest: "seo",
+    // SEO Audit enquiry: blank by default to force an explicit SEO package
+    // selection. The Service Interest field acts as the SEO package selector.
+    service_interest: "",
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
   });
+  // Single source of truth for the selected SEO package: derived from the
+  // Service Interest value, drives both the select and the offer display.
+  const seoPackages = useMemo(
+    () => getService("seo")?.pricing ?? [],
+    [],
+  );
+  const selectedSeoPackage = useMemo(
+    () => seoPackages.find((p) => p.packageId === form.service_interest),
+    [seoPackages, form.service_interest],
+  );
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -185,6 +197,10 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) {
       setError("Name and email are required to receive your report.");
+      return;
+    }
+    if (!form.service_interest) {
+      setError("Please select an SEO package.");
       return;
     }
     if (!audit || !auditId) {
@@ -529,14 +545,53 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
                       onChange={(e) =>
                         setForm({ ...form, service_interest: e.target.value })
                       }
-                      className="mt-2 w-full border border-white/30 bg-white/5 px-4 py-3 text-white focus:outline-none dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 dark:text-secondary-foreground"
+                      aria-describedby={selectedSeoPackage ? "seo-package-offer" : "seo-package-hint"}
+                      className="mt-2 w-full border border-white/30 bg-white/5 px-4 py-3 text-white scheme-dark focus:outline-none dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10 dark:text-secondary-foreground"
                     >
-                      {SERVICES.map((s) => (
-                        <option key={s.name} value={s.slug}>
-                          {s.name}
+                      <option value="" className="bg-ink text-white">
+                        Select an SEO package
+                      </option>
+                      {seoPackages.map((p) => (
+                        <option
+                          key={p.packageId}
+                          value={p.packageId}
+                          className="bg-ink text-white"
+                        >
+                          SEO - {p.name}
                         </option>
                       ))}
                     </select>
+                    {selectedSeoPackage ? (
+                      <div
+                        id="seo-package-offer"
+                        className="mt-3 border border-white/30 bg-white/5 px-4 py-4 dark:border-secondary-foreground/40 dark:bg-secondary-foreground/10"
+                      >
+                        <p className="font-display text-lg font-black text-white dark:text-secondary-foreground">
+                          SEO - {selectedSeoPackage.name}
+                        </p>
+                        <p className="mt-1 text-sm text-white/70 dark:text-secondary-foreground/70">
+                          {selectedSeoPackage.price} {selectedSeoPackage.cadence}
+                        </p>
+                        <ul className="mt-3 space-y-1.5 text-sm text-white/80 dark:text-secondary-foreground/80">
+                          {selectedSeoPackage.features.map((f) => (
+                            <li key={f} className="flex items-start gap-2">
+                              <CheckCircle2
+                                className="mt-0.5 h-4 w-4 shrink-0 text-catalyst"
+                                aria-hidden="true"
+                              />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p
+                        id="seo-package-hint"
+                        className="mt-2 text-sm text-white/60 dark:text-secondary-foreground/60"
+                      >
+                        Select an SEO package to continue.
+                      </p>
+                    )}
                   </div>
                   {/* Honeypot — invisible to humans */}
                   <div className="hidden" aria-hidden="true">

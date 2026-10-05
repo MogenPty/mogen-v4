@@ -4,6 +4,7 @@
  * module owns validation-independent email delivery.
  */
 
+import { getPackage } from "@/data/packages";
 import { getService } from "@/data/services";
 import type { MailProvider } from "@/lib/mail/mail-provider";
 import {
@@ -62,7 +63,10 @@ export async function processAuditLead(
   };
 
   const serviceName = input.lead.service
-    ? (getService(input.lead.service)?.name ?? input.lead.service)
+    ? (getService(input.lead.service)?.name ??
+      (getPackage(input.lead.service)
+        ? `SEO - ${getPackage(input.lead.service)!.name}`
+        : input.lead.service))
     : undefined;
   const leadInfo: LeadInfo = {
     name: input.lead.name,
