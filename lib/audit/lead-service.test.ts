@@ -100,4 +100,54 @@ describe("lead processing", () => {
     expect(provider.sent).toHaveLength(1);
     expect(provider.sent[0].subject).toContain("example.co.za");
   });
+
+  it("recovers when the internal email fails transiently", async () => {
+    const provider = new FakeMailProvider();
+    let calls = 0;
+    const flakyOnce = {
+      ...provider,
+      name: "flaky-once",
+      sent: provider.sent,
+      send: async (message: Parameters<FakeMailProvider["send"]>[0]) => {
+        calls += 1;
+        if (calls === 1) {
+          return {
+            success: false as const,
+            error: { code: "PROVIDER_ERROR" as const, message: "transient" },
+          };
+        }
+        return provider.send(message);
+      },
+    };
+    const result = await processAuditLead(flakyOnce, {
+      lead: { name: "Jane Doe", email: "jane@example.co.za" },
+      audit: sampleAudit(),
+    });
+    expect(result).toEqual({ ok: true });
+    expect(calls).toBe(3); // internal, internal retry, client
+    expect(provider.sent).toHaveLength(2);
+  });
+
+  it("surfaces persistent internal failure without sending the client email", async () => {
+    const provider = new FakeMailProvider();
+    const attempts: string[] = [];
+    const down = {
+      ...provider,
+      name: "down",
+      sent: provider.sent,
+      send: async (message: Parameters<FakeMailProvider["send"]>[0]) => {
+        attempts.push(message.subject);
+        return {
+          success: false as const,
+          error: { code: "PROVIDER_ERROR" as const, message: "down" },
+        };
+      },
+    };
+    const result = await processAuditLead(down, {
+      lead: { name: "Jane Doe", email: "jane@example.co.za" },
+      audit: sampleAudit(),
+    });
+    expect(result.ok).toBe(false);
+    expect(attempts).toHaveLength(2); // initial + one retry; client never attempted
+  });
 });

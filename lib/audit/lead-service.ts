@@ -31,11 +31,18 @@ const SAFE_ERROR =
   "Something went wrong. Please try again or email info@mogen.co.za.";
 const CLIENT_ERROR =
   "Something went wrong sending your report. Please try again or email info@mogen.co.za.";
+const INTERNAL_ERROR =
+  "Something went wrong saving your details. Please try again or email info@mogen.co.za.";
 
 /**
  * Send the client PDF to the visitor and the technical PDF + lead details
  * to the inbox. The internal email is sent FIRST so a client-email failure
  * can never swallow the lead — the caller still reports the client failure.
+ *
+ * A failed internal send is retried once (transient provider failures are
+ * the common case). If it still fails, the failure is surfaced instead of
+ * returning success: the stored audit outlives the request, so retrying the
+ * form re-sends both emails and no lead is silently lost.
  */
 export async function processAuditLead(
   provider: MailProvider,
@@ -71,7 +78,18 @@ export async function processAuditLead(
     lead: leadInfo,
   });
   if (!internalResult.success) {
-    console.error(`[audit-lead] internal mail failed: ${internalResult.error.code}`);
+    console.error(
+      `[audit-lead] internal mail failed: ${internalResult.error.code} — retrying once`,
+    );
+    const retry = await sendInternalAuditEmail(provider, config, {
+      audit: trustedAudit,
+      ...(input.ip ? { ip: input.ip } : {}),
+      lead: leadInfo,
+    });
+    if (!retry.success) {
+      console.error(`[audit-lead] internal mail retry failed: ${retry.error.code}`);
+      return { ok: false, error: INTERNAL_ERROR, status: 502 };
+    }
   }
 
   const clientResult = await sendClientReportEmail(provider, config, {
