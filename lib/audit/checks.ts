@@ -12,6 +12,11 @@
  */
 
 import { detectDuplicates, normalizeText } from "./duplicate";
+import {
+  INP_LAB_UNAVAILABLE_NOTE,
+  type PageSpeedAnalysis,
+  type PageSpeedEvidence,
+} from "./pagespeed";
 import type { PageData } from "./parser";
 import type {
   AuditEvidence,
@@ -59,7 +64,22 @@ export interface AnalysisInput {
   sitemap: SitemapSnapshot;
   /** canonical href → verification (only for checked targets). */
   canonicalTargets: Map<string, CanonicalVerification>;
+  /**
+   * Normalized dual-strategy PageSpeed / Lighthouse lab evidence.
+   * Null = both strategies unavailable → `performance-lab` stays NOT_ASSESSED.
+   */
+  psi?: PageSpeedAnalysis | null;
+  /** Machine-readable reason when PageSpeed could not provide evidence. */
+  psiReason?: string | null;
 }
+
+/**
+ * Canonical thresholds for the `performance-lab` rule, following the
+ * standard Lighthouse performance bands (0–49 poor, 50–89 needs
+ * improvement, 90+ good). Scores are 0–1 as returned by PageSpeed.
+ * Kept here — never hardcoded in report renderers.
+ */
+export const LAB_PERFORMANCE_THRESHOLDS = { pass: 0.9, warn: 0.5 } as const;
 
 function ev(
   now: string,
@@ -104,6 +124,181 @@ function truncate(value: string, max = 160): string {
  */
 export function isValidLangTag(tag: string): boolean {
   return /^[a-z]{2,3}(-[a-z]{4})?(-([a-z]{2}|[0-9]{3}))?$/i.test(tag.trim());
+}
+
+function formatMetricForSummary(
+  label: string,
+  valueMs: number | null,
+  unitless?: number | null,
+  isInp = false,
+): string | null {
+  if (unitless !== undefined) {
+    if (unitless === null) return `${label} unavailable`;
+    return `${label} ${unitless.toFixed(2)}`;
+  }
+  if (valueMs === null) {
+    // INP absence is expected lab behaviour (field-only metric) — say so
+    // explicitly instead of a bare "unavailable".
+    return isInp ? `INP ${INP_LAB_UNAVAILABLE_NOTE}` : `${label} unavailable`;
+  }
+  if (valueMs >= 1000) return `${label} ${(valueMs / 1000).toFixed(1)} s`;
+  return `${label} ${Math.round(valueMs)} ms`;
+}
+
+function strategySummaryEvidence(
+  now: string,
+  psi: PageSpeedEvidence,
+): AuditEvidence {
+  return ev(
+    now,
+    "psi",
+    psi.url,
+    {
+      strategy: psi.strategy,
+      provider: psi.provider,
+      fetchedAt: psi.fetchedAt,
+      version: psi.version,
+      categories: psi.categories,
+      metrics: psi.metrics,
+    },
+    `Google PageSpeed Insights — ${psi.strategy} lab analysis of ${psi.url}. ` +
+      "Lighthouse is synthetic lab data, not real-user (CrUX field) data.",
+  );
+}
+
+/**
+ * Evaluate the `performance-lab` rule from normalized PageSpeed evidence.
+ *
+ * - Mobile and desktop are evaluated separately but feed one finding.
+ *   Mobile is canonical when it carries a performance score; desktop is the
+ *   genuine fallback when it does. The Lighthouse score itself is never
+ *   copied as an SEO score — the Mogen score uses its own weighting.
+ * - No usable strategy, or no performance score on the usable strategy →
+ *   NOT_ASSESSED with an explicit reason. Missing metrics stay
+ *   unavailable, never zero — and INP is never derived from TBT.
+ */
+export function evaluatePerformanceLab(input: AnalysisInput): Finding {
+  const { now, finalUrl } = input;
+  const entryUrl = input.pages[0]?.url ?? finalUrl;
+  const analysis = input.psi ?? null;
+  const mobile = analysis?.mobile ?? null;
+  const desktop = analysis?.desktop ?? null;
+
+  if (!mobile && !desktop) {
+    // User-facing summary stays stable; the machine-readable reason lives
+    // in the evidence details/value below.
+    const reason = input.psiReason ?? analysis?.mobileReason ?? null;
+    const summary =
+      "Lab performance not measured — PageSpeed Insights / Lighthouse data unavailable. Performance is never inferred from HTML size, scripts, or framework.";
+    return finding(
+      "performance-lab",
+      "NOT_ASSESSED",
+      summary,
+      [ev(now, "psi", entryUrl, { connected: false, reason }, reason ?? summary)],
+    );
+  }
+
+  // Mobile is canonical when it carries a performance score; desktop is the
+  // genuine fallback when it does. Neither score → NOT_ASSESSED.
+  const mobileScore = mobile?.categories.performance ?? null;
+  const desktopScore = desktop?.categories.performance ?? null;
+  const primary = mobileScore !== null ? mobile : desktopScore !== null ? desktop : null;
+  const secondary =
+    primary === mobile ? desktop : primary === desktop ? mobile : null;
+  const primaryEvidence = primary;
+  if (!primaryEvidence) {
+    return finding(
+      "performance-lab",
+      "NOT_ASSESSED",
+      "Lighthouse lab analysis ran but returned no performance score — metric unavailable.",
+      [
+        ...(mobile ? [strategySummaryEvidence(now, mobile)] : []),
+        ...(desktop ? [strategySummaryEvidence(now, desktop)] : []),
+      ],
+    );
+  }
+  const score = primaryEvidence.categories.performance;
+  if (score === null) {
+    return finding(
+      "performance-lab",
+      "NOT_ASSESSED",
+      `Lighthouse ${primaryEvidence.strategy} lab analysis ran but returned no performance score — metric unavailable.`,
+      [
+        strategySummaryEvidence(now, primaryEvidence),
+        ...(secondary ? [strategySummaryEvidence(now, secondary)] : []),
+      ],
+    );
+  }
+
+  const status: FindingStatus =
+    score >= LAB_PERFORMANCE_THRESHOLDS.pass
+      ? "PASS"
+      : score >= LAB_PERFORMANCE_THRESHOLDS.warn
+        ? "WARN"
+        : "FAIL";
+  const pct = Math.round(score * 100);
+  const m = primaryEvidence.metrics;
+  const parts = [
+    formatMetricForSummary("LCP", m.lcpMs),
+    formatMetricForSummary("INP", m.inpMs, undefined, true),
+    formatMetricForSummary("CLS", null, m.cls),
+    formatMetricForSummary("FCP", m.fcpMs),
+    formatMetricForSummary("TTFB", m.ttfbMs),
+    formatMetricForSummary("TBT", m.totalBlockingTimeMs),
+  ].filter((x): x is string => x !== null);
+
+  const strategyNote =
+    secondary && secondary.categories.performance !== null
+      ? ` (${primaryEvidence.strategy} lab; ${secondary.strategy} ${Math.round((secondary.categories.performance as number) * 100)}/100 also measured)`
+      : ` (${primaryEvidence.strategy} lab)`;
+  const summary =
+    status === "PASS"
+      ? `Lighthouse lab performance ${pct}/100${strategyNote} — ${parts.join("; ")}.`
+      : status === "WARN"
+        ? `Lighthouse lab performance ${pct}/100${strategyNote} needs improvement — ${parts.join("; ")}.`
+        : `Lighthouse lab performance ${pct}/100${strategyNote} is poor — ${parts.join("; ")}.`;
+
+  const evidence: AuditEvidence[] = [];
+  for (const strat of [mobile, desktop]) {
+    if (!strat) continue;
+    evidence.push(strategySummaryEvidence(now, strat));
+    // Per-metric provenance so the report can show each measurement's origin.
+    const sm = strat.metrics;
+    const metricProvenance: Array<[string, string, number | null, string, boolean]> = [
+      ["largest-contentful-paint", "Largest Contentful Paint", sm.lcpMs, "ms", false],
+      ["interaction-to-next-paint", "Interaction to Next Paint", sm.inpMs, "ms", true],
+      ["cumulative-layout-shift", "Cumulative Layout Shift", sm.cls, "", false],
+      ["first-contentful-paint", "First Contentful Paint", sm.fcpMs, "ms", false],
+      ["server-response-time", "Time to First Byte", sm.ttfbMs, "ms", false],
+      ["speed-index", "Speed Index", sm.speedIndexMs, "ms", false],
+      ["total-blocking-time", "Total Blocking Time", sm.totalBlockingTimeMs, "ms", false],
+    ];
+    for (const [metricId, label, value, unit, isInp] of metricProvenance) {
+      evidence.push(
+        ev(
+          now,
+          "psi",
+          strat.url,
+          { metric: metricId, value, unit, strategy: strat.strategy },
+          value === null
+            ? isInp
+              ? `${label}: ${INP_LAB_UNAVAILABLE_NOTE} (Google PageSpeed Insights, ${strat.strategy} lab).`
+              : `${label}: unavailable (Google PageSpeed Insights, ${strat.strategy} lab).`
+            : `${label}: ${unit === "" ? value : `${value} ${unit}`} (Google PageSpeed Insights, ${strat.strategy} lab).`,
+        ),
+      );
+    }
+  }
+
+  return finding(
+    "performance-lab",
+    status,
+    summary,
+    evidence,
+    status === "PASS"
+      ? undefined
+      : "Recommendation: improve the slowest lab measurements above (images, render-blocking scripts, server response) and re-run the audit.",
+  );
 }
 
 export function runChecks(input: AnalysisInput): Finding[] {
@@ -671,13 +866,11 @@ export function runChecks(input: AnalysisInput): Finding[] {
     }
   }
 
-  // ——— 28–31. Unconnected search sources ———
+  // ——— 28–31. Search sources (lab performance now evidence-based) ———
   findings.push(finding("rich-results", "NOT_ASSESSED",
     "Rich-result eligibility not assessed — no schema validator connected. JSON-LD presence alone does not imply eligibility.",
     [ev(now, "rich_results", entry?.url, { connected: false }, "No validator queried.")]));
-  findings.push(finding("performance-lab", "NOT_ASSESSED",
-    "Lab performance not measured — no PageSpeed Insights / Lighthouse integration. Performance is never inferred from HTML size, scripts, or framework.",
-    [ev(now, "psi", entry?.url, { connected: false }, "No lab data queried.")]));
+  findings.push(evaluatePerformanceLab(input));
   findings.push(finding("performance-field", "NOT_ASSESSED",
     "Field performance not measured — no Chrome UX Report integration (no LCP, INP, CLS field data).",
     [ev(now, "crux", entry?.url, { connected: false }, "No field data queried.")]));

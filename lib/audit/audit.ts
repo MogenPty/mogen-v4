@@ -16,6 +16,13 @@ import {
   type SitemapSnapshot,
 } from "./checks";
 import { SafeFetchError, safeFetch } from "./fetcher";
+import {
+  fetchPageSpeedStrategies,
+  getPageSpeedApiKey,
+  type PageSpeedAnalysis,
+  type PageSpeedFetchFn,
+  PAGESPEED_TIMEOUT_MS,
+} from "./pagespeed";
 import { parsePage, type PageData } from "./parser";
 import { scoreFindings, scoreQuadrants } from "./scoring";
 import { ENGINE_VERSION, RULE_SET_VERSION, type AuditResult } from "./types";
@@ -26,6 +33,14 @@ export interface AuditOptions {
   now?: () => string;
   /** Overall audit deadline (default 90 s); requests stop starting once reached. */
   timeoutMs?: number;
+  /** Override the PageSpeed API key (tests); defaults to PAGESPEED_API_KEY. */
+  pagespeedApiKey?: string | null;
+  /** Injectable PageSpeed fetch (tests); defaults to global fetch. */
+  pagespeedFetchFn?: PageSpeedFetchFn;
+  /** Per-request PageSpeed timeout (default 25 s). */
+  pagespeedTimeoutMs?: number;
+  /** Skip PageSpeed even when configured (tests / offline). */
+  skipPagespeed?: boolean;
 }
 
 export const AUDIT_TIMEOUT_MS = 90_000;
@@ -101,6 +116,9 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
     fetchFn,
     now = () => new Date().toISOString(),
     timeoutMs = AUDIT_TIMEOUT_MS,
+    pagespeedFetchFn,
+    pagespeedTimeoutMs = PAGESPEED_TIMEOUT_MS,
+    skipPagespeed = false,
   } = options;
   const observedAt = now();
   // Overall deadline for the whole audit; every request combines it with its
@@ -293,7 +311,40 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
     }
   }
 
-  // ——— 7. Checks + scoring ———
+  // ——— 7. PageSpeed / Lighthouse lab evidence (optional, never fatal) ———
+  // Exactly two requests (mobile + desktop) for the exact final URL, run in
+  // parallel. Each strategy degrades independently; any failure degrades to
+  // NOT_ASSESSED — the audit itself always completes.
+  let psi: PageSpeedAnalysis | null = null;
+  let psiReason: string | null = null;
+  if (!skipPagespeed && live()) {
+    const apiKey =
+      options.pagespeedApiKey !== undefined
+        ? options.pagespeedApiKey
+        : getPageSpeedApiKey();
+    if (!apiKey) {
+      psiReason = "PageSpeed API key not configured";
+    } else {
+      try {
+        psi = await fetchPageSpeedStrategies(finalUrl, {
+          apiKey,
+          timeoutMs: pagespeedTimeoutMs,
+          ...(pagespeedFetchFn ? { fetchFn: pagespeedFetchFn } : {}),
+          now: () => observedAt,
+          signal: overall,
+        });
+        if (!psi.mobile && !psi.desktop) {
+          psiReason = psi.mobileReason ?? "Lighthouse data unavailable";
+        }
+      } catch {
+        psiReason = "PageSpeed request failed";
+      }
+    }
+  } else if (!skipPagespeed) {
+    psiReason = "Lighthouse data unavailable";
+  }
+
+  // ——— 8. Checks + scoring ———
   const findings = runChecks({
     now: observedAt,
     finalUrl,
@@ -303,6 +354,8 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
     robots,
     sitemap,
     canonicalTargets,
+    psi,
+    ...(psiReason ? { psiReason } : {}),
   });
   const summary = scoreFindings(findings);
   const quadrants = scoreQuadrants(findings);
@@ -343,6 +396,7 @@ export async function runAudit(submittedRaw: string, options: AuditOptions = {})
       duplicateUrls: sitemap.duplicateUrls,
       offOriginUrls: sitemap.offOriginUrls,
     },
+    psi,
     summary,
     quadrants,
     findings,
