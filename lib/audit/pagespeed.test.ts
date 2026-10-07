@@ -154,8 +154,17 @@ describe("pagespeed configuration", () => {
     expect(analysis.mobileReason).toBe("PageSpeed API key not configured");
     expect(analysis.desktopReason).toBe("PageSpeed API key not configured");
     expect(hasPageSpeedEvidence(analysis)).toBe(false);
-    const findings = runChecks(baseInput());
-    expect(findings.find((f) => f.ruleId === "performance-lab")?.status).toBe("NOT_ASSESSED");
+    const findings = runChecks({
+      ...baseInput(),
+      psi: analysis,
+      psiReason: analysis.mobileReason,
+    });
+    const lab = findings.find((f) => f.ruleId === "performance-lab");
+    expect(lab?.status).toBe("NOT_ASSESSED");
+    expect(lab?.summary).toBe(
+      "Lab performance not measured — PageSpeed Insights / Lighthouse data unavailable. Performance is never inferred from HTML size, scripts, or framework.",
+    );
+    expect(JSON.stringify(lab?.evidence)).toContain("PageSpeed API key not configured");
   });
 
   it("never exposes the API key in normalized output", async () => {
@@ -363,6 +372,20 @@ describe("audit integration", () => {
   it("performance-lab receives real evidence when available", () => {
     const findings = runChecks({ ...baseInput(), psi: analysisFixture() });
     expect(findings.find((f) => f.ruleId === "performance-lab")?.status).toBe("PASS");
+  });
+
+  it("prefers the strategy that actually has a performance score", () => {
+    const mobileScoreless: PageSpeedEvidence = {
+      ...strategyEvidence("mobile"),
+      categories: { performance: null, accessibility: 0.95, bestPractices: 0.9, seo: 0.9 },
+    };
+    const findings = runChecks({
+      ...baseInput(),
+      psi: analysisFixture({ mobile: mobileScoreless }),
+    });
+    const lab = findings.find((f) => f.ruleId === "performance-lab");
+    expect(lab?.status).toBe("PASS");
+    expect(lab?.summary).toContain("desktop");
   });
 
   it("performance-lab stays NOT_ASSESSED when evidence is unavailable", () => {

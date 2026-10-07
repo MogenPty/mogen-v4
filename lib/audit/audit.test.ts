@@ -34,7 +34,7 @@ describe("runAudit crawl limits", () => {
       return htmlResponse(pageHtml(title, links).replace("CANONICAL", canonical));
     }) as typeof fetch;
 
-    const result = await runAudit("https://example.com/", { fetchFn, now: () => "2026-10-04T00:00:00.000Z" });
+    const result = await runAudit("https://example.com/", { fetchFn, now: () => "2026-10-04T00:00:00.000Z", skipPagespeed: true });
     expect(result.crawl.pagesAnalysed).toBeLessThanOrEqual(10);
     expect(result.crawl.pagesAnalysed).toBeGreaterThan(1);
     expect(result.findings).toHaveLength(37);
@@ -53,7 +53,7 @@ describe("runAudit crawl limits", () => {
         "CANONICAL", "https://example.com/",
       ));
     }) as typeof fetch;
-    const opts = { fetchFn, now: () => "2026-10-04T00:00:00.000Z" as const };
+    const opts = { fetchFn, now: () => "2026-10-04T00:00:00.000Z" as const, skipPagespeed: true as const };
     const a = await runAudit("https://example.com/", opts);
     const b = await runAudit("https://example.com/", opts);
     expect(a.summary).toEqual(b.summary);
@@ -81,6 +81,7 @@ describe("runAudit crawl limits", () => {
     await runAudit("https://example.com/", {
       fetchFn,
       now: () => "2026-10-04T00:00:00.000Z" as const,
+      skipPagespeed: true,
     });
     expect(calls.filter((u) => u === "https://example.com/")).toHaveLength(1);
   });
@@ -104,6 +105,7 @@ describe("runAudit crawl limits", () => {
         fetchFn: hanging,
         now: () => "2026-10-04T00:00:00.000Z" as const,
         timeoutMs: 50,
+        skipPagespeed: true,
       }),
     ).rejects.toBeInstanceOf(SafeFetchError);
   });

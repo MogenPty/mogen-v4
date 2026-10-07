@@ -170,9 +170,9 @@ function strategySummaryEvidence(
  * Evaluate the `performance-lab` rule from normalized PageSpeed evidence.
  *
  * - Mobile and desktop are evaluated separately but feed one finding.
- *   Mobile is the canonical measurement; desktop is used only when mobile
- *   is unavailable. The Lighthouse score itself is never copied as an SEO
- *   score — the Mogen score uses its own weighting.
+ *   Mobile is canonical when it carries a performance score; desktop is the
+ *   genuine fallback when it does. The Lighthouse score itself is never
+ *   copied as an SEO score — the Mogen score uses its own weighting.
  * - No usable strategy, or no performance score on the usable strategy →
  *   NOT_ASSESSED with an explicit reason. Missing metrics stay
  *   unavailable, never zero — and INP is never derived from TBT.
@@ -185,22 +185,38 @@ export function evaluatePerformanceLab(input: AnalysisInput): Finding {
   const desktop = analysis?.desktop ?? null;
 
   if (!mobile && !desktop) {
-    const reason =
-      input.psiReason ??
-      analysis?.mobileReason ??
+    // User-facing summary stays stable; the machine-readable reason lives
+    // in the evidence details/value below.
+    const reason = input.psiReason ?? analysis?.mobileReason ?? null;
+    const summary =
       "Lab performance not measured — PageSpeed Insights / Lighthouse data unavailable. Performance is never inferred from HTML size, scripts, or framework.";
     return finding(
       "performance-lab",
       "NOT_ASSESSED",
-      reason,
-      [ev(now, "psi", entryUrl, { connected: false }, reason)],
+      summary,
+      [ev(now, "psi", entryUrl, { connected: false, reason }, reason ?? summary)],
     );
   }
 
-  // Mobile is canonical; desktop is the genuine fallback, named as such.
-  const primary = mobile ?? desktop;
-  const secondary = mobile ? desktop : null;
-  const primaryEvidence = primary as PageSpeedEvidence;
+  // Mobile is canonical when it carries a performance score; desktop is the
+  // genuine fallback when it does. Neither score → NOT_ASSESSED.
+  const mobileScore = mobile?.categories.performance ?? null;
+  const desktopScore = desktop?.categories.performance ?? null;
+  const primary = mobileScore !== null ? mobile : desktopScore !== null ? desktop : null;
+  const secondary =
+    primary === mobile ? desktop : primary === desktop ? mobile : null;
+  const primaryEvidence = primary;
+  if (!primaryEvidence) {
+    return finding(
+      "performance-lab",
+      "NOT_ASSESSED",
+      "Lighthouse lab analysis ran but returned no performance score — metric unavailable.",
+      [
+        ...(mobile ? [strategySummaryEvidence(now, mobile)] : []),
+        ...(desktop ? [strategySummaryEvidence(now, desktop)] : []),
+      ],
+    );
+  }
   const score = primaryEvidence.categories.performance;
   if (score === null) {
     return finding(
