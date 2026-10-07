@@ -11,6 +11,10 @@ import { jsPDF } from "jspdf";
 import type { AuditResult } from "./types";
 import { QUADRANT_LABELS, RULE_MAP } from "./types";
 import {
+  INP_LAB_UNAVAILABLE_SHORT,
+  type PageSpeedEvidence,
+} from "./pagespeed";
+import {
   buildClientReport,
   GOOD_SCORE_THRESHOLD,
 } from "./report-client";
@@ -228,6 +232,85 @@ function truncateJson(value: unknown, max = 800): string {
   return raw.length > max ? `${raw.slice(0, max)}…` : raw;
 }
 
+function formatMs(value: number | null): string {
+  if (value === null) return "not assessed";
+  if (value >= 1000) return `${(value / 1000).toFixed(1)} s`;
+  return `${Math.round(value)} ms`;
+}
+
+function formatCls(value: number | null): string {
+  if (value === null) return "not assessed";
+  return value.toFixed(2);
+}
+
+function formatCategoryScore(score: number | null): string {
+  if (score === null) return "not assessed";
+  return `${Math.round(score * 100)} / 100`;
+}
+
+function renderPsiStrategy(
+  w: InstanceType<typeof Writer>,
+  label: string,
+  strat: PageSpeedEvidence | null,
+  reason: string | null,
+): void {
+  w.para(label);
+  if (!strat) {
+    w.para(`${label.split(" ")[0]}: unavailable — ${reason ?? "Lighthouse data unavailable"}`);
+    return;
+  }
+  if (strat.version) w.kv("Lighthouse version", strat.version);
+  w.kv("Performance", formatCategoryScore(strat.categories.performance));
+  w.kv("Accessibility", formatCategoryScore(strat.categories.accessibility));
+  w.kv("Best practices", formatCategoryScore(strat.categories.bestPractices));
+  w.kv("SEO (Lighthouse evidence only)", formatCategoryScore(strat.categories.seo));
+  const m = strat.metrics;
+  w.kv("LCP", formatMs(m.lcpMs));
+  w.kv("FCP", formatMs(m.fcpMs));
+  w.kv("CLS", formatCls(m.cls));
+  w.kv("TBT", formatMs(m.totalBlockingTimeMs));
+  w.kv("Speed Index", formatMs(m.speedIndexMs));
+  w.kv("TTFB", formatMs(m.ttfbMs));
+  w.kv(
+    "INP",
+    m.inpMs === null ? INP_LAB_UNAVAILABLE_SHORT : formatMs(m.inpMs),
+  );
+}
+
+/** Lighthouse / PageSpeed Insights section for the technical report. */
+function renderPsiSection(
+  w: InstanceType<typeof Writer>,
+  audit: AuditResult,
+): void {
+  w.h2("Lighthouse / PageSpeed Insights");
+  const psi = audit.psi ?? null;
+  const lab = audit.findings.find((f) => f.ruleId === "performance-lab");
+  if (!psi || (!psi.mobile && !psi.desktop)) {
+    w.para("Lighthouse / performance: NOT_ASSESSED");
+    w.para(
+      lab?.summary ??
+        "Lighthouse lab data unavailable — performance was not inferred from HTML.",
+    );
+    w.para("Lighthouse / PageSpeed Insights — lab analysis: no usable data returned.");
+    return;
+  }
+  w.kv("Source", "Google PageSpeed Insights");
+  w.kv("Analysed URL", psi.url);
+  w.kv("Generated", psi.fetchedAt);
+  renderPsiStrategy(w, "Mobile lab analysis", psi.mobile, psi.mobileReason);
+  renderPsiStrategy(w, "Desktop lab analysis", psi.desktop, psi.desktopReason);
+  w.para(
+    "Note: Lighthouse metrics are synthetic lab measurements, not real-user data. " +
+      "INP is a field (real-user) metric and is never manufactured from TBT — " +
+      "TBT is the Lighthouse lab responsiveness metric. Real-user INP requires " +
+      "field data such as Chrome UX Report (CrUX), which is not connected.",
+  );
+  w.para(
+    "Note: the Lighthouse SEO category is supporting evidence only. " +
+      "The Mogen SEO score remains the canonical score.",
+  );
+}
+
 /** Technical PDF: the complete measurement record for Mogen's inbox. */
 export function renderTechnicalPdf(audit: AuditResult, meta: TechnicalPdfMeta = {}): Buffer {
   const w = new Writer(baseDoc());
@@ -270,6 +353,8 @@ export function renderTechnicalPdf(audit: AuditResult, meta: TechnicalPdfMeta = 
   w.kv("Invalid entries", String(audit.sitemap.invalidEntries));
   w.kv("Duplicate URLs", String(audit.sitemap.duplicateUrls));
   w.kv("Off-origin URLs", String(audit.sitemap.offOriginUrls));
+
+  renderPsiSection(w, audit);
 
   w.h2("Summary");
   const s = audit.summary;

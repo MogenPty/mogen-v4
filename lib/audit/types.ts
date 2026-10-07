@@ -138,6 +138,13 @@ export interface AuditResult {
   crawl: CrawlInfo;
   robots: RobotsInfo;
   sitemap: SitemapInfo;
+  /**
+   * Normalized dual-strategy Lighthouse / PageSpeed Insights lab evidence
+   * (mobile + desktop, kept separate — never averaged). Null when PageSpeed
+   * could not provide usable evidence — the `performance-lab` rule then
+   * stays NOT_ASSESSED. Never carries the API key.
+   */
+  psi?: import("./pagespeed").PageSpeedAnalysis | null;
   summary: AuditSummary;
   quadrants: QuadrantScore[];
   findings: Finding[];
