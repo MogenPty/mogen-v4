@@ -45,12 +45,19 @@ describe("task 8A — /blog migrates to /articles", () => {
     expect(sitemap).not.toContain("`/blog");
     expect(sitemap).not.toContain("/blog/");
     expect(sitemap).not.toContain("/blog`");
+    // Canonical article URLs are built from MDX frontmatter slugs in the
+    // shared metadata helper consumed by the detail route.
+    const helper = readSource("lib/articles/metadata.ts");
+    expect(helper).toContain("/articles/${slug}");
+    expect(helper).not.toContain("/blog/${slug}");
+    expect(helper).not.toContain('"/blog"');
+    expect(helper).not.toContain("/blog/");
+    expect(helper).toContain('"Articles"');
     const detail = readSource("app/articles/[slug]/page.tsx");
-    expect(detail).toContain("/articles/${post.slug}");
-    expect(detail).not.toContain("/blog/${post.slug}");
+    expect(detail).toContain("articleMetadata");
+    expect(detail).not.toContain("/blog/${slug}");
     expect(detail).not.toContain('"/blog"');
     expect(detail).not.toContain("/blog/");
-    expect(detail).toContain('"Articles"');
   });
 
   it("points internal navigation at /articles, not /blog", () => {

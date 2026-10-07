@@ -1,37 +1,43 @@
-"use client";
-
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
+import type { ReactNode } from "react";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
-import { getPost, POSTS, sortPostsByDateDesc } from "@/data/blog";
+import { POSTS, sortPostsByDateDesc } from "@/data/blog";
+import type { ArticleSummary } from "@/lib/articles/types";
 import { formatNumber } from "@/lib/utils";
-import ArticleNotFound from "./article-not-found";
+import ArticleImage from "./article-image";
 
 interface Props {
-  slug: string;
+  article: ArticleSummary;
+  /** Rendered MDX content for the article body. */
+  content: ReactNode;
   numbering?: number;
 }
 
 export default function BlogPostBlock({
-  slug,
+  article,
+  content,
   numbering = 1,
 }: Readonly<Props>) {
-  const post = getPost(slug);
-  if (!post) return <ArticleNotFound numbering={numbering} />;
-
   const related = sortPostsByDateDesc(
-    POSTS.filter((p) => p.slug !== post.slug),
+    POSTS.filter((p) => p.slug !== article.slug),
   ).slice(0, 3);
+
+  const introParts = [
+    article.author,
+    article.publishedAt,
+    article.readTime,
+  ].filter(Boolean);
+  const intro = introParts.join(" · ");
 
   return (
     <PageShell
       index={`// ${formatNumber(numbering)} — Insights`}
-      label={post.category}
-      title={post.title}
-      intro={`${post.author} · ${post.date} · ${post.readTime}`}
+      label={article.category}
+      title={article.title}
+      intro={intro}
     >
       <BlueprintGrid className="bg-bone pb-20">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -44,31 +50,40 @@ export default function BlogPostBlock({
         </div>
       </BlueprintGrid>
 
+      {article.heroImage ? (
+        <BlueprintGrid className="bg-bone pb-12">
+          <div className="mx-auto max-w-190 px-6 lg:px-10">
+            <ArticleImage
+              src={article.heroImage}
+              alt={article.heroImageAlt ?? article.title}
+              priority
+            />
+          </div>
+        </BlueprintGrid>
+      ) : null}
+
       <BlueprintGrid className="bg-bone pb-24">
         <div className="mx-auto max-w-190 px-6 lg:px-10">
+          {article.updatedAt && article.updatedAt !== article.publishedAt ? (
+            <p className="small-caps mb-6 text-ink/50">
+              Updated {article.updatedAt}
+            </p>
+          ) : null}
           <article className="prose-content space-y-6 text-lg leading-relaxed text-ink/80">
-            <ReactMarkdown
-              components={{
-                h3: ({ node, ...props }) => (
-                  <h3
-                    className="mt-10 font-display text-2xl font-black text-ink"
-                    {...props}
-                  />
-                ),
-                p: ({ node, ...props }) => (
-                  <p className="text-ink/80" {...props} />
-                ),
-                blockquote: ({ node, ...props }) => (
-                  <blockquote
-                    className="border-l-2 border-catalyst pl-6 font-display text-xl font-bold text-ink"
-                    {...props}
-                  />
-                ),
-              }}
-            >
-              {post.body}
-            </ReactMarkdown>
+            {content}
           </article>
+          {article.tags.length > 0 ? (
+            <div className="mt-10 flex flex-wrap gap-2">
+              {article.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="small-caps border border-ink/15 px-3 py-1 text-ink/60"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </BlueprintGrid>
 

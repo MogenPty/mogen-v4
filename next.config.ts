@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   images: {
     remotePatterns: [
       {
@@ -41,4 +43,17 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  options: {
+    // Plugin names as strings: remark/rehype functions are not serializable
+    // and Turbopack requires serializable MDX options (see Next.js MDX docs).
+    // remark-frontmatter MUST come first: @next/mdx does not strip YAML
+    // frontmatter by default, so without it the `---` fences render as
+    // <hr/> rules and the key: value lines render as article text.
+    // Metadata still comes from gray-matter in lib/articles/loader.ts.
+    remarkPlugins: ["remark-frontmatter", "remark-gfm"],
+    rehypePlugins: [],
+  },
+});
+
+export default withMDX(nextConfig);

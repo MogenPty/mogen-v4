@@ -109,7 +109,9 @@ describe("task 8 — sitemap generation", () => {
       expect(post.slug).toBeTruthy();
       expect(getPost(post.slug)).toBeDefined();
     }
-    expect(readSource("app/sitemap.ts")).toContain("POSTS");
+    // Article sitemap entries derive from MDX frontmatter via the loader
+    // (POSTS itself is derived from the same frontmatter — see data/blog.ts).
+    expect(readSource("app/sitemap.ts")).toContain("getAllArticles");
   });
 });
 
@@ -178,12 +180,20 @@ describe("task 8 — promotion metadata", () => {
 
 describe("task 8 — article metadata", () => {
   it("emits canonical + article OG + Article JSON-LD per post", () => {
-    const source = readSource("app/articles/[slug]/page.tsx");
-    expect(source).toContain("alternates");
-    expect(source).toContain("canonical");
-    expect(source).toContain('"article"');
-    expect(source).toContain('"Article"');
-    expect(source).toContain("datePublished");
+    // The detail route delegates to the shared MDX metadata helper, which
+    // builds canonical + article OG + Article JSON-LD from frontmatter.
+    const route = readSource("app/articles/[slug]/page.tsx");
+    expect(route).toContain("articleMetadata");
+    expect(route).toContain("articleJsonLd");
+    const helper = readSource("lib/articles/metadata.ts");
+    // Canonical + OG come from the shared pageMetadata helper (which sets
+    // `alternates` from the configured site URL — see lib/seo.ts).
+    expect(helper).toContain("pageMetadata");
+    expect(helper).toContain("canonicalUrl");
+    expect(readSource("lib/seo.ts")).toContain("alternates");
+    expect(helper).toContain('"article"');
+    expect(helper).toContain('"Article"');
+    expect(helper).toContain("datePublished");
   });
 
   it("gives every article a unique title and description", () => {
