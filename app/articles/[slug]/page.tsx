@@ -8,7 +8,11 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export const dynamicParams = false;
+// dynamicParams stays true (the default): generateStaticParams pre-renders
+// known articles at build time, while articles added later still render on
+// demand instead of 404ing. Unknown slugs return the project 404 via
+// notFound() below, so no invalid URL ever renders.
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return getArticleSlugs().map((slug) => ({ slug }));

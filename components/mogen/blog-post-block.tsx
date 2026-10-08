@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
-import { POSTS, sortPostsByDateDesc } from "@/data/blog";
+import { getPosts, sortPostsByDateDesc } from "@/data/blog";
 import type { ArticleSummary } from "@/lib/articles/types";
 import { formatNumber } from "@/lib/utils";
 import ArticleImage from "./article-image";
@@ -22,7 +22,7 @@ export default function BlogPostBlock({
   numbering = 1,
 }: Readonly<Props>) {
   const related = sortPostsByDateDesc(
-    POSTS.filter((p) => p.slug !== article.slug),
+    getPosts().filter((p) => p.slug !== article.slug),
   ).slice(0, 3);
 
   const introParts = [
@@ -69,7 +69,7 @@ export default function BlogPostBlock({
               Updated {article.updatedAt}
             </p>
           ) : null}
-          <article className="prose-content space-y-6 text-lg leading-relaxed text-ink/80">
+          <article className="prose-content space-y-6 text-lg leading-relaxed text-ink/80 article">
             {content}
           </article>
           {article.tags.length > 0 ? (

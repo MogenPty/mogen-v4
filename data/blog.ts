@@ -38,23 +38,39 @@ function toPost(summary: ArticleSummary, body: string): Post {
 }
 
 /**
- * Compatibility collection backed by MDX frontmatter.
- * The `.mdx` files in `/articles` are the source of truth; this array
- * is derived synchronously (server-side) so existing listing components,
- * sitemap and tests keep working without a second registry to edit.
+ * Load posts fresh from MDX frontmatter on every call.
+ * The `.mdx` files in `/articles` are the source of truth — reading the
+ * filesystem per call (instead of caching at module scope) is what lets
+ * newly added articles appear in listings without a server restart.
+ * Article counts are tiny, so this costs nothing measurable.
  */
-function loadPosts(): Post[] {
-  const parsed = loadArticles();
+function loadPosts(cwd = process.cwd()): Post[] {
+  const parsed = loadArticles({ cwd });
   const bySlug = new Map(parsed.map((a) => [a.meta.slug, a]));
-  return getAllArticleSummaries().map((summary) => {
+  return getAllArticleSummaries({ cwd }).map((summary) => {
     const body = bySlug.get(summary.slug)?.body ?? "";
     return toPost(summary, body);
   });
 }
 
+export interface GetPostsOptions {
+  cwd?: string;
+}
+
+/** Fresh post collection. Prefer this over `POSTS` in components. */
+export function getPosts(options?: GetPostsOptions): Post[] {
+  return loadPosts(options?.cwd ?? process.cwd());
+}
+
+/**
+ * Backwards-compatible snapshot for tests and one-off uses.
+ * NOTE: evaluated once at module load — components must use `getPosts()`
+ * (or the fresh defaults below) so new articles appear without restarts.
+ */
 export const POSTS: Post[] = loadPosts();
 
-export const getPost = (slug: string) => POSTS.find((p) => p.slug === slug);
+export const getPost = (slug: string, options?: GetPostsOptions) =>
+  getPosts(options).find((p) => p.slug === slug);
 
 /**
  * Articles listing helpers for /articles (newest-first + featured + pagination).
@@ -71,8 +87,9 @@ export function sortPostsByDateDesc(posts: Post[]): Post[] {
 }
 
 /** Latest explicitly featured article (newest `date` among `featured: true`). */
-export function getLatestFeaturedPost(posts: Post[] = POSTS): Post | undefined {
-  const featured = posts.filter((p) => p.featured === true);
+export function getLatestFeaturedPost(posts?: Post[]): Post | undefined {
+  const all = posts ?? getPosts();
+  const featured = all.filter((p) => p.featured === true);
   if (featured.length === 0) return undefined;
   return sortPostsByDateDesc(featured)[0];
 }
@@ -82,9 +99,10 @@ export function getLatestFeaturedPost(posts: Post[] = POSTS): Post | undefined {
  * excluded so it is never duplicated below the prominent position.
  * When no featured article exists, this is simply all posts newest-first.
  */
-export function getRegularPosts(posts: Post[] = POSTS): Post[] {
-  const featured = getLatestFeaturedPost(posts);
-  const sorted = sortPostsByDateDesc(posts);
+export function getRegularPosts(posts?: Post[]): Post[] {
+  const all = posts ?? getPosts();
+  const featured = getLatestFeaturedPost(all);
+  const sorted = sortPostsByDateDesc(all);
   if (!featured) return sorted;
   return sorted.filter((p) => p.slug !== featured.slug);
 }
@@ -123,7 +141,7 @@ export interface GetArticlesOptions {
 export function getArticles({
   page = 1,
   pageSize = ARTICLES_PAGE_SIZE,
-  posts = POSTS,
+  posts,
 }: GetArticlesOptions = {}): PaginatedResult {
   const safePageSize = Number.isInteger(pageSize) && pageSize > 0 ? pageSize : ARTICLES_PAGE_SIZE;
   const regular = getRegularPosts(posts);

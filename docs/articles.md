@@ -104,6 +104,12 @@ Rules:
    layout, appears in `/articles`, the sitemap and search metadata
    automatically. No TypeScript registry needs editing.
 
+New files are picked up automatically: the listing, detail pages, homepage
+preview and related articles all read the filesystem on every request, so a
+new article appears on refresh with no server restart and no rebuild. Two
+caveats: `sitemap.xml` is generated at build time (it refreshes on the next
+deploy), and in dev a brand-new article may need a page refresh to appear.
+
 ## Drafts
 
 ```yaml
