@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "predev": "node scripts/generate-articles-index.mjs",
     "build": "next build",
+    "prebuild": "node scripts/generate-articles-index.mjs",
+    "articles:sync": "node scripts/generate-articles-index.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

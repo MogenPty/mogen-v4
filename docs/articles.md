@@ -104,11 +104,17 @@ Rules:
    layout, appears in `/articles`, the sitemap and search metadata
    automatically. No TypeScript registry needs editing.
 
-New files are picked up automatically: the listing, detail pages, homepage
-preview and related articles all read the filesystem on every request, so a
-new article appears on refresh with no server restart and no rebuild. Two
-caveats: `sitemap.xml` is generated at build time (it refreshes on the next
-deploy), and in dev a brand-new article may need a page refresh to appear.
+New files are picked up automatically: in dev the listing, detail pages,
+homepage preview and related articles read the filesystem on every request,
+so a new article appears on refresh with no server restart. For production
+(`pnpm build`), `prebuild` regenerates `lib/articles/generated-index.json`
+from the MDX files and that bundled index becomes the runtime metadata
+source — this is why `/articles` (dynamically rendered for pagination)
+keeps working on serverless deployments where the loose `articles/*.mdx`
+files are not present on the function filesystem, while the MDX files
+remain the single source of truth. Two caveats: `sitemap.xml` is generated
+at build time (it refreshes on the next deploy), and in dev a brand-new
+article may need a page refresh to appear.
 
 ## Drafts
 
