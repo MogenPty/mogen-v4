@@ -6,7 +6,6 @@ import {
   getArticles,
   getLatestFeaturedPost,
   getPageNumbers,
-  POSTS,
 } from "@/data/blog";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
@@ -71,7 +70,8 @@ export default function BlogBlock({
   pageSize = ARTICLES_PAGE_SIZE,
   preservedParams,
 }: Readonly<Props>) {
-  const featured = getLatestFeaturedPost(POSTS);
+  // Fresh reads every render so newly added articles appear immediately.
+  const featured = getLatestFeaturedPost();
   const result = getArticles({ page, pageSize });
   const showFeatured = result.currentPage === 1 && featured !== undefined;
   const pageNumbers =

@@ -207,6 +207,19 @@
     outline-offset: 3px;
     border-radius: 2px;
   }
+
+  article {
+    & ul,
+    & ol,
+    & li {
+      all: revert;
+    }
+
+    & h4 {
+      margin-bottom: 6px !important;
+      font-weight: 600;
+    }
+  }
 }
 
 @layer components {

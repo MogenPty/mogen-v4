@@ -1,99 +1,35 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogPostBlock from "@/components/mogen/blog-post-block";
-import { getPost, POSTS } from "@/data/blog";
-import { siteConfig } from "@/data/site";
+import { getArticleBySlug, getArticleSlugs } from "@/lib/articles/loader";
+import { articleJsonLd, articleMetadata } from "@/lib/articles/metadata";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
+// dynamicParams stays true (the default): generateStaticParams pre-renders
+// known articles at build time, while articles added later still render on
+// demand instead of 404ing. Unknown slugs return the project 404 via
+// notFound() below, so no invalid URL ever renders.
+export const dynamicParams = true;
+
 export function generateStaticParams() {
-  return POSTS.map((p) => ({ slug: p.slug }));
+  return getArticleSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPost(slug);
-  if (!post) return { title: "Article not found" };
-  const canonical = `${siteConfig.url}/articles/${post.slug}`;
-  return {
-    title: post.title,
-    description: post.excerpt,
-    alternates: { canonical },
-    openGraph: {
-      type: "article",
-      url: canonical,
-      siteName: siteConfig.name,
-      title: post.title,
-      description: post.excerpt,
-      images: [
-        {
-          url: siteConfig.ogImage,
-          width: siteConfig.ogImageWidth,
-          height: siteConfig.ogImageHeight,
-          alt: siteConfig.ogImageAlt,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: post.title,
-      description: post.excerpt,
-      images: [siteConfig.ogImage],
-    },
-  };
+  const article = getArticleBySlug(slug);
+  if (!article) return { title: "Article not found" };
+  return articleMetadata(article);
 }
 
 function ArticleJsonLd({ slug }: Readonly<{ slug: string }>) {
-  const post = getPost(slug);
-  if (!post) return null;
-  const organizationId = `${siteConfig.url}/#organization`;
-  const websiteId = `${siteConfig.url}/#website`;
-  const pageUrl = `${siteConfig.url}/articles/${post.slug}`;
-  // Article schema mirrors visible content only: headline, description,
-  // dates, author name and publisher. No invented ratings or counts.
-  const graph = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Article",
-        "@id": `${pageUrl}#article`,
-        headline: post.title,
-        description: post.excerpt,
-        url: pageUrl,
-        mainEntityOfPage: pageUrl,
-        datePublished: post.date,
-        author: { "@type": "Organization", name: siteConfig.name },
-        publisher: { "@id": organizationId },
-        isPartOf: { "@id": websiteId },
-        inLanguage: siteConfig.lang,
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: "Home",
-            item: `${siteConfig.url}/`,
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Articles",
-            item: `${siteConfig.url}/articles`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: post.title,
-            item: pageUrl,
-          },
-        ],
-      },
-    ],
-  };
+  const article = getArticleBySlug(slug);
+  if (!article) return null;
+  if (article.draft) return null;
+  const graph = articleJsonLd(article);
   return (
     <script
       type="application/ld+json"
@@ -107,12 +43,15 @@ export default async function BlogPost({ params }: Readonly<Props>) {
   const { slug } = await params;
   // Unknown article slugs return the project 404 (with 404 status) rather
   // than a 200 "not found" panel — see Task 8 §14.
-  if (!slug || !getPost(slug)) notFound();
+  const article = slug ? getArticleBySlug(slug) : undefined;
+  if (!slug || !article || article.draft) notFound();
+
+  const { default: Content } = await import(`@/articles/${slug}.mdx`);
 
   return (
     <>
       <ArticleJsonLd slug={slug} />
-      <BlogPostBlock slug={slug} numbering={9} />
+      <BlogPostBlock article={article} content={<Content />} numbering={9} />
     </>
   );
 }

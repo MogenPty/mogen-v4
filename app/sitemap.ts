@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import { POSTS } from "@/data/blog";
 import { getPublicPromotions } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
+import { getAllArticles } from "@/lib/articles/loader";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteConfig.url;
@@ -36,12 +36,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: getRoutePriority(route),
   }));
 
-  const articleEntries: MetadataRoute.Sitemap = POSTS.map((post) => ({
-    url: `${base}/articles/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
+  // Article URLs derive from MDX frontmatter (drafts excluded by the loader).
+  const articleEntries: MetadataRoute.Sitemap = getAllArticles().map(
+    (article) => ({
+      url: `${base}/articles/${article.slug}`,
+      lastModified: new Date(article.updatedAt ?? article.publishedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }),
+  );
 
   const promotionEntries: MetadataRoute.Sitemap = getPublicPromotions().map((p) => ({
     url: `${base}/promotions/${p.slug}`,
