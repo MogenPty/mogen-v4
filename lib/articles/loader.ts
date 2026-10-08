@@ -11,6 +11,7 @@ import {
   type ArticleSummary,
 } from "./types";
 import { isAllowedArticleImageSrc } from "./image-policy";
+import generatedEntries from "./generated-index.json";
 
 export {
   ARTICLE_IMAGE_PREFIX,
@@ -204,27 +205,98 @@ export function assertUniqueSlugs(
 
 function discoverArticleFiles(cwd = process.cwd()): string[] {
   const dir = articlesDirectory(cwd);
-  if (!existsSync(dir)) return [];
+  if (!existsSync(dir)) {
+    // Never silently return [] here: an absent source directory means the
+    // deployment/discovery is broken, which must not masquerade as the
+    // genuine "no published articles yet" empty state in the UI.
+    throw new Error(
+      `Article source directory not found: ${dir} (cwd="${cwd}"). ` +
+        `The MDX articles must be readable at "${ARTICLES_DIR_NAME}/" relative to the project root. ` +
+        `In production this index is bundled at build time (see scripts/generate-articles-index.mjs); ` +
+        `a missing directory means the deployment is broken, not that there are zero articles.`,
+    );
+  }
   return readdirSync(dir)
     .filter((f) => f.endsWith(".mdx"))
     .sort((a, b) => a.localeCompare(b));
 }
 
 /**
- * Load + validate every article. Drafts are excluded by default.
- * Duplicate slugs fail loudly (never silent unpredictable routing).
+ * Where article metadata comes from.
+ * - `"fs"`: live filesystem scan (default in dev/test so newly added MDX
+ *   files appear without regenerating anything).
+ * - `"generated"`: the build-generated `generated-index.json` bundle
+ *   (default in production builds and production runtime, where the loose
+ *   `articles/*.mdx` files may not exist on the serverless filesystem).
+ * - `"auto"` (default): `"generated"` when `NODE_ENV === "production"`,
+ *   otherwise `"fs"`.
+ *
+ * Both sources feed the SAME `parseArticleFile()` validation, so the MDX
+ * files remain the single source of truth and every consumer
+ * (`/articles`, `/articles/[slug]`, related articles, sitemap) agrees.
  */
-export function loadArticles(options?: {
+export type ArticleSource = "auto" | "fs" | "generated";
+
+export interface LoadArticlesOptions {
   cwd?: string;
   includeDrafts?: boolean;
-}): ParsedArticle[] {
-  const cwd = options?.cwd ?? process.cwd();
-  const includeDrafts = options?.includeDrafts ?? false;
+  source?: ArticleSource;
+}
+
+function resolveSource(explicit?: ArticleSource): "fs" | "generated" {
+  if (explicit === "fs" || explicit === "generated") return explicit;
+  return process.env.NODE_ENV === "production" ? "generated" : "fs";
+}
+
+interface GeneratedEntry {
+  fileName: string;
+  raw: string;
+}
+
+/** Parse the build-generated index (statically imported, webpack-bundled). */
+function loadFromGenerated(): ParsedArticle[] {
+  const entries = generatedEntries as unknown as GeneratedEntry[];
+  if (!Array.isArray(entries)) {
+    throw new Error(
+      "Generated article index is corrupt (expected an array). " +
+        "Regenerate it with: pnpm articles:sync",
+    );
+  }
+  return entries.map((entry) => {
+    if (
+      !entry ||
+      typeof entry.fileName !== "string" ||
+      typeof entry.raw !== "string"
+    ) {
+      throw new Error(
+        "Generated article index contains a malformed entry. " +
+          "Regenerate it with: pnpm articles:sync",
+      );
+    }
+    return parseArticleFile(entry.fileName, entry.raw);
+  });
+}
+
+/** Parse the live `articles/*.mdx` directory. */
+function loadFromFilesystem(cwd: string): ParsedArticle[] {
   const files = discoverArticleFiles(cwd);
-  const parsed = files.map((fileName) => {
+  return files.map((fileName) => {
     const raw = readFileSync(join(articlesDirectory(cwd), fileName), "utf8");
     return parseArticleFile(fileName, raw);
   });
+}
+
+/**
+ * Load + validate every article. Drafts are excluded by default.
+ * Duplicate slugs fail loudly (never silent unpredictable routing).
+ */
+export function loadArticles(options?: LoadArticlesOptions): ParsedArticle[] {
+  const cwd = options?.cwd ?? process.cwd();
+  const includeDrafts = options?.includeDrafts ?? false;
+  const parsed =
+    resolveSource(options?.source) === "generated"
+      ? loadFromGenerated()
+      : loadFromFilesystem(cwd);
 
   assertUniqueSlugs(
     parsed.map((a) => ({ slug: a.meta.slug, fileName: a.fileName })),
@@ -243,23 +315,17 @@ export function loadArticles(options?: {
 }
 
 /** Listing metadata only — never loads full MDX bodies into cards. */
-export function getAllArticles(options?: {
-  cwd?: string;
-  includeDrafts?: boolean;
-}): ArticleSummary[] {
+export function getAllArticles(options?: LoadArticlesOptions): ArticleSummary[] {
   return loadArticles(options).map((a) => a.summary);
 }
 
-export function getArticleSlugs(options?: {
-  cwd?: string;
-  includeDrafts?: boolean;
-}): string[] {
+export function getArticleSlugs(options?: LoadArticlesOptions): string[] {
   return loadArticles(options).map((a) => a.meta.slug);
 }
 
 export function getArticleBySlug(
   slug: string,
-  options?: { cwd?: string; includeDrafts?: boolean },
+  options?: LoadArticlesOptions,
 ): ArticleSummary | undefined {
   return loadArticles(options)
     .map((a) => a.summary)
@@ -269,7 +335,7 @@ export function getArticleBySlug(
 /** Full validated metadata (throws when missing). Server-side only. */
 export function requireArticleBySlug(
   slug: string,
-  options?: { cwd?: string; includeDrafts?: boolean },
+  options?: LoadArticlesOptions,
 ): ParsedArticle {
   const found = loadArticles(options).find((a) => a.meta.slug === slug);
   if (!found) {

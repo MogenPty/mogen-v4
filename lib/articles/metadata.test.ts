@@ -88,7 +88,10 @@ describe("article structured data — minimum Article JSON-LD", () => {
   });
 
   it("includes dateModified and image only when the article has them", () => {
-    const plain = getArticleBySlug("local-seo-pretoria-2026")!;
+    const source = getArticleBySlug("local-seo-pretoria-2026")!;
+    // Strip optional fields so this case does not depend on the article's
+    // current frontmatter (content edits must never break the contract test).
+    const plain = { ...source, updatedAt: undefined, heroImage: undefined };
     expect(JSON.stringify(articleJsonLd(plain))).not.toContain("dateModified");
     const updated = { ...plain, updatedAt: "2026-10-01" };
     expect(JSON.stringify(articleJsonLd(updated))).toContain("dateModified");
