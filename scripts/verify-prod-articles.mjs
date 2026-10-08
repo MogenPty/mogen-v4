@@ -15,14 +15,33 @@
  * because metadata comes from the bundled generated index.
  */
 import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { join } from "node:path";
 
 const port = Number(process.argv[2] ?? 3100);
 const base = `http://127.0.0.1:${port}`;
 const KNOWN_SLUG = "web-development-in-the-brits-area";
 
-async function waitForServer(deadlineMs) {
+/** Fail fast if something already answers on the port (stale server). */
+async function assertPortFree() {
+  try {
+    await fetch(`${base}/`, { redirect: "manual" });
+  } catch {
+    return; // connection refused: port is free
+  }
+  throw new Error(
+    `port ${port} is already occupied — refusing to test a stale server`,
+  );
+}
+
+async function waitForServer(server, deadlineMs) {
   const start = Date.now();
   for (;;) {
+    if (server.exitCode !== null) {
+      throw new Error(
+        `next start exited during startup (code ${server.exitCode}) — readiness cannot belong to this run`,
+      );
+    }
     try {
       const res = await fetch(`${base}/articles`, { redirect: "manual" });
       if (res.status === 200) return;
@@ -37,13 +56,17 @@ async function waitForServer(deadlineMs) {
 }
 
 async function main() {
-  const server = spawn("npx", ["next", "start", "-p", String(port)], {
-    stdio: "ignore",
-    shell: true,
-  });
+  await assertPortFree();
+  // Spawn the Next binary directly (no intermediary shell, no PATH lookup):
+  // with shell:true, args are concatenated, not escaped (DEP0190).
+  const server = spawn(
+    process.execPath,
+    [join(process.cwd(), "node_modules", "next", "dist", "bin", "next"), "start", "-p", String(port)],
+    { stdio: "ignore" },
+  );
   const failures = [];
   try {
-    await waitForServer(90000);
+    await waitForServer(server, 90000);
 
     const index = await (await fetch(`${base}/articles`)).text();
     if (index.includes("No articles yet")) {
@@ -80,6 +103,12 @@ async function main() {
     failures.push(`FAIL harness error: ${error.message}`);
   } finally {
     server.kill();
+    // Wait for the spawned process to actually exit (bounded, so a wedged
+    // child cannot hang the harness forever).
+    await Promise.race([
+      once(server, "exit").then(() => undefined),
+      new Promise((r) => setTimeout(r, 10000)),
+    ]);
   }
   if (failures.length > 0) {
     for (const f of failures) console.error(f);

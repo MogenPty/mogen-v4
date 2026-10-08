@@ -8,6 +8,7 @@ import {
   getArticleBySlug,
   getArticleSlugs,
   loadArticles,
+  parseArticleFile,
 } from "@/lib/articles/loader";
 
 const KNOWN_SLUG = "web-development-in-the-brits-area";
@@ -34,8 +35,11 @@ describe("articles — canonical discovery (fs vs generated index)", () => {
     const generated = generatedEntries().map((e) => e.fileName);
     expect(generated).toEqual(onDisk);
     for (const entry of generatedEntries()) {
-      expect(entry.raw).toContain("title:");
-      expect(entry.raw).toContain(`slug: "${entry.fileName.replace(/\.mdx$/, "")}"`);
+      // Compare the parsed slug (quoting-agnostic) rather than requiring a
+      // particular YAML quoting style in the raw frontmatter. Parsing also
+      // re-validates each embedded file (missing title etc. throws here).
+      const parsed = parseArticleFile(entry.fileName, entry.raw);
+      expect(parsed.meta.slug).toBe(entry.fileName.replace(/\.mdx$/, ""));
     }
   });
 
