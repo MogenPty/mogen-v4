@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { isAllowedArticleImageSrc } from "@/lib/articles/loader";
+import { isAllowedArticleImageSrc } from "@/lib/articles/image-policy";
 
 interface ArticleImageProps {
   src: string;

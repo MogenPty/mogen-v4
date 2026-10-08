@@ -19,7 +19,7 @@ Speed is no longer a nice-to-have — it's a ranking factor. Google's Core Web V
 
 In the competitive landscape of digital marketing, one metric has traditionally held a place as a "nice-to-have"—something we aim for but rarely touch. However, with the advent of Google's new Core Web Vitals (CWV) system, this status is being completely overturned.
 
-For years, SEO experts and developers have relied on metrics like PageSpeed Insights or Lighthouse to gauge how fast a website performs. Today, these tools are obsolete because they no longer reflect reality. **Core Web Vitals** represent the true signal that real users expect from your digital presence. They measure exactly what Google actually sees when it crawls your site: the speed of loading, the responsiveness of elements, and the stability of the layout.
+For years, SEO experts and developers have relied on PageSpeed Insights and Lighthouse for useful lab diagnostics. **Core Web Vitals** complement those lab tools with real-user experience signals. They measure what actual visitors experience: the speed of loading, the responsiveness of elements, and the stability of the layout.
 
 For a South African site, this means more than just "speed." It means ensuring your content remains accessible to visitors regardless of their device or network conditions. While many sites are fast enough for Google to rank them #1, they often fail these metrics even if they look visually appealing on a screen. Core Web Vitals ensure that the speed signals Google rewards you with higher rankings and better trust in your brand.
 
@@ -52,7 +52,7 @@ A lean, well-built site wins all three. We build every Mogen site to pass Core W
 *   **Compress Images:** Use WebP format instead of standard JPEG or PNG whenever possible. This reduces file size by up to 70% without losing quality.
 *   **Preload Hero Images:** Ensure the primary image in the hero section is loaded immediately using
 > ```
-> <img src="..." onload="this.onload=null; this.src='https://cdn.example.com/image.webp'">
+> <link rel="preload" as="image" href="/images/articles/hero.webp">
 > ```
 *   **CDN Strategy:** Serve assets from Content Delivery Networks (like Cloudflare or AWS) that are geographically close to South African users. This reduces latency significantly.
 
@@ -61,7 +61,7 @@ A lean, well-built site wins all three. We build every Mogen site to pass Core W
 ## INP — Interaction to Next Paint
 
 **What it measures:**
-In the new system, **INP** replaced FID (First Input Delay). INP tracks how long it takes for the user's mouse to move from a point on the page to another point, until the next content appears. It measures responsiveness across the whole page visit.
+In the new system, **INP** replaced FID (First Input Delay). INP measures the responsiveness of clicks, taps, and keyboard input across the whole page visit, tracking the time from interaction until the next paint.
 
 **Why it matters:**
 If a large JavaScript application or heavy third-party library takes 200 milliseconds (ms) to execute, the entire site feels "laggy" to the user, even if all other elements load instantly. This is often due to long-running background tasks, heavy scripts, or third-party widgets that block the page flow.

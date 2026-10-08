@@ -1,7 +1,4 @@
-import {
-  getAllArticles as getAllArticleSummaries,
-  loadArticles,
-} from "@/lib/articles/loader";
+import { loadArticles } from "@/lib/articles/loader";
 import type { ArticleSummary } from "@/lib/articles/types";
 
 export interface Post {
@@ -45,12 +42,7 @@ function toPost(summary: ArticleSummary, body: string): Post {
  * Article counts are tiny, so this costs nothing measurable.
  */
 function loadPosts(cwd = process.cwd()): Post[] {
-  const parsed = loadArticles({ cwd });
-  const bySlug = new Map(parsed.map((a) => [a.meta.slug, a]));
-  return getAllArticleSummaries({ cwd }).map((summary) => {
-    const body = bySlug.get(summary.slug)?.body ?? "";
-    return toPost(summary, body);
-  });
+  return loadArticles({ cwd }).map((a) => toPost(a.summary, a.body));
 }
 
 export interface GetPostsOptions {

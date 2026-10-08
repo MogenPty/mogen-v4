@@ -10,6 +10,7 @@ import {
   type ArticleMeta,
   type ArticleSummary,
 } from "./types";
+import { isAllowedArticleImageSrc } from "./image-policy";
 
 export {
   ARTICLE_IMAGE_PREFIX,
@@ -17,6 +18,7 @@ export {
   DEFAULT_ARTICLE_AUTHOR,
   DEFAULT_ARTICLE_CATEGORY,
 };
+export { isAllowedArticleImageSrc } from "./image-policy";
 
 function articlesDirectory(cwd = process.cwd()): string {
   return join(cwd, ARTICLES_DIR_NAME);
@@ -24,22 +26,24 @@ function articlesDirectory(cwd = process.cwd()): string {
 
 function isValidDateString(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const time = Date.parse(value);
-  return Number.isFinite(time);
+  const time = Date.parse(`${value}T00:00:00Z`);
+  if (!Number.isFinite(time)) return false;
+  return new Date(time).toISOString().slice(0, 10) === value;
+}
+
+function normalizeFrontmatterDate(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  return undefined;
 }
 
 function isValidSlug(value: string): boolean {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
 }
 
-/** Local article images must be web paths under /images/articles/. */
-export function isAllowedArticleImageSrc(src: string): boolean {
-  if (!src.startsWith(ARTICLE_IMAGE_PREFIX)) return false;
-  if (src.includes("..") || src.includes("\\")) return false;
-  if (src.startsWith("public/") || src.includes("public/images")) return false;
-  return /\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(src.split("?")[0]);
-}
-
+/** Local article images must be web paths under /images/articles/. Moved to ./image-policy. */
 export function validateHeroImagePath(src: string, file: string): void {
   if (!isAllowedArticleImageSrc(src)) {
     throw new Error(
@@ -89,7 +93,7 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
   const title = data!.title;
   const slug = data!.slug;
   const description = data!.description;
-  const publishedAt = data!.publishedAt;
+  const publishedAt = normalizeFrontmatterDate(data!.publishedAt);
 
   if (typeof title !== "string" || title.trim().length === 0) {
     errors.push("Missing required frontmatter: title");
@@ -116,8 +120,8 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
     );
   }
 
-  const updatedAt = data!.updatedAt;
-  if (updatedAt !== undefined) {
+  const updatedAt = normalizeFrontmatterDate(data!.updatedAt);
+  if (data!.updatedAt !== undefined) {
     if (typeof updatedAt !== "string" || !isValidDateString(updatedAt)) {
       errors.push('Invalid frontmatter: updatedAt (expected "YYYY-MM-DD")');
     }
@@ -149,8 +153,8 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
     title: fm.title.trim(),
     slug: fm.slug,
     description: fm.description.trim(),
-    publishedAt: fm.publishedAt,
-    ...(fm.updatedAt ? { updatedAt: fm.updatedAt } : {}),
+    publishedAt: publishedAt!,
+    ...(updatedAt ? { updatedAt } : {}),
     author:
       typeof fm.author === "string" && fm.author.trim().length > 0
         ? fm.author
