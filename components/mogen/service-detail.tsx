@@ -3,12 +3,6 @@
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
-import {
-  buildEnquiryHref,
-  type EnquiryAttribution,
-  withAttribution,
-} from "@/lib/enquiry/enquiry";
-import { formatNumber } from "@/lib/utils";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import MagneticButton from "@/components/mogen/magnet-button";
@@ -17,6 +11,12 @@ import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
 import ServiceQuoteForm from "@/components/mogen/service-quote-form";
 import { getService, SERVICES } from "@/data/services";
+import {
+  buildEnquiryHref,
+  type EnquiryAttribution,
+  withAttribution,
+} from "@/lib/enquiry/enquiry";
+import { formatNumber } from "@/lib/utils";
 
 interface Props {
   serviceSlug: string;
@@ -137,14 +137,14 @@ export default function ServiceDetail({
               />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
                 {service.process.map((p) => (
-                  <div key={p.n} className="bg-bone p-8">
+                  <div key={p.position} className="bg-bone p-8">
                     <span className="font-display text-4xl font-black text-catalyst">
-                      {p.n}
+                      {p.position}
                     </span>
                     <h3 className="mt-4 font-display text-xl font-black text-ink">
-                      {p.t}
+                      {p.title}
                     </h3>
-                    <p className="mt-2 text-sm text-ink/70">{p.d}</p>
+                    <p className="mt-2 text-sm text-ink/70">{p.description}</p>
                   </div>
                 ))}
               </div>
@@ -196,7 +196,7 @@ export default function ServiceDetail({
                         {a.price}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm text-ink/60">{a.desc}</p>
+                    <p className="mt-2 text-sm text-ink/60">{a.description}</p>
                   </div>
                 ))}
               </div>

@@ -1,6 +1,7 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { getPackage } from "@/data/packages";
 import {
   formatPromotionPrice,
   getFeaturedPricePoint,
@@ -8,7 +9,7 @@ import {
   needsCadenceSuffix,
 } from "@/data/promotions";
 import { getService, SERVICES } from "@/data/services";
-import { getPackage } from "@/data/packages";
+import { getSiteUrl } from "@/data/site";
 import {
   ACCENT_INIT_SCRIPT,
   ACCENT_STORAGE_KEY,
@@ -16,7 +17,6 @@ import {
   isAccent,
   normalizeAccent,
 } from "@/lib/accent";
-import { getSiteUrl } from "@/data/site";
 import {
   buildEnquiryHref,
   parseEnquiryContext,
@@ -63,10 +63,7 @@ function hslToHex(h: number, s: number, l: number): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-function walkPublicSources(
-  dir: string,
-  acc: string[] = [],
-): string[] {
+function walkPublicSources(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     if (entry === "node_modules" || entry === ".next" || entry === ".git")
       continue;
@@ -86,9 +83,9 @@ describe("task 7B — promotion pricing never duplicates /month", () => {
     expect(formatPromotionPrice("R399/month", "/month")).toBe("R399/month");
     expect(formatPromotionPrice("R299", "/month")).toBe("R299/month");
     expect(formatPromotionPrice("R900", "once-off")).toBe("R900 once-off");
-    expect(
-      formatPromotionPrice("R150/month", "per additional 5 pages"),
-    ).toBe("R150/month per additional 5 pages");
+    expect(formatPromotionPrice("R150/month", "per additional 5 pages")).toBe(
+      "R150/month per additional 5 pages",
+    );
     expect(formatPromotionPrice("R99", undefined)).toBe("R99");
   });
 
@@ -110,9 +107,9 @@ describe("task 7B — promotion pricing never duplicates /month", () => {
     // Actual prices unchanged — only the duplicated cadence was removed.
     expect(monthly.promotional).toBe("R299/month");
     expect(monthly.regular).toBe("R399/month");
-    expect(
-      formatPromotionPrice(monthly.promotional!, monthly.cadence),
-    ).toBe("R299/month");
+    expect(formatPromotionPrice(monthly.promotional!, monthly.cadence)).toBe(
+      "R299/month",
+    );
     expect(formatPromotionPrice(monthly.regular, monthly.cadence)).toBe(
       "R399/month",
     );
@@ -171,8 +168,8 @@ describe("task 7B — once-off vs monthly additional-page pricing", () => {
     expect(extra.price).toBe("R650");
     expect(extra.price).not.toContain("/month");
     expect(extra.price).not.toContain("/ mo");
-    expect(extra.desc.toLowerCase()).toContain("once-off");
-    expect(extra.desc).not.toContain("/month");
+    expect(extra.description.toLowerCase()).toContain("once-off");
+    expect(extra.description).not.toContain("/month");
   });
 
   it("keeps Sprout additional pages recurring at R150/month", () => {
@@ -355,7 +352,7 @@ describe("task 7B — green default accent, orange retained", () => {
     // Explicit surface contexts pin the local container (light card in
     // dark page, dark card in light page, promotion/package/CTA cards).
     expect(button).toContain("ButtonSurface");
-    expect(button).toContain('surface?: ButtonSurface');
+    expect(button).toContain("surface?: ButtonSurface");
     expect(button).toContain("surface-light");
     expect(button).toContain("surface-dark");
     expect(button).toContain("on-light");
@@ -395,7 +392,8 @@ describe("featured promotion price point", () => {
   });
 });
 
-describe("task 7B — package structure and enquiry context preserved", () => {  it("keeps the locked catalogue names, order and key prices", () => {
+describe("task 7B — package structure and enquiry context preserved", () => {
+  it("keeps the locked catalogue names, order and key prices", () => {
     expect(SERVICES.map((s) => s.slug)).toEqual([
       "web-development",
       "seo",
@@ -437,7 +435,9 @@ describe("task 7B — package structure and enquiry context preserved", () => { 
   it("resolves promotion-only URLs to package + service without redundancy", () => {
     const href = buildEnquiryHref({ promotion: "mogen-sprout-first-100" });
     expect(href).toBe("/contact?promotion=mogen-sprout-first-100");
-    const details = resolveEnquiryDetails(parseEnquiryContext(new URLSearchParams(href.split("?")[1])));
+    const details = resolveEnquiryDetails(
+      parseEnquiryContext(new URLSearchParams(href.split("?")[1])),
+    );
     expect(details.promotion?.slug).toBe("mogen-sprout-first-100");
     expect(details.package?.id).toBe("sprout");
     expect(details.serviceName).toBe("Web Development");

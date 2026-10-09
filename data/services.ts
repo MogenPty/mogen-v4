@@ -8,9 +8,9 @@ import {
 import type { ForwardRefExoticComponent, RefAttributes } from "react";
 
 interface Process {
-  n: string;
-  t: string;
-  d: string;
+  position: string;
+  title: string;
+  description: string;
 }
 
 interface Pricing {
@@ -26,12 +26,12 @@ interface Pricing {
 interface AddOn {
   name: string;
   price: string;
-  desc: string;
+  description: string;
 }
 
 interface Faq {
-  q: string;
-  a: string;
+  question: string;
+  answer: string;
 }
 
 interface Service {
@@ -67,24 +67,28 @@ export const SERVICES: Service[] = [
     ],
     process: [
       {
-        n: "01",
-        t: "Discovery",
-        d: "We map your goals, audience and competitors to define the right site structure.",
+        position: "01",
+        title: "Discovery",
+        description:
+          "We map your goals, audience and competitors to define the right site structure.",
       },
       {
-        n: "02",
-        t: "Design",
-        d: "Blueprint wireframes and a high-converting visual system tailored to your brand.",
+        position: "02",
+        title: "Design",
+        description:
+          "Blueprint wireframes and a high-converting visual system tailored to your brand.",
       },
       {
-        n: "03",
-        t: "Build",
-        d: "Pixel-perfect, fast, responsive development with clean semantic code.",
+        position: "03",
+        title: "Build",
+        description:
+          "Pixel-perfect, fast, responsive development with clean semantic code.",
       },
       {
-        n: "04",
-        t: "Launch",
-        d: "SEO setup, cross-device testing, analytics and a smooth go-live.",
+        position: "04",
+        title: "Launch",
+        description:
+          "SEO setup, cross-device testing, analytics and a smooth go-live.",
       },
     ],
     pricing: [
@@ -136,44 +140,50 @@ export const SERVICES: Service[] = [
       {
         name: "Extra page",
         price: "R650",
-        desc: "Additional bespoke page beyond your package. Once-off cost — not a monthly charge.",
+        description:
+          "Additional bespoke page beyond your package. Once-off cost — not a monthly charge.",
       },
       {
         name: "Blog setup",
         price: "R1,500",
-        desc: "Blog with categories, tags and RSS feed.",
+        description: "Blog with categories, tags and RSS feed.",
       },
       {
         name: "E-commerce add-on",
         price: "R6,500",
-        desc: "Up to 50 products, cart and checkout.",
+        description: "Up to 50 products, cart and checkout.",
       },
       {
         name: "Copywriting",
         price: "R450 / page",
-        desc: "SEO-optimised copy written for you.",
+        description: "SEO-optimised copy written for you.",
       },
     ],
     faq: [
       {
-        q: "How long does a website take to build?",
-        a: "A Seed site typically launches in 2 weeks, Sprout in 3–4 weeks, and Vegetative depends on scope. We confirm a timeline after the discovery call.",
+        question: "How long does a website take to build?",
+        answer:
+          "A Seed site typically launches in 2 weeks, Sprout in 3–4 weeks, and Vegetative depends on scope. We confirm a timeline after the discovery call.",
       },
       {
-        q: "Is SEO included?",
-        a: "Every site ships with on-page SEO foundations and Google Search Console setup. For ongoing ranking work, see our SEO service.",
+        question: "Is SEO included?",
+        answer:
+          "Every site ships with on-page SEO foundations and Google Search Console setup. For ongoing ranking work, see our SEO service.",
       },
       {
-        q: "Will my site work on mobile?",
-        a: "Yes — every build is mobile-first and tested across devices, with Core Web Vitals optimised for speed.",
+        question: "Will my site work on mobile?",
+        answer:
+          "Yes — every build is mobile-first and tested across devices, with Core Web Vitals optimised for speed.",
       },
       {
-        q: "Do you offer hosting?",
-        a: "We can set up and manage hosting or hand off to your provider. Ask about our monthly care plans.",
+        question: "Do you offer hosting?",
+        answer:
+          "We can set up and manage hosting or hand off to your provider. Ask about our monthly care plans.",
       },
       {
-        q: "Can I edit the site myself?",
-        a: "Yes — Sprout and Vegetative builds include a CMS and a training session so you can edit content.",
+        question: "Can I edit the site myself?",
+        answer:
+          "Yes — Sprout and Vegetative builds include a CMS and a training session so you can edit content.",
       },
     ],
   },
@@ -195,24 +205,28 @@ export const SERVICES: Service[] = [
     ],
     process: [
       {
-        n: "01",
-        t: "Audit",
-        d: "We run the 37-step technical and content audit across your site.",
+        position: "01",
+        title: "Audit",
+        description:
+          "We run the 37-step technical and content audit across your site.",
       },
       {
-        n: "02",
-        t: "Prioritise",
-        d: "Issues are banded into Critical, Reactive, Strategic and Deferred.",
+        position: "02",
+        title: "Prioritise",
+        description:
+          "Issues are banded into Critical, Reactive, Strategic and Deferred.",
       },
       {
-        n: "03",
-        t: "Remedy",
-        d: "We fix, optimise and build — starting with the highest-impact band.",
+        position: "03",
+        title: "Remedy",
+        description:
+          "We fix, optimise and build — starting with the highest-impact band.",
       },
       {
-        n: "04",
-        t: "Compound",
-        d: "Ongoing content, links and reporting that grow rankings over time.",
+        position: "04",
+        title: "Compound",
+        description:
+          "Ongoing content, links and reporting that grow rankings over time.",
       },
     ],
     pricing: [
@@ -264,44 +278,49 @@ export const SERVICES: Service[] = [
       {
         name: "Extra location",
         price: "R2,500 / mo",
-        desc: "Add another location to your local SEO.",
+        description: "Add another location to your local SEO.",
       },
       {
         name: "Landing page",
         price: "R2,900",
-        desc: "SEO-optimised landing page per service area.",
+        description: "SEO-optimised landing page per service area.",
       },
       {
         name: "Content writing",
         price: "R650 / article",
-        desc: "SEO content written and optimised.",
+        description: "SEO content written and optimised.",
       },
       {
         name: "Backlink audit",
         price: "R3,500",
-        desc: "Toxic link remediation and disavow.",
+        description: "Toxic link remediation and disavow.",
       },
     ],
     faq: [
       {
-        q: "How long until I see results?",
-        a: "Technical fixes can lift rankings within weeks; compounding content and authority work typically shows clear movement in 3–6 months.",
+        question: "How long until I see results?",
+        answer:
+          "Technical fixes can lift rankings within weeks; compounding content and authority work typically shows clear movement in 3–6 months.",
       },
       {
-        q: "Do you guarantee #1 rankings?",
-        a: "No reputable SEO guarantees #1 — Google's algorithm changes. We guarantee a rigorous process, transparent reporting and measurable progress.",
+        question: "Do you guarantee #1 rankings?",
+        answer:
+          "No reputable SEO guarantees #1 — Google's algorithm changes. We guarantee a rigorous process, transparent reporting and measurable progress.",
       },
       {
-        q: "Is this for local or national SEO?",
-        a: "Both. Ignition focuses on local Pretoria visibility; Scale and Dominance expand to national and multi-location.",
+        question: "Is this for local or national SEO?",
+        answer:
+          "Both. Ignition focuses on local Pretoria visibility; Scale and Dominance expand to national and multi-location.",
       },
       {
-        q: "What's the 37-step framework?",
-        a: "Our proprietary process covering crawl, indexation, content, links, technical, local and reporting — explore it on seo.mogen.co.za.",
+        question: "What's the 37-step framework?",
+        answer:
+          "Our proprietary process covering crawl, indexation, content, links, technical, local and reporting — explore it on seo.mogen.co.za.",
       },
       {
-        q: "Do you write the content?",
-        a: "Yes — SEO content writing is included in Scale and Dominance, and available as an add-on for Ignition.",
+        question: "Do you write the content?",
+        answer:
+          "Yes — SEO content writing is included in Scale and Dominance, and available as an add-on for Ignition.",
       },
     ],
   },
@@ -323,24 +342,24 @@ export const SERVICES: Service[] = [
     ],
     process: [
       {
-        n: "01",
-        t: "Audit",
-        d: "We review your channels, audience and competitors.",
+        position: "01",
+        title: "Audit",
+        description: "We review your channels, audience and competitors.",
       },
       {
-        n: "02",
-        t: "Plan",
-        d: "A content and campaign calendar aligned to your goals.",
+        position: "02",
+        title: "Plan",
+        description: "A content and campaign calendar aligned to your goals.",
       },
       {
-        n: "03",
-        t: "Execute",
-        d: "We create, schedule and run campaigns across platforms.",
+        position: "03",
+        title: "Execute",
+        description: "We create, schedule and run campaigns across platforms.",
       },
       {
-        n: "04",
-        t: "Optimise",
-        d: "Monthly reporting and continuous improvement.",
+        position: "04",
+        title: "Optimise",
+        description: "Monthly reporting and continuous improvement.",
       },
     ],
     pricing: [
@@ -391,44 +410,49 @@ export const SERVICES: Service[] = [
       {
         name: "Extra platform",
         price: "R1,500 / mo",
-        desc: "Add another social platform to your plan.",
+        description: "Add another social platform to your plan.",
       },
       {
         name: "Influencer outreach",
         price: "R3,500",
-        desc: "Identify and brief local influencers.",
+        description: "Identify and brief local influencers.",
       },
       {
         name: "Landing page",
         price: "R2,900",
-        desc: "Conversion-focused landing page for a campaign.",
+        description: "Conversion-focused landing page for a campaign.",
       },
       {
         name: "Extra ad spend mgmt",
         price: "15% of spend",
-        desc: "Management fee for additional ad budget.",
+        description: "Management fee for additional ad budget.",
       },
     ],
     faq: [
       {
-        q: "Which platforms do you manage?",
-        a: "Facebook, Instagram, X, LinkedIn, TikTok and Google. We recommend the channels where your customers actually are.",
+        question: "Which platforms do you manage?",
+        answer:
+          "Facebook, Instagram, X, LinkedIn, TikTok and Google. We recommend the channels where your customers actually are.",
       },
       {
-        q: "Is ad spend included?",
-        a: "Packages cover management. Ad budget is separate and we advise on the right spend for your goals.",
+        question: "Is ad spend included?",
+        answer:
+          "Packages cover management. Ad budget is separate and we advise on the right spend for your goals.",
       },
       {
-        q: "Do you create the content?",
-        a: "Yes — we handle design, copy and scheduling. You approve everything before it goes live.",
+        question: "Do you create the content?",
+        answer:
+          "Yes — we handle design, copy and scheduling. You approve everything before it goes live.",
       },
       {
-        q: "Is there a minimum contract?",
-        a: "We work month-to-month after an initial 3-month setup period, so campaigns have time to compound.",
+        question: "Is there a minimum contract?",
+        answer:
+          "We work month-to-month after an initial 3-month setup period, so campaigns have time to compound.",
       },
       {
-        q: "How do you report?",
-        a: "A clear monthly report covering reach, engagement, leads and cost-per-result — no vanity metrics.",
+        question: "How do you report?",
+        answer:
+          "A clear monthly report covering reach, engagement, leads and cost-per-result — no vanity metrics.",
       },
     ],
   },
@@ -450,24 +474,28 @@ export const SERVICES: Service[] = [
     ],
     process: [
       {
-        n: "01",
-        t: "Brief",
-        d: "We gather your requirements, existing documents and how the documents will be used.",
+        position: "01",
+        title: "Brief",
+        description:
+          "We gather your requirements, existing documents and how the documents will be used.",
       },
       {
-        n: "02",
-        t: "Structure",
-        d: "We define the document structure, sections and formatting approach.",
+        position: "02",
+        title: "Structure",
+        description:
+          "We define the document structure, sections and formatting approach.",
       },
       {
-        n: "03",
-        t: "Draft",
-        d: "We draft the content with clear language and consistent formatting.",
+        position: "03",
+        title: "Draft",
+        description:
+          "We draft the content with clear language and consistent formatting.",
       },
       {
-        n: "04",
-        t: "Deliver",
-        d: "Final documents delivered as print-ready and editable files with a usage guide.",
+        position: "04",
+        title: "Deliver",
+        description:
+          "Final documents delivered as print-ready and editable files with a usage guide.",
       },
     ],
     pricing: [
@@ -519,44 +547,50 @@ export const SERVICES: Service[] = [
       {
         name: "Additional document",
         price: "R750",
-        desc: "Extra document with consistent formatting.",
+        description: "Extra document with consistent formatting.",
       },
       {
         name: "Template conversion",
         price: "R650",
-        desc: "Convert existing document to professional template.",
+        description: "Convert existing document to professional template.",
       },
       {
         name: "Procedure manual",
         price: "R2,500",
-        desc: "Detailed procedure manual with steps and responsibilities.",
+        description:
+          "Detailed procedure manual with steps and responsibilities.",
       },
       {
         name: "Form design",
         price: "R550",
-        desc: "Professional form with logical fields and branding.",
+        description: "Professional form with logical fields and branding.",
       },
     ],
     faq: [
       {
-        q: "What types of documents do you create?",
-        a: "Policies, procedures, forms, templates, manuals and related business documents — structured for clarity and consistency.",
+        question: "What types of documents do you create?",
+        answer:
+          "Policies, procedures, forms, templates, manuals and related business documents — structured for clarity and consistency.",
       },
       {
-        q: "Do you handle specialist logo or graphic design?",
-        a: "Business Documentation focuses on structured documents. Where specialist brand or graphic design is needed, we coordinate with trusted external providers.",
+        question: "Do you handle specialist logo or graphic design?",
+        answer:
+          "Business Documentation focuses on structured documents. Where specialist brand or graphic design is needed, we coordinate with trusted external providers.",
       },
       {
-        q: "What files do I receive?",
-        a: "You receive a print-ready PDF and an editable source file, formatted consistently across your document set.",
+        question: "What files do I receive?",
+        answer:
+          "You receive a print-ready PDF and an editable source file, formatted consistently across your document set.",
       },
       {
-        q: "Can you work from my existing documents?",
-        a: "Yes — we can refine and reformat existing documents into a consistent, professional system.",
+        question: "Can you work from my existing documents?",
+        answer:
+          "Yes — we can refine and reformat existing documents into a consistent, professional system.",
       },
       {
-        q: "Do you include printing?",
-        a: "We deliver print-ready files. Printing can be arranged via a partner provider if required.",
+        question: "Do you include printing?",
+        answer:
+          "We deliver print-ready files. Printing can be arranged via a partner provider if required.",
       },
     ],
   },
