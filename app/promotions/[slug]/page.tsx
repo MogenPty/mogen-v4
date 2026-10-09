@@ -447,7 +447,12 @@ export default async function PromotionDetailPage({
               <h2 className="mb-10 font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
                 Frequently asked questions
               </h2>
-              <ServiceFAQ faq={promo.faqs} />
+              <ServiceFAQ
+                faq={promo.faqs.map((f) => ({
+                  question: f.q,
+                  answer: f.a,
+                }))}
+              />
             </div>
           </BlueprintGrid>
         )}

@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -24,7 +24,18 @@ const nextConfig: NextConfig = {
         source: "/blog/:slug",
         destination: "/articles/:slug",
         permanent: true,
-      },      {
+      },
+      {
+        source: "/news",
+        destination: "/articles",
+        permanent: true,
+      },
+      {
+        source: "/news/:slug",
+        destination: "/articles/:slug",
+        permanent: true,
+      },
+      {
         source: "/services/brand-identity",
         destination: "/services/business-documentation",
         permanent: true,
