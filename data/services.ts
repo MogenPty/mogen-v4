@@ -37,6 +37,7 @@ interface Faq {
 interface Service {
   slug: string;
   name: string;
+  action: string;
   icon: ForwardRefExoticComponent<
     Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
   >;
@@ -53,6 +54,7 @@ export const SERVICES: Service[] = [
   {
     slug: "web-development",
     name: "Web Development",
+    action: "build",
     icon: Code2,
     tagline: "Custom websites engineered to convert visitors into customers.",
     intro:
@@ -190,6 +192,7 @@ export const SERVICES: Service[] = [
   {
     slug: "seo",
     name: "SEO",
+    action: "rank",
     icon: Search,
     tagline:
       "Local SEO that gets you found on Google — and brings real enquiries from nearby customers.",
@@ -327,6 +330,7 @@ export const SERVICES: Service[] = [
   {
     slug: "digital-marketing",
     name: "Digital Marketing",
+    action: "manage",
     icon: Megaphone,
     tagline:
       "Get found online with content and campaigns that bring in new customers.",
@@ -459,6 +463,7 @@ export const SERVICES: Service[] = [
   {
     slug: "business-documentation",
     name: "Business Documentation",
+    action: "prepare",
     icon: FileText,
     tagline:
       "Professional business documents — policies, procedures, forms and templates that keep your operations clear and consistent.",

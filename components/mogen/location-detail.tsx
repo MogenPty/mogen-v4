@@ -215,6 +215,15 @@ export default function LocationDetail({
               >
                 Mogen in {other.name} — {other.role.toLowerCase()} →
               </Link>
+              <span className="mx-2" aria-hidden="true">
+                ·
+              </span>
+              <Link
+                href="/locations"
+                className="small-caps text-ink hover:text-catalyst"
+              >
+                All locations →
+              </Link>
             </p>
           )}
         </div>

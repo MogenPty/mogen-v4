@@ -49,10 +49,77 @@ Full model (`lib/articles/types.ts`):
 | `category`    | no       | Defaults to `Article`                              |
 | `tags`        | no       | String list                                        |
 | `featured`    | no       | Latest `featured: true` leads `/articles` (page 1) |
+| `services`    | no       | Stable service slugs (see below); inferred when absent |
 | `heroImage`   | no       | Web path under `/images/articles/`                 |
 | `heroImageAlt`| no       | Alt for the hero image                             |
 | `draft`       | no       | `true` hides from listing, sitemap and indexing    |
 | `readTime`    | no       | Computed from body (~200 wpm) when absent         |
+
+## Publication dates, drafts and scheduling
+
+- `publishedAt` is **required** (`YYYY-MM-DD`). A file without a valid
+  `publishedAt` fails validation loudly — it is never silently hidden.
+- An article is publicly published only when it is **not a draft** and its
+  `publishedAt` has **arrived**, interpreted as **midnight at the start of
+  that date in `Africa/Johannesburg`** (SAST, UTC+2, no DST). As UTC this is
+  `Date.UTC(y, m - 1, d) - 2h`. Parsing uses integer components only, so
+  browser, server and UTC behaviour agree — see
+  `lib/articles/publication.ts` (`isArticlePublished()`).
+- Future-dated (scheduled) articles are excluded from **every** public
+  surface: `/articles`, tag archives, service-page related articles, the
+  sitemap, and direct `/articles/<slug>` requests (which 404 until
+  publication — the 404 guard runs before the MDX body import, so neither
+  content nor metadata leaks early).
+- **No redeploy needed for scheduled dates, with one caveat:** the MDX file
+  must already be present at build time (its content is bundled into
+  `generated-index.json` via `prebuild`). Once the date arrives, the index,
+  detail route, tag archives, service pages and sitemap pick it up on
+  regeneration — each carries `export const revalidate = 3600`, so the
+  **maximum expected publication delay is ~1 hour**. Brand-new files added
+  after a deployment still require the next build/deploy to be bundled.
+
+## Service associations (`services`)
+
+Optional stable service slugs (existing slugs from `data/services.ts`):
+
+```yaml
+services:
+  - web-development
+  - seo
+```
+
+- Valid values: `web-development`, `seo`, `digital-marketing`,
+  `business-documentation`. Display labels (`Web Development`) are accepted
+  and normalised; unknown values fail validation. An article may list
+  multiple services.
+- When `services` is absent, associations are **inferred** from
+  tags/category via a conservative keyword table (see
+  `lib/articles/related.ts`), so existing articles work without migration.
+  Explicit `services` always wins over inference.
+- Service pages show up to 3 relevant published articles **immediately
+  before the FAQ**: a relevant featured article first, then the latest
+  relevant articles, never duplicated, never unrelated filler. Fewer than
+  three matches show fewer cards; zero matches hide the section.
+
+## Tags
+
+- Tags render as links to `/articles/tag/<slug>` (slug via `slugifyTag()`:
+  lowercase, non-alphanumerics collapsed to `-`; original label kept for
+  display). Labels colliding to one slug (e.g. `SEO` vs `seo`) share a
+  single merged archive (see `lib/articles/tags.ts`).
+- Archives list only published articles, newest-first, 12 per page.
+  Unknown tags and tags with no eligible articles 404. Single-article
+  (thin) archives carry `noindex` with a canonical URL.
+
+## Pagination
+
+- `/articles` shows page 1; `?page=2`, `?page=3`, … show later pages.
+  Default page size is **12** (`ARTICLES_PAGE_SIZE` in `data/blog.ts`).
+- The featured article leads page 1 only and is excluded from the paginated
+  grid (never duplicated). Page 1 is canonical at `/articles`; deeper pages
+  carry their own canonicals and never enter the sitemap.
+- Invalid values (`abc`, `0`, `-3`) normalise to page 1; a page number
+  beyond the available range 404s predictably.
 
 ## Slug conventions
 

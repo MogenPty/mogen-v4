@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import BlogBlock from "@/components/mogen/blog-block";
 import { getArticles, parsePageParam } from "@/data/blog";
 import { getSiteUrl } from "@/data/site";
@@ -41,6 +42,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function Articles({ searchParams }: Props) {
   const params = await searchParams;
   const page = parsePageParam(firstParam(params.page));
+  // A page number beyond the available range is a predictable 404 (not a
+  // silently clamped duplicate of the last page). Invalid values
+  // (?page=abc, 0, -3) already normalise to 1 via parsePageParam.
+  const { currentPage, totalPages } = getArticles({ page });
+  if (totalPages > 0 && page !== currentPage) notFound();
   const preservedParams: Record<string, string | string[] | undefined> = {
     ...params,
   };

@@ -3,6 +3,11 @@ import { getPublicPromotions } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
 import { getAllArticles } from "@/lib/articles/loader";
 
+// Hourly regeneration so scheduled articles enter the sitemap when they
+// become eligible, without a manual redeploy (max delay ~1h; the generated
+// article bundle itself refreshes at build time — see docs/articles.md).
+export const revalidate = 3600;
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteConfig.url;
   const now = new Date();
@@ -23,6 +28,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/articles",
     "/promotions",
     "/contact",
+    "/locations",
     "/locations/maboloka",
     "/locations/soshanguve",
     "/privacy-policy",

@@ -28,6 +28,8 @@ function makePost(slug: string, date: string, featured?: boolean): Post {
     readTime: "5 min read",
     author: "Test Author",
     body: "Body",
+    tags: [],
+    services: [],
     ...(featured === true ? { featured: true as const } : {}),
   };
 }
@@ -115,7 +117,7 @@ describe("articles listing — pagination", () => {
   }
 
   it("paginates with a sensible default page size", () => {
-    expect(ARTICLES_PAGE_SIZE).toBe(9);
+    expect(ARTICLES_PAGE_SIZE).toBe(12);
   });
 
   it("excludes featured BEFORE paginating so pages stay consistent", () => {

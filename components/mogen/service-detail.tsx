@@ -2,6 +2,7 @@
 
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
+import ArticleCard from "@/components/mogen/article-card";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -11,6 +12,7 @@ import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
 import ServiceQuoteForm from "@/components/mogen/service-quote-form";
 import { getService, SERVICES } from "@/data/services";
+import type { ArticleSummary } from "@/lib/articles/types";
 import {
   buildEnquiryHref,
   type EnquiryAttribution,
@@ -27,12 +29,20 @@ interface Props {
    * never rendered as copy.
    */
   attribution?: EnquiryAttribution;
+  /**
+   * Related published articles for this service, selected server-side via
+   * the canonical loader (`getRelatedArticlesForService`). Empty when no
+   * relevant articles exist — the section hides rather than rendering a
+   * placeholder.
+   */
+  relatedArticles?: ArticleSummary[];
 }
 
 export default function ServiceDetail({
   serviceSlug,
   numbering = 1,
   attribution,
+  relatedArticles = [],
 }: Readonly<Props>) {
   const service = getService(serviceSlug);
 
@@ -132,7 +142,7 @@ export default function ServiceDetail({
           <BlueprintGrid className="bg-secondary py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering + 1)} — Process`}
+                index={`// ${formatNumber(numbering++)} — Process`}
                 title="How we work"
               />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
@@ -157,7 +167,7 @@ export default function ServiceDetail({
           <BlueprintGrid id={"pricing"} className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering + 2)} — Investment`}
+                index={`// ${formatNumber(numbering++)} — Investment`}
                 title="Pricing"
               />
               <div className="mb-12 max-w-2xl">
@@ -182,7 +192,7 @@ export default function ServiceDetail({
           <BlueprintGrid className="bg-secondary py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering + 3)} — Optional`}
+                index={`// ${formatNumber(numbering++)} — Optional`}
                 title="Add-ons"
               />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
@@ -204,12 +214,38 @@ export default function ServiceDetail({
           </BlueprintGrid>
         )}
 
+        {/* RELATED ARTICLES — published articles for this service, hidden when none */}
+        {relatedArticles.length > 0 && (
+          <BlueprintGrid className="bg-secondary py-20">
+            <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
+              <SectionLabel
+                index={`// ${formatNumber(numbering++)} — Reading`}
+                title="Related articles"
+              />
+              <div className="mb-10 max-w-2xl">
+                <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
+                  Go deeper on
+                  <br />
+                  <span className="text-catalyst">
+                    {service.name.toLowerCase()}.
+                  </span>
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedArticles.map((article) => (
+                  <ArticleCard key={article.slug} article={article} />
+                ))}
+              </div>
+            </div>
+          </BlueprintGrid>
+        )}
+
         {/* FAQ */}
         {service.faq && (
           <BlueprintGrid className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-225 px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering + 4)} — Questions`}
+                index={`// ${formatNumber(numbering++)} — Questions`}
                 title="FAQ"
               />
               <h2 className="mb-10 font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
@@ -221,21 +257,24 @@ export default function ServiceDetail({
         )}
 
         {/* QUOTE FORM */}
-        <BlueprintGrid id={"quote"} className="bg-ink py-20 text-bone lg:py-28">
+        <BlueprintGrid
+          id={"quote"}
+          className="bg-catalyst py-20 text-bone lg:py-28"
+        >
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
               <div>
-                <span className="small-caps text-catalyst">
-                  {`// ${formatNumber(numbering + 5)} — Start`}
+                <span className="small-caps text-ink">
+                  {`// ${formatNumber(numbering++)} — Start`}
                 </span>
                 <h2 className="mt-6 font-display text-4xl font-black leading-[1.05] lg:text-6xl text-balance">
-                  Let&apos;s build your
+                  {`Let's ${service.action} your`}
                   <br />
-                  <span className="text-catalyst">
+                  <span className="text-ink">
                     {service.name.toLowerCase()}.
                   </span>
                 </h2>
-                <p className="mt-6 max-w-md text-lg text-bone/70">
+                <p className="mt-6 max-w-md text-lg text-bone">
                   Send us your details and we&apos;ll prepare a tailored
                   proposal within 24 hours — no obligation.
                 </p>
@@ -249,7 +288,7 @@ export default function ServiceDetail({
         <BlueprintGrid className="bg-bone py-20">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
             <SectionLabel
-              index={`// ${formatNumber(numbering + 6)} — More`}
+              index={`// ${formatNumber(numbering++)} — More`}
               title="Other services"
             />
             <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
