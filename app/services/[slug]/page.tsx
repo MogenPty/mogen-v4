@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ServiceDetail from "@/components/mogen/service-detail";
 import { getService, SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
+import { getRelatedArticlesForService } from "@/lib/articles/related";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { pageMetadata } from "@/lib/seo";
 
@@ -14,6 +15,10 @@ interface Props {
 export function generateStaticParams() {
   return SERVICES.map((s) => ({ slug: s.slug }));
 }
+
+// Related-article freshness (scheduled publications) without a redeploy:
+// the collection regenerates at most hourly (see docs/articles.md).
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -103,6 +108,9 @@ export default async function ServiceDetailPage({
   // Carry allowlisted attribution (utm_*) from the service page URL into
   // enquiry CTAs — explicit service context always wins (see lib/enquiry).
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});
+  // Related articles come from the canonical published loader (drafts +
+  // scheduled excluded); the client component only renders them.
+  const relatedArticles = getRelatedArticlesForService(slug);
 
   return (
     <>
@@ -111,6 +119,7 @@ export default async function ServiceDetailPage({
         serviceSlug={slug}
         numbering={1}
         attribution={attribution}
+        relatedArticles={relatedArticles}
       />
     </>
   );

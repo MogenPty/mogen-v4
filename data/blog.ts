@@ -1,4 +1,4 @@
-import { loadArticles } from "@/lib/articles/loader";
+import { loadArticles, type LoadArticlesOptions } from "@/lib/articles/loader";
 import type { ArticleSummary } from "@/lib/articles/types";
 
 export interface Post {
@@ -10,6 +10,10 @@ export interface Post {
   readTime: string;
   author: string;
   body: string;
+  /** Display tags (preserved labels; slugs via `slugifyTag`). */
+  tags: string[];
+  /** Effective service slugs (explicit frontmatter or inference). */
+  services: string[];
   /**
    * Explicit editorial flag — the latest post with `featured: true` is
    * shown in the prominent top position on /articles (page 1 only).
@@ -18,7 +22,8 @@ export interface Post {
   featured?: boolean;
 }
 
-export const ARTICLES_PAGE_SIZE = 9;
+/** Default articles per index page (single configuration constant). */
+export const ARTICLES_PAGE_SIZE = 12;
 
 function toPost(summary: ArticleSummary, body: string): Post {
   return {
@@ -30,6 +35,8 @@ function toPost(summary: ArticleSummary, body: string): Post {
     readTime: summary.readTime,
     author: summary.author,
     body,
+    tags: [...summary.tags],
+    services: [...summary.services],
     ...(summary.featured ? { featured: true as const } : {}),
   };
 }
@@ -40,18 +47,34 @@ function toPost(summary: ArticleSummary, body: string): Post {
  * filesystem per call (instead of caching at module scope) is what lets
  * newly added articles appear in listings without a server restart.
  * Article counts are tiny, so this costs nothing measurable.
+ *
+ * Only publicly published articles are returned (drafts + scheduled
+ * excluded by the canonical loader — see `lib/articles/publication.ts`).
  */
-function loadPosts(cwd = process.cwd()): Post[] {
-  return loadArticles({ cwd }).map((a) => toPost(a.summary, a.body));
+function loadPosts(
+  cwd = process.cwd(),
+  loaderOptions?: Omit<LoadArticlesOptions, "cwd">,
+): Post[] {
+  return loadArticles({ cwd, ...loaderOptions }).map((a) =>
+    toPost(a.summary, a.body),
+  );
 }
 
 export interface GetPostsOptions {
   cwd?: string;
+  /** Forwarded to the canonical loader (tests/deterministic boundaries). */
+  nowMs?: number;
+  includeScheduled?: boolean;
 }
 
 /** Fresh post collection. Prefer this over `POSTS` in components. */
 export function getPosts(options?: GetPostsOptions): Post[] {
-  return loadPosts(options?.cwd ?? process.cwd());
+  return loadPosts(options?.cwd ?? process.cwd(), {
+    ...(options?.nowMs !== undefined ? { nowMs: options.nowMs } : {}),
+    ...(options?.includeScheduled !== undefined
+      ? { includeScheduled: options.includeScheduled }
+      : {}),
+  });
 }
 
 /**
@@ -63,6 +86,25 @@ export const POSTS: Post[] = loadPosts();
 
 export const getPost = (slug: string, options?: GetPostsOptions) =>
   getPosts(options).find((p) => p.slug === slug);
+
+/** Convert a listing `Post` back to its canonical `ArticleSummary` shape. */
+export function toArticleSummary(post: Post): ArticleSummary {
+  return {
+    title: post.title,
+    slug: post.slug,
+    description: post.excerpt,
+    publishedAt: post.date,
+    author: post.author,
+    category: post.category,
+    tags: [...post.tags],
+    services: [...post.services],
+    featured: post.featured === true,
+    draft: false,
+    readTime: post.readTime,
+    date: post.date,
+    excerpt: post.excerpt,
+  };
+}
 
 /**
  * Articles listing helpers for /articles (newest-first + featured + pagination).
@@ -169,10 +211,13 @@ export function getPageNumbers(current: number, total: number): (number | "…")
  * Clean pagination URLs compatible with the existing Next.js architecture:
  * `/articles` for page 1, `/articles?page=N` otherwise.
  * Any other legitimate query params are preserved; `page` is replaced.
+ * `basePath` supports tag archives (`/articles/tag/<slug>`); defaults to
+ * the main index so existing callers are unchanged.
  */
 export function buildArticlesPageUrl(
   page: number,
   preservedParams?: Record<string, string | string[] | undefined>,
+  basePath: string = "/articles",
 ): string {
   const params = new URLSearchParams();
   if (preservedParams) {
@@ -187,5 +232,5 @@ export function buildArticlesPageUrl(
   }
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
-  return query ? `/articles?${query}` : "/articles";
+  return query ? `${basePath}?${query}` : basePath;
 }

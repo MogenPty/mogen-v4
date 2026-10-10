@@ -1,11 +1,13 @@
 import { ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
+import ArticleCard from "@/components/mogen/article-card";
 import {
   ARTICLES_PAGE_SIZE,
   buildArticlesPageUrl,
   getArticles,
   getLatestFeaturedPost,
   getPageNumbers,
+  toArticleSummary,
 } from "@/data/blog";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
@@ -148,25 +150,7 @@ export default function BlogBlock({
             <>
               <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-3">
                 {result.items.map((p) => (
-                  <Link
-                    key={p.slug}
-                    href={`/articles/${p.slug}`}
-                    className="group flex flex-col bg-bone p-8 transition-colors hover:bg-ink hover:text-bone"
-                  >
-                    <span className="small-caps text-catalyst">
-                      {p.category}
-                    </span>
-                    <h3 className="mt-4 font-display text-xl font-black leading-tight">
-                      {p.title}
-                    </h3>
-                    <p className="mt-3 flex-1 text-sm opacity-80">{p.excerpt}</p>
-                    <div className="mt-6 flex items-center justify-between text-xs opacity-60">
-                      <span>{p.date}</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> {p.readTime}
-                      </span>
-                    </div>
-                  </Link>
+                  <ArticleCard key={p.slug} article={toArticleSummary(p)} />
                 ))}
               </div>
 

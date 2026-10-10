@@ -60,6 +60,7 @@ const COLS: Column[] = [
 const LOCATIONS_COL: Column = {
   title: "Locations",
   links: [
+    { label: "All locations", href: "/locations" },
     { label: "Maboloka", href: "/locations/maboloka" },
     { label: "Soshanguve", href: "/locations/soshanguve" },
   ],
@@ -97,7 +98,7 @@ export default function Footer() {
             </Link>
             <p className="mt-4 max-w-xs text-sm text-forground/60">
               Websites, business documentation and SEO for local businesses in
-              Pretoria, Maboloka, Soshanguve & across Gauteng.
+              Maboloka, Soshanguve & beyond.
             </p>
           </div>
 
@@ -108,28 +109,31 @@ export default function Footer() {
               Locations and Ecosystem always share one column, Locations
               above Ecosystem. */}
           <div className="order-2 grid grid-cols-1 gap-12 sm:order-3 sm:col-span-2 sm:grid-cols-2 md:grid-cols-4 md:gap-8 lg:contents">
-          {COLS.map((c) => (
-            <div key={c.title}>
-              <h3 className="small-caps text-foreground/50">{c.title}</h3>
-              <ul className="mt-4 space-y-2">
-                {c.links.map((l) => (
-                  <li key={l.label}>
-                    <Link
-                      href={anchorHref(l.href)}
-                      target={l.external ? "_blank" : undefined}
-                      rel={l.external ? "noopener noreferrer" : undefined}
-                      className="flex items-center gap-1 text-sm text-foreground/80 hover:text-catalyst"
-                    >
-                      {l.label}
-                      {l.external && (
-                        <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+            {COLS.map((c) => (
+              <div key={c.title}>
+                <h3 className="small-caps text-foreground/50">{c.title}</h3>
+                <ul className="mt-4 space-y-2">
+                  {c.links.map((l) => (
+                    <li key={l.label}>
+                      <Link
+                        href={anchorHref(l.href)}
+                        target={l.external ? "_blank" : undefined}
+                        rel={l.external ? "noopener noreferrer" : undefined}
+                        className="flex items-center gap-1 text-sm text-foreground/80 hover:text-catalyst"
+                      >
+                        {l.label}
+                        {l.external && (
+                          <ArrowUpRight
+                            className="h-3 w-3"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
             <div className="space-y-12">
               {[LOCATIONS_COL, ECOSYSTEM_COL].map((c) => (
                 <div key={c.title}>
@@ -163,7 +167,10 @@ export default function Footer() {
             <h3 className="small-caps text-foreground/50">Contact</h3>
             <ul className="mt-4 space-y-3 text-sm text-foreground/80">
               <li className="flex min-w-0 items-center gap-2">
-                <Mail className="h-4 w-4 shrink-0 text-catalyst" aria-hidden="true" />
+                <Mail
+                  className="h-4 w-4 shrink-0 text-catalyst"
+                  aria-hidden="true"
+                />
                 <a
                   href={`mailto:${siteConfig.email}`}
                   className="min-w-0 break-all hover:text-catalyst"

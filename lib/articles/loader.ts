@@ -3,6 +3,7 @@ import { basename, join } from "node:path";
 import matter from "gray-matter";
 import {
   ARTICLE_IMAGE_PREFIX,
+  ARTICLE_SERVICE_SLUGS,
   ARTICLES_DIR_NAME,
   DEFAULT_ARTICLE_AUTHOR,
   DEFAULT_ARTICLE_CATEGORY,
@@ -11,10 +12,12 @@ import {
   type ArticleSummary,
 } from "./types";
 import { isAllowedArticleImageSrc } from "./image-policy";
+import { isArticlePublished } from "./publication";
 import generatedEntries from "./generated-index.json";
 
 export {
   ARTICLE_IMAGE_PREFIX,
+  ARTICLE_SERVICE_SLUGS,
   ARTICLES_DIR_NAME,
   DEFAULT_ARTICLE_AUTHOR,
   DEFAULT_ARTICLE_CATEGORY,
@@ -147,6 +150,46 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
     }
   }
 
+  // Optional explicit service associations. Accepted as stable service slugs
+  // ("web-development") or display labels ("Web Development"); normalised to
+  // slugs. Unknown values fail loudly (never silently dropped).
+  let services: string[] = [];
+  const rawServices = data!.services;
+  if (rawServices !== undefined) {
+    if (
+      !Array.isArray(rawServices) ||
+      rawServices.some(
+        (s) => typeof s !== "string" || (s as string).trim().length === 0,
+      )
+    ) {
+      errors.push(
+        "Invalid frontmatter: services (expected a list of service slugs)",
+      );
+    } else {
+      const normalised = (rawServices as string[]).map((s) =>
+        s
+          .trim()
+          .toLowerCase()
+          .replace(/[\s_]+/g, "-")
+          .replace(/[^a-z0-9-]/g, "")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, ""),
+      );
+      const unknown = normalised.filter(
+        (s) =>
+          !(ARTICLE_SERVICE_SLUGS as readonly string[]).includes(s),
+      );
+      if (unknown.length > 0) {
+        errors.push(
+          `Invalid frontmatter: services (unknown service slug(s): ${unknown.join(", ")}; expected one of ${(ARTICLE_SERVICE_SLUGS as readonly string[]).join(", ")})`,
+        );
+      } else {
+        // Dedupe while preserving author order.
+        services = [...new Set(normalised)];
+      }
+    }
+  }
+
   if (errors.length > 0) fail(file, errors);
 
   const fm = data as unknown as ArticleFrontmatter;
@@ -165,6 +208,7 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
         ? fm.category
         : DEFAULT_ARTICLE_CATEGORY,
     tags: Array.isArray(fm.tags) ? (fm.tags as string[]) : [],
+    services,
     featured: fm.featured === true,
     ...(fm.heroImage ? { heroImage: fm.heroImage } : {}),
     ...(fm.heroImageAlt ? { heroImageAlt: fm.heroImageAlt } : {}),
@@ -240,6 +284,17 @@ export type ArticleSource = "auto" | "fs" | "generated";
 export interface LoadArticlesOptions {
   cwd?: string;
   includeDrafts?: boolean;
+  /**
+   * Include future-dated (scheduled) articles. Default false: scheduled
+   * articles are excluded from every public surface (index, related, tags,
+   * sitemap, detail route). Pass true only for tests/previews.
+   */
+  includeScheduled?: boolean;
+  /**
+   * Reference timestamp (UTC ms) for publication eligibility. Defaults to
+   * `Date.now()`. Pass explicitly in tests for deterministic boundaries.
+   */
+  nowMs?: number;
   source?: ArticleSource;
 }
 
@@ -287,12 +342,15 @@ function loadFromFilesystem(cwd: string): ParsedArticle[] {
 }
 
 /**
- * Load + validate every article. Drafts are excluded by default.
+ * Load + validate every article. Drafts and scheduled (future-dated)
+ * articles are excluded by default — see `lib/articles/publication.ts`.
  * Duplicate slugs fail loudly (never silent unpredictable routing).
  */
 export function loadArticles(options?: LoadArticlesOptions): ParsedArticle[] {
   const cwd = options?.cwd ?? process.cwd();
   const includeDrafts = options?.includeDrafts ?? false;
+  const includeScheduled = options?.includeScheduled ?? false;
+  const nowMs = options?.nowMs ?? Date.now();
   const parsed =
     resolveSource(options?.source) === "generated"
       ? loadFromGenerated()
@@ -302,9 +360,11 @@ export function loadArticles(options?: LoadArticlesOptions): ParsedArticle[] {
     parsed.map((a) => ({ slug: a.meta.slug, fileName: a.fileName })),
   );
 
-  const visible = includeDrafts
-    ? parsed
-    : parsed.filter((a) => !a.meta.draft);
+  const visible = parsed.filter((a) => {
+    if (!includeDrafts && a.meta.draft) return false;
+    if (!includeScheduled && !isArticlePublished(a.meta, nowMs)) return false;
+    return true;
+  });
   // Predictable ordering: published date descending, slug tiebreak.
   return [...visible].sort((a, b) => {
     if (a.meta.publishedAt !== b.meta.publishedAt) {

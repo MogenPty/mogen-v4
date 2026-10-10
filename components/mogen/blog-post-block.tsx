@@ -1,10 +1,12 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import ArticleCard from "@/components/mogen/article-card";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
-import { getPosts, sortPostsByDateDesc } from "@/data/blog";
+import { getPosts, sortPostsByDateDesc, toArticleSummary } from "@/data/blog";
+import { slugifyTag, tagArchivePath } from "@/lib/articles/tags";
 import type { ArticleSummary } from "@/lib/articles/types";
 import { formatNumber } from "@/lib/utils";
 import ArticleImage from "./article-image";
@@ -75,12 +77,13 @@ export default function BlogPostBlock({
           {article.tags.length > 0 ? (
             <div className="mt-10 flex flex-wrap gap-2">
               {article.tags.map((tag) => (
-                <span
+                <Link
                   key={tag}
-                  className="small-caps border border-ink/15 px-3 py-1 text-ink/60"
+                  href={tagArchivePath(slugifyTag(tag))}
+                  className="small-caps border border-ink/15 px-3 py-1 text-ink/60 transition-colors hover:border-catalyst hover:text-catalyst"
                 >
                   {tag}
-                </span>
+                </Link>
               ))}
             </div>
           ) : null}
@@ -95,20 +98,7 @@ export default function BlogPostBlock({
           </h2>
           <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-3">
             {related.map((p) => (
-              <Link
-                key={p.slug}
-                href={`/articles/${p.slug}`}
-                className="group flex flex-col bg-bone p-6 transition-colors hover:bg-ink hover:text-bone"
-              >
-                <span className="small-caps text-catalyst">{p.category}</span>
-                <h3 className="mt-3 font-display text-lg font-black leading-tight">
-                  {p.title}
-                </h3>
-                <span className="mt-4 small-caps flex items-center gap-2 text-current">
-                  Read{" "}
-                  <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
-                </span>
-              </Link>
+              <ArticleCard key={p.slug} article={toArticleSummary(p)} />
             ))}
           </div>
         </div>

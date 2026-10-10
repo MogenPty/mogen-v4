@@ -4,6 +4,16 @@
  * never duplicate it in a separate TypeScript registry.
  */
 
+/** Stable service identifiers (existing service slugs in `data/services.ts`). */
+export const ARTICLE_SERVICE_SLUGS = [
+  "web-development",
+  "seo",
+  "digital-marketing",
+  "business-documentation",
+] as const;
+
+export type ArticleServiceSlug = (typeof ARTICLE_SERVICE_SLUGS)[number];
+
 export interface ArticleFrontmatter {
   title: string;
   slug: string;
@@ -18,6 +28,14 @@ export interface ArticleFrontmatter {
   featured?: boolean;
   heroImage?: string;
   heroImageAlt?: string;
+  /**
+   * Optional explicit service associations as stable service slugs
+   * (see `ARTICLE_SERVICE_SLUGS`). An article may relate to multiple
+   * services. When absent, associations are inferred from tags/category
+   * (see `lib/articles/related.ts`) so existing articles keep working
+   * without frontmatter migration.
+   */
+  services?: string[];
   /** Future-compatible draft flag. Drafts never list and never index. */
   draft?: boolean;
   /** Optional explicit read time (e.g. "8 min read"). Computed when absent. */
@@ -29,6 +47,8 @@ export interface ArticleMeta extends ArticleFrontmatter {
   author: string;
   category: string;
   tags: string[];
+  /** Normalised explicit service slugs (may be empty — see inference). */
+  services: string[];
   featured: boolean;
   draft: boolean;
   readTime: string;

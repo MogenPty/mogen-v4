@@ -14,6 +14,12 @@ interface Props {
 // notFound() below, so no invalid URL ever renders.
 export const dynamicParams = true;
 
+// Scheduled articles become available without a redeploy: cached article
+// pages (including 404s for not-yet-published URLs) regenerate at most
+// hourly, so the maximum expected publication delay is ~1h
+// (see docs/articles.md).
+export const revalidate = 3600;
+
 export function generateStaticParams() {
   return getArticleSlugs().map((slug) => ({ slug }));
 }
