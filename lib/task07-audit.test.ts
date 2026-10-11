@@ -21,7 +21,7 @@ describe("task 07 — public contact email", () => {
   it.each([
     "app/privacy-policy/page.tsx",
     "app/terms-of-service/page.tsx",
-    "components/mogen/service-quote-form.tsx",
+    "components/mogen/contact-form.tsx",
     "components/mogen/resources-block.tsx",
   ])("%s uses info@mogen.co.za, not the obsolete hello@ address", (file) => {
     const source = readSource(file);

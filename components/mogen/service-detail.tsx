@@ -4,13 +4,13 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import ArticleCard from "@/components/mogen/article-card";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
+import ContactForm from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import MagneticButton from "@/components/mogen/magnet-button";
 import Nav from "@/components/mogen/nav";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
-import ServiceQuoteForm from "@/components/mogen/service-quote-form";
 import { getService, SERVICES } from "@/data/services";
 import type { ArticleSummary } from "@/lib/articles/types";
 import {
@@ -119,7 +119,7 @@ export default function ServiceDetail({
           <BlueprintGrid className="bg-bone py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
-                index={`// ${formatNumber(numbering)} — Included`}
+                index={`// ${formatNumber(numbering++)} — Included`}
                 title="What you get"
               />
               <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
@@ -279,7 +279,12 @@ export default function ServiceDetail({
                   proposal within 24 hours — no obligation.
                 </p>
               </div>
-              <ServiceQuoteForm serviceName={service.name} />
+              <div className="border border-ink/10 bg-bone p-8">
+                <ContactForm
+                  initialService={service.name}
+                  initialAttribution={attribution}
+                />
+              </div>
             </div>
           </div>
         </BlueprintGrid>
