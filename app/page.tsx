@@ -72,7 +72,12 @@ export default async function Home({
         <FinalCTA numbering={numbering++} />
       </main>
       <Footer />
-      <ConversionBar auditHref="#audit" />
+      <ConversionBar
+        auditHref="#audit"
+        serviceSlug="web-development"
+        attribution={attribution}
+        featuredPromotion={promotion}
+      />
     </div>
   );
 }
