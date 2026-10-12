@@ -12,6 +12,7 @@ import Nav from "@/components/mogen/nav";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
 import { getService, SERVICES } from "@/data/services";
+import type { Promotion } from "@/data/promotions";
 import type { ArticleSummary } from "@/lib/articles/types";
 import {
   buildEnquiryHref,
@@ -36,6 +37,13 @@ interface Props {
    * placeholder.
    */
   relatedArticles?: ArticleSummary[];
+  /**
+   * Authoritative featured promotion from `getFeaturedPromotion()`
+   * (resolved server-side). Carried as `?promotion=` context only when it
+   * matches this service; `undefined` lets ConversionBar resolve it
+   * client-side, `null` pins "no promotion".
+   */
+  featuredPromotion?: Promotion | null;
 }
 
 export default function ServiceDetail({
@@ -43,6 +51,7 @@ export default function ServiceDetail({
   numbering = 1,
   attribution,
   relatedArticles = [],
+  featuredPromotion,
 }: Readonly<Props>) {
   const service = getService(serviceSlug);
 
@@ -325,7 +334,11 @@ export default function ServiceDetail({
         </BlueprintGrid>
       </main>
       <Footer />
-      <ConversionBar />
+      <ConversionBar
+        serviceSlug={serviceSlug}
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
     </div>
   );
 }

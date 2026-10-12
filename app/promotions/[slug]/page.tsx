@@ -13,6 +13,7 @@ import PromotionEnquiryCta from "@/components/mogen/promotion-enquiry-cta";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import {
   getEffectiveStatus,
+  getFeaturedPromotion,
   getPromotionBySlug,
   getPromotions,
   needsCadenceSuffix,
@@ -249,6 +250,10 @@ export default async function PromotionDetailPage({
 
   let numbering = 1;
   const status = getEffectiveStatus(promo);
+  // The promotions routes behave like the homepage: the valid featured
+  // promotion (not necessarily this page's promotion) selects the
+  // ConversionBar journey.
+  const featuredPromotion = getFeaturedPromotion();
 
   return (
     <div className="bg-bone">
@@ -503,7 +508,11 @@ export default async function PromotionDetailPage({
         </BlueprintGrid>
       </main>
       <Footer />
-      <ConversionBar />
+      <ConversionBar
+        defaultServiceSlug="web-development"
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
     </div>
   );
 

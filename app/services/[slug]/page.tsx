@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ServiceDetail from "@/components/mogen/service-detail";
 import { getService, SERVICES } from "@/data/services";
+import { getFeaturedPromotion } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
 import { getRelatedArticlesForService } from "@/lib/articles/related";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
@@ -111,6 +112,9 @@ export default async function ServiceDetailPage({
   // Related articles come from the canonical published loader (drafts +
   // scheduled excluded); the client component only renders them.
   const relatedArticles = getRelatedArticlesForService(slug);
+  // Authoritative featured promotion for the ConversionBar override
+  // (Phase 2 — resolved server-side so date transitions apply on ISR).
+  const featuredPromotion = getFeaturedPromotion();
 
   return (
     <>
@@ -120,6 +124,7 @@ export default async function ServiceDetailPage({
         numbering={1}
         attribution={attribution}
         relatedArticles={relatedArticles}
+        featuredPromotion={featuredPromotion}
       />
     </>
   );

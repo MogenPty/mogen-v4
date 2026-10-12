@@ -3,6 +3,8 @@ import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import ConversionBar from "./conversation-bar";
 import Footer from "./footer";
 import Nav from "./nav";
+import type { Promotion } from "@/data/promotions";
+import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 
 interface Props {
   index: string | number;
@@ -10,6 +12,13 @@ interface Props {
   title: ReactNode;
   intro?: string;
   children: ReactNode;
+  /**
+   * Authoritative featured promotion (promotions routes behave like the
+   * homepage). Omitted everywhere else — no promotion applies.
+   */
+  featuredPromotion?: Promotion | null;
+  /** UTM attribution forwarded into enquiry destinations. */
+  attribution?: EnquiryAttribution;
 }
 
 export default function PageShell({
@@ -18,6 +27,8 @@ export default function PageShell({
   title,
   intro,
   children,
+  featuredPromotion,
+  attribution,
 }: Readonly<Props>) {
   return (
     <div className="bg-bone">
@@ -37,7 +48,11 @@ export default function PageShell({
         {children}
       </main>
       <Footer />
-      <ConversionBar />
+      <ConversionBar
+        defaultServiceSlug="web-development"
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
     </div>
   );
 }

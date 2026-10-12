@@ -346,6 +346,11 @@ export interface BuildEnquiryHrefInput {
   website?: string;
   attribution?: EnquiryAttribution;
   /**
+   * Destination base. Defaults to `/contact` so existing callers are
+   * unaffected; the ConversionBar passes its settings `href` through.
+   */
+  base?: string;
+  /**
    * Existing params to extend (e.g. the current page's search params).
    * Only allowlisted attribution keys — plus service/promotion as a
    * fallback when no explicit value is given — are carried over.
@@ -384,8 +389,9 @@ export function buildEnquiryHref(input: BuildEnquiryHrefInput): string {
     if (value) params.set(key, value);
   }
 
+  const base = clean(input.base) ?? "/contact";
   const query = params.toString();
-  return query ? `/contact?${query}` : "/contact";
+  return query ? `${base}?${query}` : base;
 }
 
 /**
