@@ -3,7 +3,7 @@ import PageShell from "@/components/mogen/page-shell";
 import PromotionCard from "@/components/mogen/promotion-card";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
-import { getPublicPromotions } from "@/data/promotions";
+import { getPublicPromotions, getFeaturedPromotion } from "@/data/promotions";
 import {
   buildEnquiryHref,
   parseEnquiryAttribution,
@@ -31,6 +31,9 @@ export default async function PromotionsIndexPage({
   // Carry allowlisted attribution (utm_*) from the collection URL into
   // each card's enquiry CTA — explicit promotion context always wins.
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});
+  // The promotions routes behave like the homepage: the valid featured
+  // promotion selects the ConversionBar journey.
+  const featuredPromotion = getFeaturedPromotion();
 
   return (
     <PageShell
@@ -42,6 +45,8 @@ export default async function PromotionsIndexPage({
         </>
       }
       intro="Limited Mogen offers with clear pricing, eligibility and terms. Expired promotions stay listed for reference — what you see is what was offered."
+      featuredPromotion={featuredPromotion}
+      attribution={attribution}
     >
       <BlueprintGrid className="bg-bone pb-24">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">

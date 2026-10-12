@@ -73,8 +73,7 @@ export default async function Home({
       </main>
       <Footer />
       <ConversionBar
-        auditHref="#audit"
-        serviceSlug="web-development"
+        defaultServiceSlug="web-development"
         attribution={attribution}
         featuredPromotion={promotion}
       />

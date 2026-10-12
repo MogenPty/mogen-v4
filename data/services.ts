@@ -34,6 +34,24 @@ interface Faq {
   answer: string;
 }
 
+interface ConversionBarSettings {
+  /** Service slug these settings belong to. */
+  serviceSlug: string;
+  /** CTA label rendered in the bar. */
+  label: string;
+  /** Accessible name for the CTA link. */
+  ariaLabel: string;
+  /**
+   * Conversion journey: `audit` links to the audit `href` as-is;
+   * `enquiry` builds on the `href` base with service/promotion context
+   * plus attribution (Phase 3 replaces the Web Development destination
+   * with the requirements questionnaire).
+   */
+  journey: "audit" | "enquiry";
+  /** Destination base: audit anchor or enquiry path. */
+  href: string;
+}
+
 interface Service {
   slug: string;
   name: string;
@@ -48,6 +66,8 @@ interface Service {
   pricing?: Pricing[];
   addons?: AddOn[];
   faq?: Faq[];
+  /** ConversionBar CTA copy + journey for this service. */
+  conversionBar?: ConversionBarSettings;
 }
 
 export const SERVICES: Service[] = [
@@ -188,6 +208,13 @@ export const SERVICES: Service[] = [
           "Yes — Sprout and Vegetative builds include a CMS and a training session so you can edit content.",
       },
     ],
+    conversionBar: {
+      serviceSlug: "web-development",
+      label: "Start Your Website →",
+      ariaLabel: "Start your website enquiry",
+      journey: "enquiry",
+      href: "/contact",
+    },
   },
   {
     slug: "seo",
@@ -326,6 +353,13 @@ export const SERVICES: Service[] = [
           "Yes — SEO content writing is included in Scale and Dominance, and available as an add-on for Ignition.",
       },
     ],
+    conversionBar: {
+      serviceSlug: "seo",
+      label: "Get Free Audit →",
+      ariaLabel: "Get your free growth audit now",
+      journey: "audit",
+      href: "/#audit",
+    },
   },
   {
     slug: "digital-marketing",
@@ -459,6 +493,13 @@ export const SERVICES: Service[] = [
           "A clear monthly report covering reach, engagement, leads and cost-per-result — no vanity metrics.",
       },
     ],
+    conversionBar: {
+      serviceSlug: "digital-marketing",
+      label: "Get a Quote →",
+      ariaLabel: "Get a quote for Digital Marketing",
+      journey: "enquiry",
+      href: "/contact",
+    },
   },
   {
     slug: "business-documentation",
@@ -598,10 +639,31 @@ export const SERVICES: Service[] = [
           "We deliver print-ready files. Printing can be arranged via a partner provider if required.",
       },
     ],
+    conversionBar: {
+      serviceSlug: "business-documentation",
+      label: "Get a Quote →",
+      ariaLabel: "Get a quote for Business Documentation",
+      journey: "enquiry",
+      href: "/contact",
+    },
   },
 ];
 
 export const getService = (slug: string) =>
   SERVICES.find((s) => s.slug === slug);
 
-export type { AddOn, Faq, Pricing, Process, Service };
+/**
+ * ConversionBar settings for a service slug (case-insensitive).
+ * Returns undefined when the slug is unknown or the service defines no
+ * settings — callers fall back to the Web Development settings (the
+ * site-wide default).
+ */
+export const getConversionBarSettings = (
+  slug: string | null | undefined,
+): ConversionBarSettings | undefined => {
+  const cleaned = slug?.trim().toLowerCase();
+  if (!cleaned) return undefined;
+  return SERVICES.find((s) => s.slug === cleaned)?.conversionBar;
+};
+
+export type { AddOn, ConversionBarSettings, Faq, Pricing, Process, Service };

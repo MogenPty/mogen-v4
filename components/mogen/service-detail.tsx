@@ -39,8 +39,9 @@ interface Props {
   relatedArticles?: ArticleSummary[];
   /**
    * Authoritative featured promotion from `getFeaturedPromotion()`
-   * (resolved server-side). `undefined` lets ConversionBar resolve it
-   * client-side; `null` pins "no promotion".
+   * (resolved server-side). Carried as `?promotion=` context only when it
+   * matches this service; `undefined` lets ConversionBar resolve it
+   * client-side, `null` pins "no promotion".
    */
   featuredPromotion?: Promotion | null;
 }

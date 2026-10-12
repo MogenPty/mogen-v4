@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Promotion } from "@/data/promotions";
-import { getFeaturedPromotion } from "@/data/promotions";
 import {
   parseEnquiryAttribution,
   type EnquiryAttribution,
@@ -15,36 +15,39 @@ import { cn } from "@/lib/utils";
  * ConversionBar — floating quick-action bar that tracks the visitor's
  * "Conversion Readiness" as they scroll deeper into the funnel.
  *
- * Phase 2: service-aware + promotion-aware. The CTA journey is selected
- * from the page service context with an active featured promotion
- * (via the authoritative `getFeaturedPromotion()` selector) overriding
- * the page default. Destinations stay valid before Phase 3:
- * SEO audit → existing audit anchor; Web Development → contact flow
- * with service context (questionnaire lands in Phase 3); other
- * services → contact flow with service context.
+ * CTA copy and destination bases come from `data/services.ts`
+ * (`Service.conversionBar` — no `auditHref` prop). Service pages always
+ * use their own service's settings; the homepage and the promotions
+ * routes (the only callers that pass a featured promotion) use the
+ * promotion's service settings when valid; everywhere else the
+ * site-wide default applies (Web Development).
  */
 type ConversionBarProps = {
-  /** Destination for audit journeys. Defaults to the cross-route homepage anchor. */
-  auditHref?: string;
   /**
-   * Page service context (service page slug; homepage passes
-   * "web-development"). Omitted on generic pages → default audit CTA.
+   * Page service context (service pages pass their slug — always wins).
+   * Omitted on the homepage and generic pages.
    */
   serviceSlug?: string;
+  /**
+   * Fallback service identity for pages without a service context.
+   * Defaults to Web Development (the site-wide default).
+   */
+  defaultServiceSlug?: string;
   /** Package context to preserve (only when it belongs to the journey's service). */
   packageSlug?: string;
   /** UTM attribution forwarded into enquiry destinations. */
   attribution?: EnquiryAttribution;
   /**
-   * Authoritative featured promotion. `undefined` (default) resolves via
-   * `getFeaturedPromotion()`; pass `null` to pin "no promotion".
+   * Authoritative featured promotion from `getFeaturedPromotion()`,
+   * passed explicitly by the homepage and the promotions routes only.
+   * `undefined`/`null` means no promotion applies here.
    */
   featuredPromotion?: Promotion | null;
 };
 
 export default function ConversionBar({
-  auditHref = "/#audit",
   serviceSlug,
+  defaultServiceSlug,
   packageSlug,
   attribution,
   featuredPromotion,
@@ -52,6 +55,7 @@ export default function ConversionBar({
   const [ready, setReady] = useState(0);
   const [visible, setVisible] = useState(false);
   const [urlAttribution, setUrlAttribution] = useState<EnquiryAttribution>({});
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => {
@@ -88,27 +92,27 @@ export default function ConversionBar({
     [urlAttribution, attribution],
   );
 
-  const featured = useMemo(
-    () =>
-      featuredPromotion !== undefined
-        ? (featuredPromotion ?? undefined)
-        : getFeaturedPromotion(),
-    [featuredPromotion],
-  );
-
   const cta = useMemo(
     () =>
       resolveConversion({
         serviceSlug,
-        featuredPromotion: featured,
-        auditHref,
+        defaultServiceSlug,
+        featuredPromotion: featuredPromotion ?? undefined,
         attribution:
           Object.keys(mergedAttribution).length > 0
             ? mergedAttribution
             : undefined,
         packageSlug,
+        pathname,
       }),
-    [serviceSlug, featured, auditHref, mergedAttribution, packageSlug],
+    [
+      serviceSlug,
+      defaultServiceSlug,
+      featuredPromotion,
+      mergedAttribution,
+      packageSlug,
+      pathname,
+    ],
   );
 
   return (
