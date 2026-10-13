@@ -18,7 +18,7 @@ export const metadata: Metadata = pageMetadata({
 export default function PricingDirectoryPage() {
   return (
     <div className="bg-bone">
-      <Nav />
+      <Nav defaultServiceSlug="web-development" />
       <main>
         <BlueprintGrid className="bg-bone pt-32 pb-16 lg:pt-40 lg:pb-20">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -88,13 +88,19 @@ export default function PricingDirectoryPage() {
             </div>
             <p className="mt-10 max-w-2xl text-sm text-ink/50">
               Pricing is maintained on each service page. The tables on those
-              pages are authoritative — this directory does not duplicate them.
+              pages are authoritative — this directory does not duplicate them.{" "}
+              <Link
+                href="/faq"
+                className="small-caps text-ink hover:text-catalyst"
+              >
+                Common questions →
+              </Link>
             </p>
           </div>
         </BlueprintGrid>
       </main>
-      <Footer />
-      <ConversionBar />
+      <Footer defaultServiceSlug="web-development" />
+      <ConversionBar defaultServiceSlug="web-development" />
     </div>
   );
 }

@@ -64,7 +64,7 @@ describe("conversion settings (data-driven)", () => {
     expect(getConversionBarSettings(null)).toBeUndefined();
   });
 
-  it("derives CTA copy and href base from the service settings", () => {
+  it("derives CTA copy from the service settings; destinations target components", () => {
     const web = resolveConversion({
       serviceSlug: "web-development",
       featuredPromotion: null,
@@ -73,7 +73,9 @@ describe("conversion settings (data-driven)", () => {
     const webSettings = getConversionBarSettings("web-development")!;
     expect(web.label).toBe(webSettings.label);
     expect(web.ariaLabel).toBe(webSettings.ariaLabel);
-    expect(web.href.startsWith("/contact")).toBe(true);
+    // Discovery CTAs target the service's conversion component — never
+    // /contact (decision context belongs to the Claim CTAs).
+    expect(web.href).toBe("/services/web-development#assessment");
 
     const seo = resolveConversion({
       serviceSlug: "seo",
@@ -120,7 +122,8 @@ describe("conversion selection (service pages win)", () => {
     expect(plain.kind).toBe("web-enquiry");
     expect(plain.label).not.toContain("Audit");
 
-    // Even a featured SEO promotion cannot force the audit onto the page.
+    // Even a featured SEO promotion cannot force the audit onto the page:
+    // the page keeps its own questionnaire journey.
     const withSeoPromo = resolveConversion({
       serviceSlug: "web-development",
       featuredPromotion: seoPromo(),
@@ -128,10 +131,10 @@ describe("conversion selection (service pages win)", () => {
     });
     expect(withSeoPromo.kind).toBe("web-enquiry");
     expect(withSeoPromo.label).not.toContain("Audit");
-    expect(withSeoPromo.href.startsWith("/contact")).toBe(true);
+    expect(withSeoPromo.href).toBe("/services/web-development#assessment");
   });
 
-  it("a matching featured promotion contributes its promotion context", () => {
+  it("a matching featured promotion keeps the page journey (no promotion carry)", () => {
     const cta = resolveConversion({
       serviceSlug: "web-development",
       featuredPromotion: webPromo(),
@@ -140,17 +143,20 @@ describe("conversion selection (service pages win)", () => {
     });
     expect(cta.kind).toBe("web-enquiry");
     expect(cta.overridden).toBe(false);
-    const params = hrefParams(cta.href);
-    // Minimal promotion context: service inferred centrally, never repeated.
-    expect(params.get("promotion")).toBe("web-promo");
-    expect(params.has("service")).toBe(false);
-    expect(params.get("utm_source")).toBe("google");
+    // Discovery CTAs never carry business context — decision ("Claim")
+    // CTAs carry promotion context to /contact via buildEnquiryHref.
+    expect(cta.promotionSlug).toBeUndefined();
+    expect(cta.href).toBe(
+      "/services/web-development?utm_source=google#assessment",
+    );
+    expect(hrefParams(cta.href).has("promotion")).toBe(false);
+    expect(hrefParams(cta.href).has("service")).toBe(false);
   });
 
   it.each([
     ["digital-marketing", "Digital Marketing"],
     ["business-documentation", "Business Documentation"],
-  ])("%s uses its own settings", (slug, name) => {
+  ])("%s uses its own settings and quote-form component", (slug, name) => {
     const cta = resolveConversion({
       serviceSlug: slug,
       featuredPromotion: webPromo(),
@@ -158,8 +164,26 @@ describe("conversion selection (service pages win)", () => {
     });
     expect(cta.kind).toBe("service-enquiry");
     expect(cta.effectiveServiceSlug).toBe(slug);
-    expect(hrefParams(cta.href).get("service")).toBe(slug);
+    expect(cta.href).toBe(`/services/${slug}#quote`);
     expect(cta.ariaLabel).toContain(name);
+  });
+
+  it("collapses component anchors on their own routes", () => {
+    const webPage = resolveConversion({
+      serviceSlug: "web-development",
+      featuredPromotion: null,
+      pathname: "/services/web-development",
+      today: TODAY,
+    });
+    expect(webPage.href).toBe("#assessment");
+
+    const dmPage = resolveConversion({
+      serviceSlug: "digital-marketing",
+      featuredPromotion: null,
+      pathname: "/services/digital-marketing",
+      today: TODAY,
+    });
+    expect(dmPage.href).toBe("#quote");
   });
 
   it("collapses the audit anchor only on the audit's own route", () => {
@@ -205,15 +229,15 @@ describe("homepage and promotions routes (promotion applies)", () => {
     expect(cta.label).not.toContain("Audit");
   });
 
-  it("non-homepage Web default keeps the enquiry destination", () => {
+  it("non-homepage Web default targets the questionnaire component", () => {
     const cta = resolveConversion({
       defaultServiceSlug: "web-development",
       featuredPromotion: null,
       today: TODAY,
     });
     expect(cta.kind).toBe("web-enquiry");
-    expect(cta.href.startsWith("/contact")).toBe(true);
-    expect(hrefParams(cta.href).get("service")).toBe("web-development");
+    expect(cta.href).toBe("/services/web-development#assessment");
+    expect(hrefParams(cta.href).has("service")).toBe(false);
   });
 
   it("homepage uses the featured promotion's service settings when valid", () => {
@@ -229,7 +253,7 @@ describe("homepage and promotions routes (promotion applies)", () => {
     expect(cta.href).toBe("/services/seo#audit");
   });
 
-  it("a featured Web promotion on the homepage carries promotion context", () => {
+  it("a featured Web promotion on the homepage stays on the questionnaire", () => {
     const cta = resolveConversion({
       defaultServiceSlug: "web-development",
       featuredPromotion: webPromo(),
@@ -238,9 +262,10 @@ describe("homepage and promotions routes (promotion applies)", () => {
       today: TODAY,
     });
     expect(cta.overridden).toBe(true);
-    const params = hrefParams(cta.href);
-    expect(params.get("promotion")).toBe("web-promo");
-    expect(params.get("utm_campaign")).toBe("launch");
+    // Same-page questionnaire — the promotion selects the service, but
+    // discovery never carries promotion context (claims do, to /contact).
+    expect(cta.href).toBe("#assessment");
+    expect(cta.promotionSlug).toBeUndefined();
   });
 });
 
@@ -308,7 +333,7 @@ describe("promotion validity", () => {
         today: TODAY,
       });
       expect(home.kind).toBe("web-enquiry");
-      expect(hrefParams(home.href).get("service")).toBe("web-development");
+      expect(home.href).toBe("/services/web-development#assessment");
     }
   });
 
@@ -323,44 +348,35 @@ describe("promotion validity", () => {
   });
 });
 
-describe("context preservation", () => {
-  it("preserves service, package, and promotion context where applicable", () => {
-    // Valid package for the journey's service is preserved.
-    const withPackage = resolveConversion({
+describe("attribution without business context", () => {
+  it("carries only UTM attribution on cross-page component links", () => {
+    const cta = resolveConversion({
       serviceSlug: "web-development",
-      packageSlug: "sprout",
       featuredPromotion: null,
       attribution: { utm_source: "google", utm_medium: "organic" },
       today: TODAY,
     });
-    const pkgParams = hrefParams(withPackage.href);
-    expect(pkgParams.get("service")).toBe("web-development");
-    expect(pkgParams.get("package")).toBe("sprout");
-    expect(pkgParams.get("utm_source")).toBe("google");
-    expect(pkgParams.get("utm_medium")).toBe("organic");
-
-    // A package belonging to another service is dropped, never mismatched.
-    const mismatched = resolveConversion({
-      serviceSlug: "digital-marketing",
-      packageSlug: "sprout",
-      featuredPromotion: null,
-      today: TODAY,
-    });
-    expect(hrefParams(mismatched.href).get("service")).toBe(
-      "digital-marketing",
+    expect(cta.href).toBe(
+      "/services/web-development?utm_source=google&utm_medium=organic#assessment",
     );
-    expect(hrefParams(mismatched.href).has("package")).toBe(false);
+    const params = hrefParams(cta.href);
+    expect(params.has("service")).toBe(false);
+    expect(params.has("package")).toBe(false);
+    expect(params.has("promotion")).toBe(false);
 
-    // Unknown packages are dropped.
-    const unknown = resolveConversion({
-      serviceSlug: "digital-marketing",
-      packageSlug: "nope",
+    // Same-page anchors rely on the page URL (which already carries any
+    // attribution into the embedded component's submission).
+    const samePage = resolveConversion({
+      serviceSlug: "web-development",
       featuredPromotion: null,
+      attribution: { utm_source: "google" },
+      pathname: "/services/web-development",
       today: TODAY,
     });
-    expect(hrefParams(unknown.href).has("package")).toBe(false);
+    expect(samePage.href).toBe("#assessment");
+  });
 
-    // Carried promotions never invent a package mapping.
+  it("never invents a package mapping for carried promotions", () => {
     const promo = resolveConversion({
       serviceSlug: "digital-marketing",
       featuredPromotion: makePromotion({
@@ -370,10 +386,11 @@ describe("context preservation", () => {
       attribution: { utm_campaign: "launch" },
       today: TODAY,
     });
-    const promoParams = hrefParams(promo.href);
-    expect(promoParams.get("promotion")).toBe("dm-promo");
-    expect(promoParams.has("package")).toBe(false);
-    expect(promoParams.get("utm_campaign")).toBe("launch");
+    expect(promo.promotionSlug).toBeUndefined();
+    expect(promo.href).toBe(
+      "/services/digital-marketing?utm_campaign=launch#quote",
+    );
+    expect(hrefParams(promo.href).has("package")).toBe(false);
   });
 
   it("keeps the selection/destination split for Phase 3", () => {
@@ -387,8 +404,9 @@ describe("context preservation", () => {
       attribution: { utm_source: "x" },
     });
     expect(rebuilt.kind).toBe("web-enquiry");
-    expect(rebuilt.href).toContain("service=web-development");
     expect(rebuilt.href).toContain("utm_source=x");
+    expect(rebuilt.href).toContain("/services/web-development");
+    expect(rebuilt.href).toContain("#assessment");
   });
 
   it("follows the authoritative featured selector against real data", () => {
@@ -405,9 +423,11 @@ describe("context preservation", () => {
     });
     expect(home.overridden).toBe(true);
     expect(home.kind).toBe("web-enquiry");
-    expect(hrefParams(home.href).get("promotion")).toBe(
-      "mogen-sprout-first-100",
-    );
+    // Discovery stays on the homepage questionnaire — the promotion
+    // selects the service; claiming it happens via the promotion cards
+    // (decision CTAs to /contact), never via the chrome CTA.
+    expect(home.href).toBe("#assessment");
+    expect(home.promotionSlug).toBeUndefined();
 
     const seoPage = resolveConversion({
       serviceSlug: "seo",

@@ -14,12 +14,12 @@ export const metadata = pageMetadata({
 export default function ServicesIndexPage() {
   return (
     <div className="bg-bone">
-      <Nav />
+      <Nav defaultServiceSlug="web-development" />
       <main>
         <Services numbering={2} auditHref="/services/seo#audit" />
       </main>
-      <Footer />
-      <ConversionBar />
+      <Footer defaultServiceSlug="web-development" />
+      <ConversionBar defaultServiceSlug="web-development" />
     </div>
   );
 }

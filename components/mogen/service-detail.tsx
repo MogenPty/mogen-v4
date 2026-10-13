@@ -12,6 +12,7 @@ import MagneticButton from "@/components/mogen/magnet-button";
 import Nav from "@/components/mogen/nav";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
+import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
 import { getService, SERVICES } from "@/data/services";
 import type { Promotion } from "@/data/promotions";
 import type { ArticleSummary } from "@/lib/articles/types";
@@ -40,11 +41,19 @@ interface Props {
   relatedArticles?: ArticleSummary[];
   /**
    * Authoritative featured promotion from `getFeaturedPromotion()`
-   * (resolved server-side). Carried as `?promotion=` context only when it
-   * matches this service; `undefined` lets ConversionBar resolve it
-   * client-side, `null` pins "no promotion".
+   * (resolved server-side). Selects the ConversionBar journey only when
+   * it matches this service — discovery CTAs target the page's own
+   * conversion component either way; decision ("Claim") CTAs carry
+   * promotion context to `/contact` via the claim components.
    */
   featuredPromotion?: Promotion | null;
+  /**
+   * Active promotions resolved server-side (already date-filtered).
+   * The embedded questionnaire shows promotion pricing when one targets
+   * the recommended package — eligibility is confirmed by Mogen on
+   * enquiry.
+   */
+  activePromotions?: Promotion[];
 }
 
 export default function ServiceDetail({
@@ -53,6 +62,7 @@ export default function ServiceDetail({
   attribution,
   relatedArticles = [],
   featuredPromotion,
+  activePromotions,
 }: Readonly<Props>) {
   const service = getService(serviceSlug);
 
@@ -75,7 +85,11 @@ export default function ServiceDetail({
 
   return (
     <div className="bg-bone">
-      <Nav />
+      <Nav
+        serviceSlug={serviceSlug}
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
       <main>
         {/* HERO */}
         <section className="relative overflow-hidden bg-bone pt-32 pb-16 lg:pt-40">
@@ -230,6 +244,19 @@ export default function ServiceDetail({
             email delivery are unchanged. */}
         {serviceSlug === "seo" && <GrowthAudit numbering={numbering++} />}
 
+        {/* WEBSITE QUESTIONNAIRE — Web Development service only,
+            immediately after Add-Ons (mirroring the audit above). The
+            questionnaire lives here as well as on the homepage, so Web
+            Development discovery CTAs always have an `#assessment`
+            target no matter which service is currently promoted. */}
+        {serviceSlug === "web-development" && (
+          <WebsiteQuestionnaire
+            numbering={numbering++}
+            initialAttribution={attribution}
+            promotions={activePromotions}
+          />
+        )}
+
         {/* RELATED ARTICLES — published articles for this service, hidden when none */}
         {relatedArticles.length > 0 && (
           <BlueprintGrid className="bg-secondary py-20">
@@ -258,7 +285,7 @@ export default function ServiceDetail({
 
         {/* FAQ */}
         {service.faq && (
-          <BlueprintGrid className="bg-bone py-20 lg:py-28">
+          <BlueprintGrid id={"faq"} className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-225 px-6 lg:px-10">
               <SectionLabel
                 index={`// ${formatNumber(numbering++)} — Questions`}
@@ -268,6 +295,12 @@ export default function ServiceDetail({
                 Frequently asked questions
               </h2>
               <ServiceFAQ faq={service.faq} />
+              <Link
+                href="/faq"
+                className="small-caps mt-8 inline-flex text-ink hover:text-catalyst"
+              >
+                View all frequently asked questions →
+              </Link>
             </div>
           </BlueprintGrid>
         )}
@@ -340,7 +373,11 @@ export default function ServiceDetail({
           </div>
         </BlueprintGrid>
       </main>
-      <Footer />
+      <Footer
+        serviceSlug={serviceSlug}
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
       <ConversionBar
         serviceSlug={serviceSlug}
         attribution={attribution}

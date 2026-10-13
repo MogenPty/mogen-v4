@@ -31,6 +31,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/locations",
     "/locations/maboloka",
     "/locations/soshanguve",
+    "/locations/centurion",
+    "/faq",
     "/privacy-policy",
     "/terms-of-service",
   ];

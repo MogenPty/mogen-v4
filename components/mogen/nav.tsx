@@ -3,6 +3,9 @@
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import type { Promotion } from "@/data/promotions";
+import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
+import { useConversionCta } from "@/lib/conversion/use-conversion-cta";
 import { useAnchorHref } from "@/lib/use-anchor-href";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -18,20 +21,60 @@ const SERVICES_SUB = [
 
 const NAV = [
   { label: "Services", href: "/#services", children: SERVICES_SUB },
+  { label: "Pricing", href: "/pricing" },
   { label: "Growth Audit", href: "/services/seo#audit" },
   { label: "Promotions", href: "/promotions" },
   { label: "Work", href: "/#work" },
   { label: "Articles", href: "/articles" },
+  { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
 ];
 
 // const isInternal = (href) => href.startsWith("/") && !href.includes("#");
 
-export default function Nav() {
+interface NavProps {
+  /**
+   * Page service context (service pages pass their slug — always wins).
+   * Omitted on the homepage and generic pages.
+   */
+  serviceSlug?: string;
+  /**
+   * Fallback service identity for pages without a service context.
+   * Defaults to Web Development (the site-wide default).
+   */
+  defaultServiceSlug?: string;
+  /** UTM attribution forwarded into enquiry destinations. */
+  attribution?: EnquiryAttribution;
+  /**
+   * Authoritative featured promotion from `getFeaturedPromotion()`,
+   * passed explicitly by the homepage and the promotions routes only.
+   * `undefined`/`null` means no promotion applies here.
+   */
+  featuredPromotion?: Promotion | null;
+}
+
+export default function Nav({
+  serviceSlug,
+  defaultServiceSlug,
+  attribution,
+  featuredPromotion,
+}: Readonly<NavProps> = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const anchorHref = useAnchorHref();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Header CTA shares its resolution with the Conversion Bar and the
+  // footer CTA via useConversionCta — identical inputs on a page resolve
+  // to the identical destination and service. Labels come from the
+  // resolved service settings, so wording always represents the same
+  // journey on all three surfaces.
+  const cta = useConversionCta({
+    serviceSlug,
+    defaultServiceSlug,
+    attribution,
+    featuredPromotion,
+  });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -136,11 +179,11 @@ export default function Nav() {
           <ThemeToggle />
           <MagneticButton
             as="a"
-            href={anchorHref("/services/seo#audit")}
+            href={cta.href}
             variant="catalyst"
-            aria-label="Get a free growth audit"
+            aria-label={cta.ariaLabel}
           >
-            Free Audit
+            {cta.label}
           </MagneticButton>
         </div>
 
@@ -225,12 +268,13 @@ export default function Nav() {
             </a>
             <MagneticButton
               as="a"
-              href={anchorHref("/services/seo#audit")}
+              href={cta.href}
               variant="catalyst"
               className="mt-4 w-full"
+              aria-label={cta.ariaLabel}
               onClick={() => setOpen(false)}
             >
-              Free Audit
+              {cta.label}
             </MagneticButton>
           </div>
         </div>

@@ -60,6 +60,7 @@ export const siteConfig = {
       "North West",
       "Soshanguve",
       "Pretoria",
+      "Centurion",
       "Gauteng",
       "South Africa",
     ],
