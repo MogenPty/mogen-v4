@@ -40,3 +40,7 @@ debug.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local files
+/.firecrawl/
+/.vscode/

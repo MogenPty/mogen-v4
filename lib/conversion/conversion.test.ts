@@ -54,7 +54,9 @@ describe("conversion settings (data-driven)", () => {
       expect(["audit", "enquiry"]).toContain(settings?.journey);
       expect(settings?.href).toBeTruthy();
     }
-    expect(getConversionBarSettings("seo")?.href).toBe("/#audit");
+    expect(getConversionBarSettings("seo")?.href).toBe(
+      "/services/seo#audit",
+    );
     expect(getConversionBarSettings("web-development")?.href).toBe(
       "/contact",
     );
@@ -76,10 +78,11 @@ describe("conversion settings (data-driven)", () => {
     const seo = resolveConversion({
       serviceSlug: "seo",
       featuredPromotion: null,
+      pathname: "/services/seo",
       today: TODAY,
     });
     expect(seo.label).toBe(getConversionBarSettings("seo")!.label);
-    expect(seo.href).toBe("/#audit");
+    expect(seo.href).toBe("#audit");
   });
 
   it("defaults to Web Development, never an SEO-centric fallback", () => {
@@ -98,11 +101,12 @@ describe("conversion selection (service pages win)", () => {
     const cta = resolveConversion({
       serviceSlug: "seo",
       featuredPromotion: webPromo(),
+      pathname: "/services/seo",
       today: TODAY,
     });
     expect(cta.kind).toBe("seo-audit");
     expect(cta.overridden).toBe(false);
-    expect(cta.href).toBe("/#audit");
+    expect(cta.href).toBe("#audit");
     expect(cta.label).toContain("Audit");
     expect(cta.promotionSlug).toBeUndefined();
   });
@@ -158,27 +162,37 @@ describe("conversion selection (service pages win)", () => {
     expect(cta.ariaLabel).toContain(name);
   });
 
-  it("collapses the audit anchor on the homepage without an auditHref prop", () => {
-    const home = resolveConversion({
-      serviceSlug: "seo",
-      featuredPromotion: null,
-      pathname: "/",
-      today: TODAY,
-    });
-    expect(home.href).toBe("#audit");
-
-    const elsewhere = resolveConversion({
+  it("collapses the audit anchor only on the audit's own route", () => {
+    const seoPage = resolveConversion({
       serviceSlug: "seo",
       featuredPromotion: null,
       pathname: "/services/seo",
       today: TODAY,
     });
-    expect(elsewhere.href).toBe("/#audit");
+    expect(seoPage.href).toBe("#audit");
+
+    // Cross-route audit hrefs stay absolute so they still navigate to the
+    // SEO page (the audit no longer lives on the homepage).
+    const home = resolveConversion({
+      defaultServiceSlug: "web-development",
+      featuredPromotion: seoPromo(),
+      pathname: "/",
+      today: TODAY,
+    });
+    expect(home.href).toBe("/services/seo#audit");
+
+    const elsewhere = resolveConversion({
+      serviceSlug: "seo",
+      featuredPromotion: null,
+      pathname: "/about",
+      today: TODAY,
+    });
+    expect(elsewhere.href).toBe("/services/seo#audit");
   });
 });
 
 describe("homepage and promotions routes (promotion applies)", () => {
-  it("homepage without an active promotion uses Web Development settings", () => {
+  it("homepage without an active promotion leads into the questionnaire", () => {
     const cta = resolveConversion({
       defaultServiceSlug: "web-development",
       featuredPromotion: null,
@@ -187,9 +201,19 @@ describe("homepage and promotions routes (promotion applies)", () => {
     });
     expect(cta.kind).toBe("web-enquiry");
     expect(cta.overridden).toBe(false);
+    expect(cta.href).toBe("#assessment");
+    expect(cta.label).not.toContain("Audit");
+  });
+
+  it("non-homepage Web default keeps the enquiry destination", () => {
+    const cta = resolveConversion({
+      defaultServiceSlug: "web-development",
+      featuredPromotion: null,
+      today: TODAY,
+    });
+    expect(cta.kind).toBe("web-enquiry");
     expect(cta.href.startsWith("/contact")).toBe(true);
     expect(hrefParams(cta.href).get("service")).toBe("web-development");
-    expect(cta.label).not.toContain("Audit");
   });
 
   it("homepage uses the featured promotion's service settings when valid", () => {
@@ -201,7 +225,8 @@ describe("homepage and promotions routes (promotion applies)", () => {
     });
     expect(cta.overridden).toBe(true);
     expect(cta.kind).toBe("seo-audit");
-    expect(cta.href).toBe("#audit");
+    // The audit lives on the SEO service page — no same-page collapse.
+    expect(cta.href).toBe("/services/seo#audit");
   });
 
   it("a featured Web promotion on the homepage carries promotion context", () => {
@@ -387,9 +412,10 @@ describe("context preservation", () => {
     const seoPage = resolveConversion({
       serviceSlug: "seo",
       featuredPromotion: featured,
+      pathname: "/services/seo",
       today: "2026-10-15",
     });
     expect(seoPage.kind).toBe("seo-audit");
-    expect(seoPage.href).toBe("/#audit");
+    expect(seoPage.href).toBe("#audit");
   });
 });

@@ -209,7 +209,7 @@ export default function BlogBlock({
           <div className="flex flex-col gap-3 sm:flex-row">
             <MagneticButton
               as="a"
-              href="/#audit"
+              href="/services/seo#audit"
               variant="solid"
               className="bg-ink text-bone hover:bg-bone hover:text-ink"
             >

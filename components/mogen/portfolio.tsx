@@ -106,7 +106,7 @@ export default function Portfolio({ numbering = 1 }: Readonly<Props>) {
         </div>
 
         <div className="mt-12">
-          <MagneticButton as="a" href="#audit" variant="outline">
+          <MagneticButton as="a" href="#assessment" variant="outline">
             Start your project →
           </MagneticButton>
         </div>
