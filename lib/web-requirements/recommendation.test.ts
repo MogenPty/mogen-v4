@@ -41,6 +41,20 @@ describe("website-requirements recommendation", () => {
     expect(rec.reasons.join(" ")).toMatch(/email/i);
   });
 
+  it("mentions managed running only for managed preferences", () => {
+    const managed = recommendPackage({ ...BASE, runPreference: "managed" });
+    expect(managed.reasons.join(" ")).toMatch(/managed running/);
+    // Self-hosted visitors must never see the managed-running reason,
+    // even when email needs route them to Sprout.
+    const onceOffEmail = recommendPackage({
+      ...BASE,
+      runPreference: "once-off",
+      needs: ["email"],
+    });
+    expect(onceOffEmail.packageId).toBe("sprout");
+    expect(onceOffEmail.reasons.join(" ")).not.toMatch(/managed running/);
+  });
+
   it("recommends Vegetative for e-commerce", () => {
     const rec = recommendPackage({ ...BASE, needs: ["ecommerce"] });
     expect(rec.packageId).toBe("vegetative");

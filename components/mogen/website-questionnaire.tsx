@@ -871,6 +871,7 @@ export default function WebsiteQuestionnaire({
                       onClick={() => goTo(1)}
                       variant="outline"
                       className="w-full border-white/40 text-white hover:bg-white hover:text-ink dark:border-secondary-foreground/40 dark:text-secondary-foreground dark:hover:bg-secondary-foreground dark:hover:text-secondary"
+                      disabled={saving}
                       aria-label="Go back and edit answers"
                     >
                       <ArrowLeft className="h-4 w-4" /> Edit my answers

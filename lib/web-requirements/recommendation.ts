@@ -266,7 +266,10 @@ export function recommendPackage(
         `Email accounts are documented under ${sprout} and ${vegetative} (up to 5 accounts) — not under the static starter.`,
       );
     }
-    if (req.pageSize === "starter" || req.pageSize === "unsure") {
+    if (
+      req.runPreference === "managed" &&
+      (req.pageSize === "starter" || req.pageSize === "unsure")
+    ) {
       reasons.push(
         `A starter-sized site with managed running maps to ${sprout}'s professionally designed starter website.`,
       );
