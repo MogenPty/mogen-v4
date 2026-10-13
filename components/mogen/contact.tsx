@@ -119,14 +119,21 @@ export default function Contact({
                   >
                     Maboloka
                   </Link>
-                  , with a satellite office in{" "}
+                  , with offices in{" "}
                   <Link
                     href="/locations/soshanguve"
                     className="font-semibold text-ink hover:text-catalyst"
                   >
                     Soshanguve
                   </Link>{" "}
-                  — visits at both locations are by appointment.
+                  and{" "}
+                  <Link
+                    href="/locations/centurion"
+                    className="font-semibold text-ink hover:text-catalyst"
+                  >
+                    Centurion
+                  </Link>{" "}
+                  — visits at all locations are by appointment.
                 </p>
               </div>
 

@@ -191,10 +191,10 @@ export default function LocationDetail({
                   <div>
                     <div className="small-caps text-ink/50">Email</div>
                     <a
-                      href={`mailto:${siteConfig.email}`}
+                      href={`mailto:${location.email}`}
                       className="mt-1 block font-display text-lg font-bold text-ink hover:text-catalyst"
                     >
-                      {siteConfig.email}
+                      {location.email}
                     </a>
                   </div>
                 </li>
@@ -212,6 +212,9 @@ export default function LocationDetail({
                     >
                       {siteConfig.telephoneDisplay}
                     </a>
+                    <p className="mt-1 text-sm text-ink/60">
+                      Also reachable on WhatsApp Business.
+                    </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-4">

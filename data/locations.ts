@@ -28,9 +28,9 @@ export const LOCATIONS: Location[] = [
     order: 4,
     slug: "soshanguve",
     name: "Soshanguve",
-    region: "Gauteng - Satellite Office",
+    region: "Gauteng - Office",
     description:
-      "Supporting Soshanguve businesses with clear, mobile-first websites and online visibility that reaches nearby customers.",
+      "Mogen's full-service Soshanguve office in Block-Y — websites, online visibility, marketing and documentation with a local team.",
     services: [
       "Web Development",
       "SEO",
@@ -73,9 +73,9 @@ export const LOCATIONS: Location[] = [
     order: 7,
     slug: "centurion",
     name: "Centurion",
-    region: "Gauteng",
+    region: "Gauteng - Office",
     description:
-      "Websites, local SEO and digital marketing for businesses in Centurion — delivered remotely from Mogen's Maboloka operation.",
+      "Mogen's Centurion office in Monavoni, serving Centurion and the surrounding areas on all four services.",
     services: [
       "Web Development",
       "SEO",
@@ -102,17 +102,18 @@ export const LOCATIONS: Location[] = [
 ];
 
 /**
- * Physical/operational presence plus one served-area detail page.
+ * Office locations plus broader areas served.
  *
- * Mogen has two physical locations: Maboloka (primary operating location)
- * and Soshanguve (satellite office). Other entries in `LOCATIONS` above
- * describe areas served — clients or service availability elsewhere do not
- * imply a physical location, so no further detail pages are generated,
- * with one deliberate exception: Centurion has a served-area detail page
- * (`presence: "served"`) that describes remote delivery only and claims
- * no office, address, staff or local history in Centurion.
- * Only the slugs listed in `LOCATION_SLUGS` produce `/locations/[slug]`
- * pages; every other slug returns the project 404.
+ * Mogen operates three offices: Maboloka (primary operating location),
+ * Soshanguve and Centurion (office in Monavoni, serving Centurion and
+ * the surrounding areas). Other entries in `LOCATIONS` below
+ * describe areas served — clients or service availability elsewhere do
+ * not imply a physical location, so no further detail pages are
+ * generated. Only the slugs listed in `LOCATION_SLUGS` produce
+ * `/locations/[slug]` pages; every other slug returns the project 404.
+ *
+ * Location facts (areas, office status, emails) are owner-provided.
+ * Never invent street names or numbers — areas only.
  */
 export interface LocationServiceLink {
   name: string;
@@ -132,9 +133,9 @@ export interface LocationDetail {
   /** Location type/role, e.g. "Primary operating location". */
   role: string;
   /**
-   * Physical presence vs served-area coverage. Served-area pages describe
-   * remote delivery only and must not claim an office, address or visits
-   * at that place.
+   * Physical presence vs served-area coverage. All three current offices
+   * are physical; served-area pages (remote delivery only, no office
+   * claimed) remain possible in future via `"served"`.
    */
   presence: "physical" | "served";
   /** Short page title — the root layout template appends `| Mogen`. */
@@ -147,6 +148,8 @@ export interface LocationDetail {
   services: LocationServiceLink[];
   /** Optional note clarifying how services relate to this location. */
   servicesNote?: string;
+  /** Office email address for this location (owner-provided). */
+  email: string;
   /** Locality/region for structured data — city/region/country only. */
   addressLocality: string;
   addressRegion: string;
@@ -156,14 +159,14 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
   maboloka: {
     slug: "maboloka",
     name: "Maboloka",
-    area: "Maboloka, North West",
+    area: "Tambo, Maboloka",
     role: "Primary operating location",
     presence: "physical",
     metaTitle: "Mogen in Maboloka",
     metaDescription:
-      "Maboloka, North West is Mogen's primary operating location — web development, SEO, digital marketing and business documentation. Visits by appointment.",
+      "Mogen's primary operating location in Tambo, Maboloka — web development, SEO, digital marketing and business documentation. Visits by appointment.",
     intro:
-      "Maboloka, North West is Mogen's primary operating location. This is where Mogen's main technical and operational work is performed.",
+      "Tambo, Maboloka is Mogen's primary operating location. This is where Mogen's main technical and operational work is performed.",
     activities: [
       {
         title: "Web Development",
@@ -193,79 +196,81 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     ],
     servicesNote:
       "All four services are delivered from the primary Maboloka operation.",
+    email: "maboloka@mogen.co.za",
     addressLocality: "Maboloka",
     addressRegion: "North West",
   },
   soshanguve: {
     slug: "soshanguve",
     name: "Soshanguve",
-    area: "Soshanguve, Gauteng",
-    role: "Satellite office",
+    area: "Block-Y, Soshanguve",
+    role: "Office",
     presence: "physical",
     metaTitle: "Mogen in Soshanguve",
     metaDescription:
-      "Mogen's Soshanguve satellite office supports Business Documentation — typing, printing, related documentation work and client progress reviews. Visits by appointment.",
+      "Mogen's Soshanguve office in Block-Y offers web development, SEO, digital marketing and business documentation, serving Soshanguve and the surrounding areas. Visits by appointment.",
     intro:
-      "Soshanguve is a Mogen satellite office with an active Business Documentation presence. Web development, SEO and digital marketing are primarily performed from Maboloka.",
+      "Soshanguve is a full-service Mogen office based in Block-Y. Businesses in Soshanguve and the surrounding areas work directly with the local team — from first enquiry to final delivery.",
     activities: [
       {
-        title: "Content typing",
-        body: "Typing and preparation of business document content at the Soshanguve satellite office.",
+        title: "Web Development",
+        body: "Fast, mobile-first websites for Soshanguve businesses — designed, built and supported by the local team, structured so nearby customers can find services and send enquiries.",
       },
       {
-        title: "Printing",
-        body: "Print preparation and handling connected to Business Documentation projects.",
+        title: "SEO Services",
+        body: "Search visibility work for Soshanguve businesses, from on-page foundations and Google Business Profile setup to ongoing optimisation that compounds over time.",
       },
       {
-        title: "Related documentation work",
-        body: "Supporting documentation tasks — formatting, structuring and related project work.",
+        title: "Digital Marketing",
+        body: "Content, social and campaign work that puts Soshanguve businesses in front of the right people — planned with the local team and reported in plain language.",
       },
       {
-        title: "Client progress reviews",
-        body: "Clients can review the progress of their Business Documentation projects at the satellite office.",
+        title: "Business Documentation",
+        body: "Typing, formatting, printing and preparation of professional business documents — policies, procedures, forms and templates — handled at the Soshanguve office.",
       },
     ],
     services: [
+      { name: "Web Development", href: "/services/web-development" },
+      { name: "SEO", href: "/services/seo" },
+      { name: "Digital Marketing", href: "/services/digital-marketing" },
       {
         name: "Business Documentation",
         href: "/services/business-documentation",
       },
-      { name: "Web Development", href: "/services/web-development" },
-      { name: "SEO", href: "/services/seo" },
-      { name: "Digital Marketing", href: "/services/digital-marketing" },
     ],
     servicesNote:
-      "Business Documentation is supported at the Soshanguve satellite office, with technical and design assistance from Mogen. Web development, SEO and digital marketing are primarily performed from Maboloka.",
+      "All four services are delivered by the Soshanguve team, serving Soshanguve and the surrounding areas.",
+    email: "soshanguve@mogen.co.za",
     addressLocality: "Soshanguve",
     addressRegion: "Gauteng",
   },
   centurion: {
     slug: "centurion",
     name: "Centurion",
-    area: "Centurion, Gauteng",
-    role: "Area served — remote delivery",
-    presence: "served",
-    metaTitle: "Web Development & SEO for Businesses in Centurion",
+    area: "Monavoni, Centurion",
+    role: "Office",
+    presence: "physical",
+    metaTitle: "Mogen in Centurion",
     metaDescription:
-      "Websites, SEO, digital marketing and business documentation for businesses in Centurion — delivered remotely from Mogen's Maboloka operation. No Centurion office; enquiries via the contact page.",
+      "Mogen's Centurion office in Monavoni offers web development, SEO, digital marketing and business documentation, serving Centurion and the surrounding areas. Visits by appointment.",
     intro:
-      "Mogen serves businesses in Centurion remotely from its Maboloka primary operating location. There is no Mogen office in Centurion — scoping, delivery and support happen online, by email and by phone.",
+      "Mogen's Centurion office in Monavoni services Centurion and the surrounding areas across all four services — web development, SEO, digital marketing and business documentation — so local businesses work directly with people nearby, from first enquiry to final delivery.",
     activities: [
       {
-        title: "Websites for Centurion businesses",
-        body: "Fast, mobile-first websites for service businesses, contractors, practices and retailers in Centurion — structured so nearby customers can find services, view offerings and send an enquiry. Designed and built remotely from Maboloka.",
+        title: "Web Development",
+        body: "Fast, mobile-first websites for Centurion businesses — service providers, contractors, practices and retailers — designed, built and supported by the Centurion team and structured to turn nearby searches into enquiries.",
       },
       {
-        title: "Local search foundations",
-        body: "On-page structure, Google Business Profile guidance and service-area content that help a Centurion business appear for nearby searches. Ongoing ranking work is scoped through the SEO service.",
+        title: "SEO Services",
+        body: "Search visibility for Centurion businesses, from on-page foundations and Google Business Profile setup to ongoing optimisation that compounds over time.",
       },
       {
-        title: "Content and campaigns",
-        body: "Practical content, social and campaign support that puts a Centurion business in front of the right audience — planned remotely and reported in plain language.",
+        title: "Digital Marketing",
+        body: "Content, social and campaign work that puts Centurion businesses in front of the right audience — planned with the local team and reported in plain language.",
       },
       {
-        title: "Business documentation",
-        body: "Policies, procedures, forms and templates for Centurion businesses that need clear, consistent paperwork — drafted, formatted and delivered as print-ready and editable files.",
+        title: "Business Documentation",
+        body: "Professional business documents for Centurion businesses — policies, procedures, forms and templates — drafted, formatted and delivered as print-ready and editable files.",
       },
     ],
     services: [
@@ -278,7 +283,8 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
       },
     ],
     servicesNote:
-      "All four services are available to Centurion businesses via remote delivery from the Maboloka operation. Start with the relevant service page or the contact page.",
+      "All four services are delivered by the Centurion team, serving Centurion and the surrounding areas.",
+    email: "centurion@mogen.co.za",
     addressLocality: "Centurion",
     addressRegion: "Gauteng",
   },
