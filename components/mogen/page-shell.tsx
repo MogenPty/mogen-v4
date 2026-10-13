@@ -13,6 +13,16 @@ interface Props {
   intro?: string;
   children: ReactNode;
   /**
+   * Page service context (service pages pass their slug — always wins).
+   * Omitted on generic pages (site-wide Web Development default).
+   */
+  serviceSlug?: string;
+  /**
+   * Fallback service identity for pages without a service context.
+   * Defaults to Web Development (the site-wide default).
+   */
+  defaultServiceSlug?: string;
+  /**
    * Authoritative featured promotion (promotions routes behave like the
    * homepage). Omitted everywhere else — no promotion applies.
    */
@@ -27,12 +37,19 @@ export default function PageShell({
   title,
   intro,
   children,
+  serviceSlug,
+  defaultServiceSlug,
   featuredPromotion,
   attribution,
 }: Readonly<Props>) {
   return (
     <div className="bg-bone">
-      <Nav />
+      <Nav
+        serviceSlug={serviceSlug}
+        defaultServiceSlug={defaultServiceSlug}
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
       <main>
         <BlueprintGrid className="bg-bone pt-32 pb-16 lg:pt-40 lg:pb-20">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -47,9 +64,15 @@ export default function PageShell({
         </BlueprintGrid>
         {children}
       </main>
-      <Footer />
+      <Footer
+        serviceSlug={serviceSlug}
+        defaultServiceSlug={defaultServiceSlug}
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
       <ConversionBar
-        defaultServiceSlug="web-development"
+        serviceSlug={serviceSlug}
+        defaultServiceSlug={defaultServiceSlug}
         attribution={attribution}
         featuredPromotion={featuredPromotion}
       />

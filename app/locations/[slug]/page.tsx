@@ -89,8 +89,9 @@ function LocationJsonLd({ slug }: Readonly<{ slug: string }>) {
 
 export default async function LocationPage({ params }: Readonly<Props>) {
   const { slug } = await params;
-  // Only Maboloka and Soshanguve exist as physical locations — any other
-  // slug returns the project 404 (with 404 status) rather than a 200 panel.
+  // Detail pages exist only for slugs in LOCATION_DETAILS (physical
+  // locations plus the Centurion served-area page) — any other slug
+  // returns the project 404 (with 404 status) rather than a 200 panel.
   if (!getLocationDetail(slug)) notFound();
 
   return (

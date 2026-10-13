@@ -258,7 +258,11 @@ export default async function PromotionDetailPage({
   return (
     <div className="bg-bone">
       <PromotionJsonLd promo={promo} />
-      <Nav />
+      <Nav
+        defaultServiceSlug="web-development"
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
       <main>
         {/* HERO */}
         <section className="relative overflow-hidden bg-bone pt-32 pb-16 lg:pt-40">
@@ -507,7 +511,11 @@ export default async function PromotionDetailPage({
           </div>
         </BlueprintGrid>
       </main>
-      <Footer />
+      <Footer
+        defaultServiceSlug="web-development"
+        attribution={attribution}
+        featuredPromotion={featuredPromotion}
+      />
       <ConversionBar
         defaultServiceSlug="web-development"
         attribution={attribution}

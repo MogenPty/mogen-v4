@@ -2,7 +2,10 @@
 
 import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
+import type { Promotion } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
+import { useConversionCta } from "@/lib/conversion/use-conversion-cta";
+import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { useAnchorHref } from "@/lib/use-anchor-href";
 
 interface ColumnLink {
@@ -21,10 +24,12 @@ const COLS: Column[] = [
     title: "Agency",
     links: [
       { label: "Services", href: "/#services" },
+      { label: "Pricing", href: "/pricing" },
       { label: "Growth Audit", href: "/services/seo#audit" },
       { label: "Promotions", href: "/promotions" },
       { label: "Our Work", href: "/#work" },
       { label: "Articles", href: "/articles" },
+      { label: "FAQ", href: "/faq" },
       { label: "Contact", href: "/contact" },
     ],
   },
@@ -63,6 +68,7 @@ const LOCATIONS_COL: Column = {
     { label: "All locations", href: "/locations" },
     { label: "Maboloka", href: "/locations/maboloka" },
     { label: "Soshanguve", href: "/locations/soshanguve" },
+    { label: "Centurion", href: "/locations/centurion" },
   ],
 };
 
@@ -78,8 +84,43 @@ const ECOSYSTEM_COL: Column = {
   ],
 };
 
-export default function Footer() {
+export default function Footer({
+  serviceSlug,
+  defaultServiceSlug,
+  attribution,
+  featuredPromotion,
+}: Readonly<{
+  /**
+   * Page service context (service pages pass their slug — always wins).
+   * Omitted on the homepage and generic pages.
+   */
+  serviceSlug?: string;
+  /**
+   * Fallback service identity for pages without a service context.
+   * Defaults to Web Development (the site-wide default).
+   */
+  defaultServiceSlug?: string;
+  /** UTM attribution forwarded into enquiry destinations. */
+  attribution?: EnquiryAttribution;
+  /**
+   * Authoritative featured promotion from `getFeaturedPromotion()`,
+   * passed explicitly by the homepage and the promotions routes only.
+   * `undefined`/`null` means no promotion applies here.
+   */
+  featuredPromotion?: Promotion | null;
+}> = {}) {
   const anchorHref = useAnchorHref();
+
+  // Footer CTA shares its resolution with the header CTA and the
+  // Conversion Bar via useConversionCta — identical inputs on a page
+  // resolve to the identical destination and service, so every page
+  // carries one shared conversion destination.
+  const cta = useConversionCta({
+    serviceSlug,
+    defaultServiceSlug,
+    attribution,
+    featuredPromotion,
+  });
 
   return (
     <footer className="bg-bone text-foreground">
@@ -213,10 +254,11 @@ export default function Footer() {
               Terms
             </a>
             <Link
-              href={anchorHref("/services/seo#audit")}
+              href={cta.href}
               className="small-caps text-catalyst"
+              aria-label={cta.ariaLabel}
             >
-              Get Audit →
+              {cta.label}
             </Link>
           </div>
         </div>

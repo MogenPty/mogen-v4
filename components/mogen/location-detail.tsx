@@ -39,7 +39,10 @@ export default function LocationDetail({
   }
 
   const otherSlugs = LOCATION_SLUGS.filter((s) => s !== location.slug);
-  const other = otherSlugs.length > 0 ? getLocationDetail(otherSlugs[0]) : undefined;
+  const others = otherSlugs
+    .map((s) => getLocationDetail(s))
+    .filter((l): l is NonNullable<typeof l> => Boolean(l));
+  const isServedArea = location.presence === "served";
 
   return (
     <PageShell
@@ -128,7 +131,7 @@ export default function LocationDetail({
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <SectionLabel
             index={`// ${formatNumber(numbering + 3)} — Visiting`}
-            title="By appointment"
+            title={isServedArea ? "Remote delivery" : "By appointment"}
           />
           <div className="grid grid-cols-1 gap-px bg-ink/10 lg:grid-cols-2">
             <div className="bg-bone p-8 lg:p-12">
@@ -138,14 +141,35 @@ export default function LocationDetail({
                 aria-hidden="true"
               />
               <h2 className="mt-6 font-display text-4xl font-black leading-[1.05] text-ink lg:text-5xl text-balance">
-                Visits are
-                <br />
-                <span className="text-catalyst">by appointment.</span>
+                {isServedArea ? (
+                  <>
+                    Served
+                    <br />
+                    <span className="text-catalyst">remotely.</span>
+                  </>
+                ) : (
+                  <>
+                    Visits are
+                    <br />
+                    <span className="text-catalyst">by appointment.</span>
+                  </>
+                )}
               </h2>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-ink/70">
-                To visit Mogen in {location.name}, arrange an appointment
-                first — use the contact page, email or phone below and Mogen
-                will confirm a time.
+                {isServedArea ? (
+                  <>
+                    Mogen has no office in {location.name} — work for{" "}
+                    {location.name} businesses is delivered remotely from the
+                    Maboloka operation. Use the contact page, email or phone
+                    below and Mogen will confirm scope and next steps.
+                  </>
+                ) : (
+                  <>
+                    To visit Mogen in {location.name}, arrange an appointment
+                    first — use the contact page, email or phone below and Mogen
+                    will confirm a time.
+                  </>
+                )}
               </p>
               <div className="mt-8">
                 <MagneticButton as="a" href="/contact" variant="catalyst">
@@ -206,15 +230,24 @@ export default function LocationDetail({
               </ul>
             </div>
           </div>
-          {other && (
+          {others.length > 0 && (
             <p className="mt-10 text-sm text-ink/60">
               Also see{" "}
-              <Link
-                href={`/locations/${other.slug}`}
-                className="small-caps text-ink hover:text-catalyst"
-              >
-                Mogen in {other.name} — {other.role.toLowerCase()} →
-              </Link>
+              {others.map((o, i) => (
+                <span key={o.slug}>
+                  {i > 0 && (
+                    <span className="mx-2" aria-hidden="true">
+                      ·
+                    </span>
+                  )}
+                  <Link
+                    href={`/locations/${o.slug}`}
+                    className="small-caps text-ink hover:text-catalyst"
+                  >
+                    Mogen in {o.name} — {o.role.toLowerCase()} →
+                  </Link>
+                </span>
+              ))}
               <span className="mx-2" aria-hidden="true">
                 ·
               </span>

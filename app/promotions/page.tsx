@@ -45,6 +45,7 @@ export default async function PromotionsIndexPage({
         </>
       }
       intro="Limited Mogen offers with clear pricing, eligibility and terms. Expired promotions stay listed for reference — what you see is what was offered."
+      defaultServiceSlug="web-development"
       featuredPromotion={featuredPromotion}
       attribution={attribution}
     >

@@ -11,7 +11,7 @@ export const metadata: Metadata = pageMetadata({
   path: "/locations",
   title: "Locations",
   description:
-    "Mogen's service areas — Maboloka (primary operating location) and Soshanguve (satellite office), serving Brits, Pretoria, Gauteng and beyond.",
+    "Mogen's service areas — Maboloka (primary operating location) and Soshanguve (satellite office), serving Centurion, Brits, Pretoria, Gauteng and beyond.",
 });
 
 // Directory content changes rarely; hourly regeneration keeps the sitemap,
@@ -37,7 +37,7 @@ export default function LocationsIndex() {
           Service areas<span className="text-catalyst">.</span>
         </>
       }
-      intro="Mogen is associated with Maboloka and supports businesses across the surrounding communities, greater Gauteng and beyond where remote delivery fits."
+      intro="Mogen is associated with Maboloka and supports businesses across the surrounding communities, Centurion, greater Gauteng and beyond where remote delivery fits."
     >
       <BlueprintGrid className="bg-secondary py-24 lg:py-32">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">

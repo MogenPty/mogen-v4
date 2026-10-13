@@ -56,7 +56,11 @@ export default async function Home({
   return (
     <div className="bg-bone">
       <JsonLd />
-      <Nav />
+      <Nav
+        defaultServiceSlug="web-development"
+        attribution={attribution}
+        featuredPromotion={promotion}
+      />
       <main>
         <Hero />
         <WhatMogenDoes numbering={numbering++} />
@@ -85,7 +89,11 @@ export default async function Home({
         <LocationsPreview numbering={numbering++} />
         <FinalCTA numbering={numbering++} auditHref="/services/seo#audit" />
       </main>
-      <Footer />
+      <Footer
+        defaultServiceSlug="web-development"
+        attribution={attribution}
+        featuredPromotion={promotion}
+      />
       <ConversionBar
         defaultServiceSlug="web-development"
         attribution={attribution}

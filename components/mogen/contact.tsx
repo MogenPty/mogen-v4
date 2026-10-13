@@ -42,7 +42,7 @@ export default function Contact({
 }: Readonly<Props>) {
   return (
     <div className="bg-bone">
-      <Nav />
+      <Nav defaultServiceSlug="web-development" />
       <main>
         <BlueprintGrid className="bg-bone pt-32 pb-20 lg:pt-40 lg:pb-28">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -145,8 +145,8 @@ export default function Contact({
           </div>
         </BlueprintGrid>
       </main>
-      <Footer />
-      <ConversionBar />
+      <Footer defaultServiceSlug="web-development" />
+      <ConversionBar defaultServiceSlug="web-development" />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { getPackage } from "@/data/packages";
 import {
   getEffectiveStatus,
   isFallbackFeaturingEnabled,
@@ -11,44 +10,48 @@ import {
   type ConversionBarSettings,
 } from "@/data/services";
 import {
-  buildEnquiryHref,
+  withAttribution,
   type EnquiryAttribution,
 } from "@/lib/enquiry/enquiry";
 import { WEBSITE_ASSESSMENT_ANCHOR } from "@/lib/web-requirements/questionnaire";
 
 /**
- * Phase 3 conversion-journey selection for `ConversionBar`.
+ * Phase 3 conversion-journey selection for the site chrome CTAs
+ * (header, Conversion Bar, footer — one shared destination per page).
  *
- * CTA copy and destination bases live in `data/services.ts`
- * (`Service.conversionBar`, read via `getConversionBarSettings()` — no
- * `auditHref` prop, no duplicated labels); this module holds only the
- * selection rules and destination building.
+ * CTA copy lives in `data/services.ts` (`Service.conversionBar`, read via
+ * `getConversionBarSettings()`); this module holds only the selection
+ * rules and destination building.
  *
  * Selection rules (stable since Phase 2):
  *
  * - A service page always uses its own service's settings. A valid
  *   featured promotion whose `relatedService` matches the page service
- *   contributes its `?promotion=` context to the enquiry href; a
- *   mismatched promotion is ignored (it never forces another service's
- *   CTA onto the page).
+ *   changes nothing about the destination (the page journey wins);
+ *   a mismatched promotion is ignored (it never forces another
+ *   service's CTA onto the page).
  * - The homepage and the promotions routes (the only callers that pass a
  *   featured promotion without a page service) use the promotion's
  *   service settings when the promotion is valid.
  * - Everywhere else the site-wide default applies: Web Development.
  *
- * Destinations (Phase 3):
+ * Destinations (discovery CTAs target the service's conversion component):
  *
- * - `audit` journey → the settings `href` as-is (the GrowthAudit anchor
- *   on the SEO service page), collapsed to a same-page anchor (`#audit`)
- *   when the visitor is already on that page's route.
- * - `enquiry` journey with the Web Development service on the homepage
- *   (and no promotion override) → the embedded requirements
- *   questionnaire anchor (`#assessment`). Attribution already lives in
- *   the page URL, which the questionnaire carries into its submission.
- * - `enquiry` journey everywhere else → the settings `href` base with
- *   service context, or with `?promotion=` context when a valid
- *   promotion is carried (package and service are resolved centrally by
- *   the Contact layer — never invented here).
+ * - Every service owns one conversion component on its own page:
+ *   Web Development → the requirements questionnaire (`#assessment`),
+ *   SEO → the growth audit (`#audit`), Digital Marketing and Business
+ *   Documentation → the quote form (`#quote`).
+ * - Same-page targets collapse to a bare anchor (`#assessment` on the
+ *   homepage and on `/services/web-development`; `#audit` on
+ *   `/services/seo`; `#quote` on its service page).
+ * - Cross-page targets link to the component on its service page
+ *   (`/services/web-development#assessment`, …) carrying only UTM
+ *   attribution — never business context.
+ * - Discovery CTAs never carry `?promotion=` / `?package=` / `?service=`.
+ *   Decision CTAs ("Claim" buttons, package quote buttons, the
+ *   questionnaire submission itself) carry decision context to `/contact`
+ *   (or `POST /api/contact`) via `buildEnquiryHref` — that flow is owned
+ *   by the claim components, never by this module.
  *
  * Promotion handling uses the existing authoritative selector
  * (`getFeaturedPromotion()`, resolved server-side at the call site and
@@ -72,9 +75,10 @@ export interface ConversionSelection {
   /** Effective service slug. */
   effectiveServiceSlug: string;
   /**
-   * Valid featured promotion slug to carry as `?promotion=` context.
-   * Set when the promotion selected the effective service (homepage /
-   * promotions routes) or when it matches the page service.
+   * Valid featured promotion slug that selected the effective service
+   * (homepage / promotions routes) or matched the page service.
+   * Discovery destinations never carry it — decision ("Claim") CTAs do,
+   * via `buildEnquiryHref` in the claim components.
    */
   promotionSlug?: string;
   /** True when the featured promotion selected the effective service. */
@@ -204,14 +208,11 @@ export interface BuildConversionCtaInput {
   selection: ConversionSelection;
   attribution?: EnquiryAttribution;
   /**
-   * Package context to preserve (only when it belongs to the effective
-   * service — never inferred from a promotion).
-   */
-  packageSlug?: string;
-  /**
-   * Current pathname, used to collapse an audit anchor to a same-page
-   * anchor when the visitor is already on the audit's route (e.g.
-   * `/services/seo#audit` → `#audit` on the SEO service page).
+   * Current pathname, used to collapse a component target to a same-page
+   * anchor when the visitor is already where the component lives (e.g.
+   * `/services/web-development#assessment` → `#assessment` on the Web
+   * Development service page; `#assessment` on the homepage, which also
+   * embeds the questionnaire).
    */
   pathname?: string;
 }
@@ -222,9 +223,29 @@ export interface ConversionCta {
   ariaLabel: string;
   href: string;
   effectiveServiceSlug: string;
+  /** Always undefined for discovery CTAs (see ConversionSelection). */
   promotionSlug?: string;
   overridden: boolean;
 }
+
+/**
+ * Each service's conversion component: the questionnaire for Web
+ * Development, the growth audit for SEO, the quote form for Digital
+ * Marketing and Business Documentation. Chrome CTAs (header, bar,
+ * footer) target these — one shared destination per page.
+ */
+const SERVICE_COMPONENT: Record<string, { page: string; anchor: string }> = {
+  "web-development": {
+    page: "/services/web-development",
+    anchor: WEBSITE_ASSESSMENT_ANCHOR,
+  },
+  seo: { page: "/services/seo", anchor: "audit" },
+  "digital-marketing": { page: "/services/digital-marketing", anchor: "quote" },
+  "business-documentation": {
+    page: "/services/business-documentation",
+    anchor: "quote",
+  },
+};
 
 /**
  * Collapse a `path#hash` audit href to its bare `#hash` anchor when the
@@ -244,8 +265,11 @@ function collapseToSamePageAnchor(
 }
 
 /**
- * Build the CTA from resolved settings. Labels and destination bases
- * come from `data/services.ts` — never hardcoded here.
+ * Build the CTA from resolved settings. Labels come from
+ * `data/services.ts` — never hardcoded here. Destinations target the
+ * effective service's conversion component: a bare anchor when the
+ * component lives on the current page, otherwise the component's
+ * service-page URL carrying only UTM attribution.
  */
 export function buildConversionCta(
   input: BuildConversionCtaInput,
@@ -268,62 +292,28 @@ export function buildConversionCta(
     };
   }
 
-  // Homepage Web Development journey without a promotion override leads
-  // into the embedded requirements questionnaire (same page, no new
-  // route). Attribution already lives in the page URL, which the
-  // questionnaire carries into its submission.
-  if (
-    selection.effectiveServiceSlug === DEFAULT_CONVERSION_SERVICE_SLUG &&
-    !selection.promotionSlug &&
-    input.pathname === "/"
-  ) {
-    return {
-      kind: selection.kind,
-      label: selection.settings.label,
-      ariaLabel: selection.settings.ariaLabel,
-      href: `#${WEBSITE_ASSESSMENT_ANCHOR}`,
-      effectiveServiceSlug: selection.effectiveServiceSlug,
-      promotionSlug: undefined,
-      overridden: selection.overridden,
-    };
-  }
-
-  const base = selection.settings.href;
-  if (selection.promotionSlug) {
-    return {
-      kind: selection.kind,
-      label: selection.settings.label,
-      ariaLabel: selection.settings.ariaLabel,
-      href: buildEnquiryHref({
-        base,
-        promotion: selection.promotionSlug,
-        attribution,
-      }),
-      effectiveServiceSlug: selection.effectiveServiceSlug,
-      promotionSlug: selection.promotionSlug,
-      overridden: selection.overridden,
-    };
-  }
-
-  const pkg = cleanSlug(input.packageSlug);
-  const resolved = pkg ? getPackage(pkg) : undefined;
-  const validPackage =
-    resolved && resolved.serviceSlug === selection.effectiveServiceSlug
-      ? resolved.id
-      : undefined;
+  const component =
+    SERVICE_COMPONENT[selection.effectiveServiceSlug] ??
+    SERVICE_COMPONENT[DEFAULT_CONVERSION_SERVICE_SLUG];
+  const target = `${component.page}#${component.anchor}`;
+  // The questionnaire also lives on the homepage, so homepage visitors
+  // stay on the page even though its canonical home is the Web
+  // Development service page.
+  const samePage =
+    input.pathname === component.page ||
+    (input.pathname === "/" &&
+      component.anchor === WEBSITE_ASSESSMENT_ANCHOR);
+  const href = samePage
+    ? `#${component.anchor}`
+    : withAttribution(target, attribution);
   return {
     kind: selection.kind,
     label: selection.settings.label,
     ariaLabel: selection.settings.ariaLabel,
-    href: buildEnquiryHref({
-      base,
-      service: selection.effectiveServiceSlug,
-      package: validPackage,
-      attribution,
-    }),
+    href,
     effectiveServiceSlug: selection.effectiveServiceSlug,
     promotionSlug: undefined,
-    overridden: false,
+    overridden: selection.overridden,
   };
 }
 
@@ -338,7 +328,6 @@ export function resolveConversion(
   return buildConversionCta({
     selection,
     attribution: input.attribution,
-    packageSlug: input.packageSlug,
     pathname: input.pathname,
   });
 }
