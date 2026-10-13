@@ -33,11 +33,22 @@ const GRID_SERVICES = GRID_ORDER.map((slug) => {
 interface Props {
   numbering?: number;
   auditHref?: string;
+  /**
+   * Homepage (Phase 3) overrides the CTA tile with the website-assessment
+   * journey. Defaults keep the Growth Audit tile, which now lives on the
+   * SEO service page.
+   */
+  ctaTitle?: string;
+  ctaBody?: string;
+  ctaLabel?: string;
 }
 
 export default function Services({
   numbering = 1,
-  auditHref = "/#audit",
+  auditHref = "/services/seo#audit",
+  ctaTitle = "Not sure where to start?",
+  ctaBody = "Start with a free Growth Audit — a practical review of your current visibility and a clear next step.",
+  ctaLabel = "Get Free Audit",
 }: Readonly<Props>) {
   const blankCount = getBlankCount(GRID_SERVICES.length);
   const gridRef = useEqualHeight<HTMLDivElement>([GRID_SERVICES.length], {
@@ -95,20 +106,15 @@ export default function Services({
 
           {/* CTA tile */}
           <article className="flex flex-col justify-between bg-ink p-8 text-bone cta">
-            <h3 className="font-display text-2xl font-black">
-              Not sure where to start?
-            </h3>
-            <p className="mt-3 text-sm text-bone/70">
-              Start with a free Growth Audit — a practical review of your
-              current visibility and a clear next step.
-            </p>
+            <h3 className="font-display text-2xl font-black">{ctaTitle}</h3>
+            <p className="mt-3 text-sm text-bone/70">{ctaBody}</p>
             <MagneticButton
               as="a"
               href={auditHref}
               variant="catalyst"
               className="mt-8 hover:bg-secondary hover:text-secondary-foreground"
             >
-              Get Free Audit
+              {ctaLabel}
             </MagneticButton>
           </article>
         </div>

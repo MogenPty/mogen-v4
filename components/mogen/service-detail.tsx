@@ -7,6 +7,7 @@ import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ContactForm from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
+import GrowthAudit from "@/components/mogen/growth-audit";
 import MagneticButton from "@/components/mogen/magnet-button";
 import Nav from "@/components/mogen/nav";
 import ServiceFAQ from "@/components/mogen/service-faq";
@@ -222,6 +223,12 @@ export default function ServiceDetail({
             </div>
           </BlueprintGrid>
         )}
+
+        {/* GROWTH AUDIT — SEO service only, immediately after Add-Ons.
+            Phase 3 relocation: the audit experience moved here from the
+            homepage. Scan, report, package selection, lead capture and
+            email delivery are unchanged. */}
+        {serviceSlug === "seo" && <GrowthAudit numbering={numbering++} />}
 
         {/* RELATED ARTICLES — published articles for this service, hidden when none */}
         {relatedArticles.length > 0 && (

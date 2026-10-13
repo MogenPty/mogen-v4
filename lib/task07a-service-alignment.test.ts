@@ -153,11 +153,13 @@ describe("task 7A — service consumers stay consistent", () => {
   it("lists nav and footer services in canonical order", () => {
     for (const file of ["components/mogen/nav.tsx", "components/mogen/footer.tsx"]) {
       const source = readSource(file);
+      // Exact hrefs (closing quote): the Growth Audit link targets
+      // `/services/seo#audit` and must not count as the SEO service link.
       const order = [
-        source.indexOf("/services/web-development"),
-        source.indexOf("/services/seo"),
-        source.indexOf("/services/digital-marketing"),
-        source.indexOf("/services/business-documentation"),
+        source.indexOf('"/services/web-development"'),
+        source.indexOf('"/services/seo"'),
+        source.indexOf('"/services/digital-marketing"'),
+        source.indexOf('"/services/business-documentation"'),
       ];
       expect(order.every((i) => i >= 0)).toBe(true);
       expect([...order].sort((a, b) => a - b)).toEqual(order);

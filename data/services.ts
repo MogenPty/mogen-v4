@@ -358,7 +358,7 @@ export const SERVICES: Service[] = [
       label: "Get Free Audit →",
       ariaLabel: "Get your free growth audit now",
       journey: "audit",
-      href: "/#audit",
+      href: "/services/seo#audit",
     },
   },
   {

@@ -67,11 +67,11 @@ export default function Hero() {
             </MagneticButton>
             <MagneticButton
               as="a"
-              href="#audit"
+              href="#assessment"
               variant="outline"
-              aria-label="Get your free Mogen Growth Audit"
+              aria-label="Answer five questions to find your website package"
             >
-              Free Growth Audit
+              Find Your Website Package
             </MagneticButton>
           </div>
         </div>

@@ -16,7 +16,7 @@ export default function ServicesIndexPage() {
     <div className="bg-bone">
       <Nav />
       <main>
-        <Services numbering={2} auditHref="/#audit" />
+        <Services numbering={2} auditHref="/services/seo#audit" />
       </main>
       <Footer />
       <ConversionBar />

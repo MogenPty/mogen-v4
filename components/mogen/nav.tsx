@@ -18,7 +18,7 @@ const SERVICES_SUB = [
 
 const NAV = [
   { label: "Services", href: "/#services", children: SERVICES_SUB },
-  { label: "Growth Audit", href: "/#audit" },
+  { label: "Growth Audit", href: "/services/seo#audit" },
   { label: "Promotions", href: "/promotions" },
   { label: "Work", href: "/#work" },
   { label: "Articles", href: "/articles" },
@@ -136,7 +136,7 @@ export default function Nav() {
           <ThemeToggle />
           <MagneticButton
             as="a"
-            href={anchorHref("/#audit")}
+            href={anchorHref("/services/seo#audit")}
             variant="catalyst"
             aria-label="Get a free growth audit"
           >
@@ -225,7 +225,7 @@ export default function Nav() {
             </a>
             <MagneticButton
               as="a"
-              href={anchorHref("/#audit")}
+              href={anchorHref("/services/seo#audit")}
               variant="catalyst"
               className="mt-4 w-full"
               onClick={() => setOpen(false)}

@@ -14,16 +14,17 @@ import {
   buildEnquiryHref,
   type EnquiryAttribution,
 } from "@/lib/enquiry/enquiry";
+import { WEBSITE_ASSESSMENT_ANCHOR } from "@/lib/web-requirements/questionnaire";
 
 /**
- * Phase 2 conversion-journey selection for `ConversionBar`.
+ * Phase 3 conversion-journey selection for `ConversionBar`.
  *
  * CTA copy and destination bases live in `data/services.ts`
  * (`Service.conversionBar`, read via `getConversionBarSettings()` — no
  * `auditHref` prop, no duplicated labels); this module holds only the
  * selection rules and destination building.
  *
- * Selection rules (stable — Phase 3 must not rewrite these):
+ * Selection rules (stable since Phase 2):
  *
  * - A service page always uses its own service's settings. A valid
  *   featured promotion whose `relatedService` matches the page service
@@ -35,15 +36,19 @@ import {
  *   service settings when the promotion is valid.
  * - Everywhere else the site-wide default applies: Web Development.
  *
- * Destinations (temporary — Phase 3 replaces the Web Development
- * destination with the requirements questionnaire):
+ * Destinations (Phase 3):
  *
- * - `audit` journey → the settings `href` as-is (existing GrowthAudit
- *   anchor), collapsed to a same-page anchor on the homepage.
- * - `enquiry` journey → the settings `href` base with service context,
- *   or with `?promotion=` context when a valid promotion is carried
- *   (package and service are resolved centrally by the Contact layer —
- *   never invented here).
+ * - `audit` journey → the settings `href` as-is (the GrowthAudit anchor
+ *   on the SEO service page), collapsed to a same-page anchor (`#audit`)
+ *   when the visitor is already on that page's route.
+ * - `enquiry` journey with the Web Development service on the homepage
+ *   (and no promotion override) → the embedded requirements
+ *   questionnaire anchor (`#assessment`). Attribution already lives in
+ *   the page URL, which the questionnaire carries into its submission.
+ * - `enquiry` journey everywhere else → the settings `href` base with
+ *   service context, or with `?promotion=` context when a valid
+ *   promotion is carried (package and service are resolved centrally by
+ *   the Contact layer — never invented here).
  *
  * Promotion handling uses the existing authoritative selector
  * (`getFeaturedPromotion()`, resolved server-side at the call site and
@@ -204,8 +209,9 @@ export interface BuildConversionCtaInput {
    */
   packageSlug?: string;
   /**
-   * Current pathname, used to collapse a cross-route audit anchor
-   * (`/#audit`) to a same-page anchor (`#audit`) on the homepage.
+   * Current pathname, used to collapse an audit anchor to a same-page
+   * anchor when the visitor is already on the audit's route (e.g.
+   * `/services/seo#audit` → `#audit` on the SEO service page).
    */
   pathname?: string;
 }
@@ -221,6 +227,23 @@ export interface ConversionCta {
 }
 
 /**
+ * Collapse a `path#hash` audit href to its bare `#hash` anchor when the
+ * visitor is already on that path. Cross-route hrefs are returned as-is
+ * so they still navigate to the audit's page (e.g. the homepage SEO
+ * promotion override links to `/services/seo#audit`).
+ */
+function collapseToSamePageAnchor(
+  href: string,
+  pathname?: string,
+): string {
+  const hashIndex = href.indexOf("#");
+  if (hashIndex < 0 || !pathname) return href;
+  const hrefPath = href.slice(0, hashIndex) || "/";
+  if (hrefPath === pathname) return href.slice(hashIndex);
+  return href;
+}
+
+/**
  * Build the CTA from resolved settings. Labels and destination bases
  * come from `data/services.ts` — never hardcoded here.
  */
@@ -231,15 +254,34 @@ export function buildConversionCta(
   const attribution = input.attribution;
 
   if (selection.settings.journey === "audit") {
-    const href =
-      input.pathname === "/" && selection.settings.href.startsWith("/#")
-        ? selection.settings.href.slice(1)
-        : selection.settings.href;
     return {
       kind: selection.kind,
       label: selection.settings.label,
       ariaLabel: selection.settings.ariaLabel,
-      href,
+      href: collapseToSamePageAnchor(
+        selection.settings.href,
+        input.pathname,
+      ),
+      effectiveServiceSlug: selection.effectiveServiceSlug,
+      promotionSlug: undefined,
+      overridden: selection.overridden,
+    };
+  }
+
+  // Homepage Web Development journey without a promotion override leads
+  // into the embedded requirements questionnaire (same page, no new
+  // route). Attribution already lives in the page URL, which the
+  // questionnaire carries into its submission.
+  if (
+    selection.effectiveServiceSlug === DEFAULT_CONVERSION_SERVICE_SLUG &&
+    !selection.promotionSlug &&
+    input.pathname === "/"
+  ) {
+    return {
+      kind: selection.kind,
+      label: selection.settings.label,
+      ariaLabel: selection.settings.ariaLabel,
+      href: `#${WEBSITE_ASSESSMENT_ANCHOR}`,
       effectiveServiceSlug: selection.effectiveServiceSlug,
       promotionSlug: undefined,
       overridden: selection.overridden,

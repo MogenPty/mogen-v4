@@ -21,7 +21,7 @@ const COLS: Column[] = [
     title: "Agency",
     links: [
       { label: "Services", href: "/#services" },
-      { label: "Growth Audit", href: "/#audit" },
+      { label: "Growth Audit", href: "/services/seo#audit" },
       { label: "Promotions", href: "/promotions" },
       { label: "Our Work", href: "/#work" },
       { label: "Articles", href: "/articles" },
@@ -213,7 +213,7 @@ export default function Footer() {
               Terms
             </a>
             <Link
-              href={anchorHref("/#audit")}
+              href={anchorHref("/services/seo#audit")}
               className="small-caps text-catalyst"
             >
               Get Audit →

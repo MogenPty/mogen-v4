@@ -172,7 +172,7 @@ export default function About() {
       <WhatMogenDoes numbering={2} />
 
       {/* 03 — What Mogen does (reused service grid, About numbering) */}
-      <Services numbering={3} auditHref="/#audit" />
+      <Services numbering={3} auditHref="/services/seo#audit" />
       <div className="bg-bone pb-4">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <Link
@@ -305,7 +305,7 @@ export default function About() {
       <LocationsPreview numbering={7} />
 
       {/* 08 — Next step */}
-      <FinalCTA numbering={8} auditHref="/#audit" />
+      <FinalCTA numbering={8} auditHref="/services/seo#audit" />
     </PageShell>
   );
 }
