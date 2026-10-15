@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import Link from "next/link";
-import { LOCATIONS } from "@/data/locations";
+import { LOCATION_DETAILS, LOCATIONS } from "@/data/locations";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
@@ -10,9 +10,11 @@ interface Props {
 }
 
 export default function LocationsPreview({ numbering = 1 }: Readonly<Props>) {
-  const locationData = LOCATIONS.toSorted((a, b) => a.order - b.order);
+  const locationData = LOCATIONS.filter(
+    (loc) => loc.presence === "physical",
+  ).toSorted((a, b) => a.order - b.order);
   return (
-    <BlueprintGrid id="locations" className="bg-secondary py-24 lg:py-32">
+    <BlueprintGrid id={"locations"} className="bg-secondary py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
         <SectionLabel
           index={`// ${formatNumber(numbering)} — Locations`}
@@ -44,8 +46,11 @@ export default function LocationsPreview({ numbering = 1 }: Readonly<Props>) {
               <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">
                 {loc.description}
               </p>
+              <p className="mt-6 flex flex-wrap text-sm text-ink/70 leading-relaxed italic">
+                Serving: {LOCATION_DETAILS[loc.slug].areaServed.join(", ")}
+              </p>
               <div className="mt-4 flex flex-wrap gap-1.5">
-                {loc.services.slice(0, 2).map((s) => (
+                {loc.services.map((s) => (
                   <span
                     key={s}
                     className="small-caps border border-ink/10 px-2 py-1 text-ink/60"
@@ -53,11 +58,6 @@ export default function LocationsPreview({ numbering = 1 }: Readonly<Props>) {
                     {s}
                   </span>
                 ))}
-                {loc.services.length > 2 && (
-                  <span className="small-caps border border-ink/10 px-2 py-1 text-ink/60">
-                    +{loc.services.length - 2}
-                  </span>
-                )}
               </div>
               <Link
                 href={loc.href}

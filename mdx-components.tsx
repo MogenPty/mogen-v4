@@ -1,4 +1,5 @@
 import type { MDXComponents } from "mdx/types";
+import Link from "next/link";
 import ArticleImage, { MdxImg } from "./components/mogen/article-image";
 
 /**
@@ -32,6 +33,34 @@ const components: MDXComponents = {
       {children}
     </blockquote>
   ),
+  a: ({ href = "", children, ...props }) => {
+    const isExternal = /^https?:\/\//.test(href) || /^http?:\/\//.test(href);
+
+    if (isExternal) {
+      const link = new URL(href);
+      link.searchParams.append("utm_source", "mogen");
+      link.searchParams.append("utm_medium", "organic");
+      link.searchParams.append("utm_campaign", "news");
+      link.searchParams.append("utm_content", "article");
+
+      return (
+        <a
+          href={link.toString()}
+          target="_blank"
+          rel="noopener noreferrer"
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    }
+
+    return (
+      <Link href={href} {...props}>
+        {children}
+      </Link>
+    );
+  },
 };
 
 export function useMDXComponents(): MDXComponents {

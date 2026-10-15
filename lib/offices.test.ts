@@ -21,9 +21,7 @@ describe("offices — three physical offices", () => {
     for (const slug of ["maboloka", "soshanguve", "centurion"]) {
       expect(getLocationDetail(slug)?.presence).toBe("physical");
     }
-    expect(getLocationDetail("maboloka")?.role).toBe(
-      "Primary operating location",
-    );
+    expect(getLocationDetail("maboloka")?.role).toBe("Head Office");
     expect(getLocationDetail("soshanguve")?.role).toBe("Office");
     expect(getLocationDetail("centurion")?.role).toBe("Office");
     // Soshanguve is reinstated — no satellite wording remains.

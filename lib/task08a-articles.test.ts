@@ -10,7 +10,9 @@ function readSource(relativePath: string): string {
 describe("task 8A — /blog migrates to /articles", () => {
   it("provides /articles listing and detail routes", () => {
     expect(readSource("app/articles/page.tsx")).toContain('path: "/articles"');
-    expect(readSource("app/articles/page.tsx")).toContain('title: "Articles"');
+    expect(readSource("app/articles/page.tsx")).toContain(
+      "Articles, news and practical growth advice",
+    );
     expect(readSource("app/articles/[slug]/page.tsx")).toContain(
       "generateMetadata",
     );

@@ -36,9 +36,9 @@ function LocationJsonLd({ slug }: Readonly<{ slug: string }>) {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Place",
+        "@type": "LocalBusiness",
         "@id": `${pageUrl}#place`,
-        name: `Mogen in ${location.name}`,
+        name: `Mogen ${location.name} - ${location.role}`,
         description: location.metaDescription,
         url: pageUrl,
         address: {
@@ -46,6 +46,12 @@ function LocationJsonLd({ slug }: Readonly<{ slug: string }>) {
           addressLocality: location.addressLocality,
           addressRegion: location.addressRegion,
           addressCountry: siteConfig.address.addressCountry,
+        },
+        parentOrganization: {
+          "@type": "ProfessionalService",
+          "@id": organizationId,
+          name: siteConfig.name,
+          url: siteConfig.url,
         },
       },
       {

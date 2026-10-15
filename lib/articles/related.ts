@@ -27,44 +27,12 @@ export const RELATED_ARTICLES_MAX = 3;
  * Lowercase keyword fragments mapping article tags/category text to a
  * service. Checked against each tag and the category. Deliberately
  * conservative: only well-established associations, never business claims.
+ * Lives in ./service-keywords.json so non-TypeScript tooling (e.g. the
+ * articles:link script) shares the exact same table without duplication.
  */
-const SERVICE_KEYWORDS: Record<string, string[]> = {
-  "web-development": [
-    "web development",
-    "web site",
-    "website",
-    "landing page",
-    "web performance",
-    "web design",
-    "brits",
-    "madibeng",
-  ],
-  seo: [
-    "seo",
-    "local seo",
-    "google business profile",
-    "google search",
-    "search console",
-    "keyword research",
-    "core web vitals",
-    "map pack",
-  ],
-  "digital-marketing": [
-    "digital marketing",
-    "conversion",
-    "lead",
-    "campaign",
-    "social media",
-    "content marketing",
-  ],
-  "business-documentation": [
-    "business documentation",
-    "policy",
-    "procedure",
-    "sop",
-    "compliance document",
-  ],
-};
+import serviceKeywordsJson from "./service-keywords.json";
+
+const SERVICE_KEYWORDS: Record<string, string[]> = serviceKeywordsJson;
 
 function haystackFor(article: ArticleSummary): string[] {
   return [

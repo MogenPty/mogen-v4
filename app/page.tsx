@@ -8,7 +8,6 @@ import Hero from "@/components/mogen/hero";
 import JsonLd from "@/components/mogen/json-ld";
 import LocationsPreview from "@/components/mogen/locations-preview";
 import Nav from "@/components/mogen/nav";
-import Portfolio from "@/components/mogen/portfolio";
 import Promotion from "@/components/mogen/promotion";
 import Services from "@/components/mogen/services";
 import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
@@ -84,7 +83,7 @@ export default async function Home({
             promotion={promotion}
           />
         )}
-        <Portfolio numbering={numbering++} />
+        {/* <Portfolio numbering={numbering++} /> */}
         <ArticlesPreview numbering={numbering++} />
         <LocationsPreview numbering={numbering++} />
         <FinalCTA numbering={numbering++} auditHref="/services/seo#audit" />

@@ -1,19 +1,19 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import matter from "gray-matter";
+import generatedEntries from "./generated-index.json";
+import { isAllowedArticleImageSrc } from "./image-policy";
+import { isArticlePublished } from "./publication";
 import {
   ARTICLE_IMAGE_PREFIX,
   ARTICLE_SERVICE_SLUGS,
   ARTICLES_DIR_NAME,
-  DEFAULT_ARTICLE_AUTHOR,
-  DEFAULT_ARTICLE_CATEGORY,
   type ArticleFrontmatter,
   type ArticleMeta,
   type ArticleSummary,
+  DEFAULT_ARTICLE_AUTHOR,
+  DEFAULT_ARTICLE_CATEGORY,
 } from "./types";
-import { isAllowedArticleImageSrc } from "./image-policy";
-import { isArticlePublished } from "./publication";
-import generatedEntries from "./generated-index.json";
 
 export {
   ARTICLE_IMAGE_PREFIX,
@@ -97,7 +97,7 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
   const title = data!.title;
   const slug = data!.slug;
   const description = data!.description;
-  const publishedAt = normalizeFrontmatterDate(data!.publishedAt);
+  const publishedAt = normalizeFrontmatterDate(data!.publishedAt ?? data!.date);
 
   if (typeof title !== "string" || title.trim().length === 0) {
     errors.push("Missing required frontmatter: title");
@@ -124,8 +124,8 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
     );
   }
 
-  const updatedAt = normalizeFrontmatterDate(data!.updatedAt);
-  if (data!.updatedAt !== undefined) {
+  const updatedAt = normalizeFrontmatterDate(data!.updatedAt ?? data!.update);
+  if (data!.updatedAt !== undefined || data!.update !== undefined) {
     if (typeof updatedAt !== "string" || !isValidDateString(updatedAt)) {
       errors.push('Invalid frontmatter: updatedAt (expected "YYYY-MM-DD")');
     }
@@ -176,8 +176,7 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
           .replace(/^-|-$/g, ""),
       );
       const unknown = normalised.filter(
-        (s) =>
-          !(ARTICLE_SERVICE_SLUGS as readonly string[]).includes(s),
+        (s) => !(ARTICLE_SERVICE_SLUGS as readonly string[]).includes(s),
       );
       if (unknown.length > 0) {
         errors.push(
@@ -375,7 +374,9 @@ export function loadArticles(options?: LoadArticlesOptions): ParsedArticle[] {
 }
 
 /** Listing metadata only — never loads full MDX bodies into cards. */
-export function getAllArticles(options?: LoadArticlesOptions): ArticleSummary[] {
+export function getAllArticles(
+  options?: LoadArticlesOptions,
+): ArticleSummary[] {
   return loadArticles(options).map((a) => a.summary);
 }
 

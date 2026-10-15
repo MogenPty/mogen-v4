@@ -57,6 +57,7 @@ export interface ArticleMeta extends ArticleFrontmatter {
 export interface ArticleSummary extends ArticleMeta {
   /** Reading helpers for the legacy listing shape. */
   date: string;
+  update?: string;
   excerpt: string;
 }
 

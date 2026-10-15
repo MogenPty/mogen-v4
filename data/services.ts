@@ -60,6 +60,7 @@ interface Service {
     Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
   >;
   tagline: string;
+  metaTitle: string;
   intro: string;
   deliverables?: string[];
   process?: Process[];
@@ -74,6 +75,7 @@ export const SERVICES: Service[] = [
   {
     slug: "web-development",
     name: "Web Development",
+    metaTitle: "Web Development & Web Design for South African Businesses",
     action: "build",
     icon: Code2,
     tagline: "Custom websites engineered to convert visitors into customers.",
@@ -219,6 +221,8 @@ export const SERVICES: Service[] = [
   {
     slug: "seo",
     name: "SEO",
+    metaTitle:
+      "Local SEO, Google Business Profile & Search Engine Optimisation",
     action: "rank",
     icon: Search,
     tagline:
@@ -364,6 +368,7 @@ export const SERVICES: Service[] = [
   {
     slug: "digital-marketing",
     name: "Digital Marketing",
+    metaTitle: "Digital Marketing Services for South African Businesses",
     action: "manage",
     icon: Megaphone,
     tagline:
@@ -504,6 +509,7 @@ export const SERVICES: Service[] = [
   {
     slug: "business-documentation",
     name: "Business Documentation",
+    metaTitle: "Business Documentation Services for South African Businesses",
     action: "prepare",
     icon: FileText,
     tagline:
@@ -556,7 +562,7 @@ export const SERVICES: Service[] = [
           "2 revisions",
           "Print-ready PDF",
           "Editable source file",
-          "3–5 day delivery",
+          "3-5 day delivery",
         ],
       },
       {

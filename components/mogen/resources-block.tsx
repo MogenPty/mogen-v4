@@ -74,7 +74,7 @@ export default function ResourcesBlock({ numbering = 1 }: Readonly<Props>) {
       //   });
       setSaving(false);
       setDone(true);
-    } catch (err) {
+    } catch {
       setSaving(false);
       setError(
         "Something went wrong. Please try again or email info@mogen.co.za.",

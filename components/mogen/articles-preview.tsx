@@ -16,7 +16,7 @@ export default function ArticlesPreview({ numbering = 1 }: Readonly<Props>) {
   const preview = sortPostsByDateDesc(getPosts()).slice(0, 3);
 
   return (
-    <BlueprintGrid id="articles" className="bg-bone py-24 lg:py-32">
+    <BlueprintGrid id={"articles"} className="bg-bone py-24 lg:py-32">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
         <SectionLabel
           index={`// ${formatNumber(numbering)} — Insights`}
@@ -54,7 +54,8 @@ export default function ArticlesPreview({ numbering = 1 }: Readonly<Props>) {
                 </span>
               </div>
               <span className="mt-6 inline-flex items-center gap-2 text-sm small-caps group-hover:text-catalyst">
-                Read article <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                Read article{" "}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
           ))}

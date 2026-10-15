@@ -162,11 +162,26 @@ describe("related articles — canonical loader behaviour", () => {
     ).toEqual([]);
   });
 
+  it("shows business-documentation articles now that sector coverage exists", () => {
+    // Business-documentation articles have been added (and more sectors
+    // are coming), so the service page renders a related section.
+    const related = getRelatedArticlesForService("business-documentation", {
+      nowMs: FAR_FUTURE,
+    });
+    expect(related.length).toBeGreaterThan(0);
+    expect(related.length).toBeLessThanOrEqual(3);
+    expect(new Set(related.map((a) => a.slug)).size).toBe(related.length);
+    for (const article of related) {
+      expect(articleServices(article)).toContain("business-documentation");
+      expect(article.draft).not.toBe(true);
+    }
+  });
+
   it("hides the section when no relevant articles exist", () => {
-    // No current article maps to Business Documentation, so the service
-    // page renders no related section rather than an empty placeholder.
+    // Unknown services map to nothing, so the service page renders no
+    // related section rather than an empty placeholder or filler.
     expect(
-      getRelatedArticlesForService("business-documentation", {
+      getRelatedArticlesForService("nonexistent-service", {
         nowMs: FAR_FUTURE,
       }),
     ).toEqual([]);

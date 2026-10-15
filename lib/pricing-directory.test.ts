@@ -42,7 +42,7 @@ describe("pricing — directory stays a navigator (no duplicated tables)", () =>
     const page = readSource("app/pricing/page.tsx");
     expect(page).toContain('path: "/pricing"');
     expect(page).toContain("pageMetadata");
-    expect(page).toContain('title: "Pricing"');
+    expect(page).toContain("Affordable Web Development");
     expect(page).toContain('href="/faq"');
   });
 

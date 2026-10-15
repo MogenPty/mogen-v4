@@ -73,7 +73,9 @@ describe("tags — archives use the canonical published list", () => {
     expect(archives.size).toBeGreaterThan(0);
     const webDev = archives.get("web-development");
     expect(webDev).toBeDefined();
-    expect(webDev?.label).toBe("Web Development");
+    // Tag convention: lowercase labels in frontmatter; the archive page
+    // renders them quoted (Articles tagged "<label>").
+    expect(webDev?.label).toBe("web development");
     for (const article of webDev?.articles ?? []) {
       expect(article.tags.map(slugifyTag)).toContain("web-development");
       expect(isArticlePublished(article)).toBe(true);

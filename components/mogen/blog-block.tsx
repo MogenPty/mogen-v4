@@ -2,84 +2,55 @@ import { ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import ArticleCard from "@/components/mogen/article-card";
 import {
-  ARTICLES_PAGE_SIZE,
   buildArticlesPageUrl,
   getArticles,
+  getArticlesPageSize,
   getLatestFeaturedPost,
-  getPageNumbers,
+  getPaginationControls,
   toArticleSummary,
 } from "@/data/blog";
+import { getPaginationSettings } from "@/lib/pagination/config";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 import PageShell from "./page-shell";
+import PaginationNav from "./pagination-nav";
 
 interface Props {
   numbering?: number;
   /** 1-based page for the normal listing. Clamped safely by the data layer. */
   page?: number;
+  /** Explicit size wins; otherwise the env-driven articles default. */
   pageSize?: number;
   /** Legitimate query params to preserve in pagination links (excluding `page`). */
   preservedParams?: Record<string, string | string[] | undefined>;
 }
 
-function PaginationLink({
-  page,
-  preservedParams,
-  label,
-  ariaLabel,
-  isCurrent,
-  isDisabled,
-}: Readonly<{
-  page: number;
-  preservedParams?: Record<string, string | string[] | undefined>;
-  label: React.ReactNode;
-  ariaLabel?: string;
-  isCurrent?: boolean;
-  isDisabled?: boolean;
-}>) {
-  const base =
-    "small-caps inline-flex min-h-11 min-w-11 items-center justify-center border px-4 py-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-catalyst";
-  if (isDisabled) {
-    return (
-      <span
-        aria-disabled="true"
-        className={`${base} cursor-not-allowed border-ink/10 text-ink/30`}
-      >
-        {label}
-      </span>
-    );
-  }
-  return (
-    <Link
-      href={buildArticlesPageUrl(page, preservedParams)}
-      aria-label={ariaLabel}
-      aria-current={isCurrent ? "page" : undefined}
-      className={`${base} ${
-        isCurrent
-          ? "border-ink bg-ink text-bone"
-          : "border-ink/15 text-ink/70 hover:border-ink hover:text-ink"
-      }`}
-    >
-      {label}
-    </Link>
-  );
-}
-
 export default function BlogBlock({
   numbering = 1,
   page = 1,
-  pageSize = ARTICLES_PAGE_SIZE,
+  pageSize,
   preservedParams,
 }: Readonly<Props>) {
   // Fresh reads every render so newly added articles appear immediately.
   const featured = getLatestFeaturedPost();
-  const result = getArticles({ page, pageSize });
+  const result = getArticles({
+    page,
+    pageSize: pageSize ?? getArticlesPageSize(),
+  });
   const showFeatured = result.currentPage === 1 && featured !== undefined;
-  const pageNumbers =
+  // Layout + boundary behaviour from env (`PAGINATION_STYLE`,
+  // `PAGINATION_ENDS`); resolved at render time so flips apply on the
+  // next regeneration without a redeploy.
+  const settings = getPaginationSettings();
+  const controls =
     result.totalPages > 1
-      ? getPageNumbers(result.currentPage, result.totalPages)
-      : [];
+      ? getPaginationControls(
+          result.currentPage,
+          result.totalPages,
+          settings.ends,
+        )
+      : null;
 
   return (
     <PageShell
@@ -154,46 +125,24 @@ export default function BlogBlock({
                 ))}
               </div>
 
-              {result.totalPages > 1 && (
-                <nav
-                  aria-label="Articles pagination"
-                  className="mt-12 flex flex-wrap items-center justify-center gap-2"
-                >
-                  <PaginationLink
-                    page={result.currentPage - 1}
-                    preservedParams={preservedParams}
-                    label="Previous"
-                    ariaLabel="Go to previous articles page"
-                    isDisabled={result.currentPage <= 1}
-                  />
-                  {pageNumbers.map((n, i) =>
-                    n === "…" ? (
-                      <span
-                        key={`ellipsis-${i}`}
-                        aria-hidden="true"
-                        className="small-caps px-1 text-ink/40"
-                      >
-                        …
-                      </span>
-                    ) : (
-                      <PaginationLink
-                        key={n}
-                        page={n}
-                        preservedParams={preservedParams}
-                        label={String(n)}
-                        ariaLabel={`Go to articles page ${n}`}
-                        isCurrent={n === result.currentPage}
-                      />
-                    ),
-                  )}
-                  <PaginationLink
-                    page={result.currentPage + 1}
-                    preservedParams={preservedParams}
-                    label="Next"
-                    ariaLabel="Go to next articles page"
-                    isDisabled={result.currentPage >= result.totalPages}
-                  />
-                </nav>
+              {controls && (
+                <PaginationNav
+                  currentPage={result.currentPage}
+                  totalPages={result.totalPages}
+                  controls={controls}
+                  layout={settings.style}
+                  navAriaLabel="Articles pagination"
+                  hrefForPage={(p) =>
+                    buildArticlesPageUrl(p, preservedParams)
+                  }
+                  labels={{
+                    first: "Go to first articles page",
+                    previous: "Go to previous articles page",
+                    next: "Go to next articles page",
+                    last: "Go to last articles page",
+                    page: (n) => `Go to articles page ${n}`,
+                  }}
+                />
               )}
             </>
           )}

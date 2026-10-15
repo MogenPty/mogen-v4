@@ -4,14 +4,16 @@ import { notFound } from "next/navigation";
 import ArticleCard from "@/components/mogen/article-card";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import PageShell from "@/components/mogen/page-shell";
+import PaginationNav from "@/components/mogen/pagination-nav";
 import {
-  ARTICLES_PAGE_SIZE,
   buildArticlesPageUrl,
-  getPageNumbers,
+  getArticlesPageSize,
+  getPaginationControls,
   parsePageParam,
 } from "@/data/blog";
 import { getAllArticles } from "@/lib/articles/loader";
 import { getTagArchives, tagArchivePath } from "@/lib/articles/tags";
+import { getPaginationSettings } from "@/lib/pagination/config";
 import { canonicalUrl, pageMetadata } from "@/lib/seo";
 
 interface Props {
@@ -82,16 +84,21 @@ export default async function TagArchivePage({ params, searchParams }: Props) {
   const query = await searchParams;
   const requestedPage = parsePageParam(firstParam(query.page));
   const totalItems = archive.articles.length;
-  const totalPages = Math.ceil(totalItems / ARTICLES_PAGE_SIZE);
+  const pageSize = getArticlesPageSize();
+  const totalPages = Math.ceil(totalItems / pageSize);
   const currentPage = Math.min(Math.max(1, requestedPage), totalPages);
   if (requestedPage !== currentPage) notFound();
   const basePath = tagArchivePath(slug);
   const items = archive.articles.slice(
-    (currentPage - 1) * ARTICLES_PAGE_SIZE,
-    currentPage * ARTICLES_PAGE_SIZE,
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
-  const pageNumbers =
-    totalPages > 1 ? getPageNumbers(currentPage, totalPages) : [];
+  const settings = getPaginationSettings();
+  const controls = getPaginationControls(
+    currentPage,
+    totalPages,
+    settings.ends,
+  );
 
   return (
     <PageShell
@@ -119,91 +126,26 @@ export default async function TagArchivePage({ params, searchParams }: Props) {
             ))}
           </div>
           {totalPages > 1 && (
-            <nav
-              aria-label={`Articles tagged ${archive.label} pagination`}
-              className="mt-12 flex flex-wrap items-center justify-center gap-2"
-            >
-              <TagPageLink
-                page={currentPage - 1}
-                basePath={basePath}
-                label="Previous"
-                ariaLabel="Go to previous tag page"
-                isDisabled={currentPage <= 1}
-              />
-              {pageNumbers.map((n, i) =>
-                n === "…" ? (
-                  <span
-                    key={`ellipsis-${i}`}
-                    aria-hidden="true"
-                    className="small-caps px-1 text-ink/40"
-                  >
-                    …
-                  </span>
-                ) : (
-                  <TagPageLink
-                    key={n}
-                    page={n}
-                    basePath={basePath}
-                    label={String(n)}
-                    ariaLabel={`Go to tag page ${n}`}
-                    isCurrent={n === currentPage}
-                  />
-                ),
-              )}
-              <TagPageLink
-                page={currentPage + 1}
-                basePath={basePath}
-                label="Next"
-                ariaLabel="Go to next tag page"
-                isDisabled={currentPage >= totalPages}
-              />
-            </nav>
+            <PaginationNav
+              currentPage={currentPage}
+              totalPages={totalPages}
+              controls={controls}
+              layout={settings.style}
+              navAriaLabel={`Articles tagged ${archive.label} pagination`}
+              hrefForPage={(p) =>
+                buildArticlesPageUrl(p, undefined, basePath)
+              }
+              labels={{
+                first: "Go to first tag page",
+                previous: "Go to previous tag page",
+                next: "Go to next tag page",
+                last: "Go to last tag page",
+                page: (n) => `Go to tag page ${n}`,
+              }}
+            />
           )}
         </div>
       </BlueprintGrid>
     </PageShell>
-  );
-}
-
-function TagPageLink({
-  page,
-  basePath,
-  label,
-  ariaLabel,
-  isCurrent,
-  isDisabled,
-}: Readonly<{
-  page: number;
-  basePath: string;
-  label: React.ReactNode;
-  ariaLabel?: string;
-  isCurrent?: boolean;
-  isDisabled?: boolean;
-}>) {
-  const base =
-    "small-caps inline-flex min-h-11 min-w-11 items-center justify-center border px-4 py-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-catalyst";
-  if (isDisabled) {
-    return (
-      <span
-        aria-disabled="true"
-        className={`${base} cursor-not-allowed border-ink/10 text-ink/30`}
-      >
-        {label}
-      </span>
-    );
-  }
-  return (
-    <Link
-      href={buildArticlesPageUrl(page, undefined, basePath)}
-      aria-label={ariaLabel}
-      aria-current={isCurrent ? "page" : undefined}
-      className={`${base} ${
-        isCurrent
-          ? "border-ink bg-ink text-bone"
-          : "border-ink/15 text-ink/70 hover:border-ink hover:text-ink"
-      }`}
-    >
-      {label}
-    </Link>
   );
 }

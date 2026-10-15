@@ -116,15 +116,21 @@ describe("task 8 — sitemap generation", () => {
 });
 
 describe("task 8 — title generation (no Mogen | Mogen)", () => {
-  it("uses short titles so the layout template cannot duplicate the brand", () => {
-    for (const [file, title] of [
-      ["app/services/page.tsx", '"Services"'],
-      ["app/promotions/page.tsx", '"Promotions"'],
-      ["app/pricing/page.tsx", '"Pricing"'],
-      ["app/articles/page.tsx", '"Articles"'],
+  it("uses descriptive titles without duplicating the brand", () => {
+    // Index pages carry descriptive SEO titles (work in progress); the
+    // root layout appends "| Mogen" via its template, so page sources
+    // must not repeat the brand suffix themselves.
+    for (const [file, snippet] of [
+      ["app/services/page.tsx", 'title: "Services"'],
+      ["app/promotions/page.tsx", 'title: "Current and past promotions"'],
+      ["app/pricing/page.tsx", '"Affordable Web Development'],
+      [
+        "app/articles/page.tsx",
+        '"Articles, news and practical growth advice',
+      ],
     ] as const) {
       const source = readSource(file);
-      expect(source).toContain(`title: ${title}`);
+      expect(source).toContain(snippet);
       expect(source).not.toContain("— Mogen");
       expect(source).not.toContain("| Mogen");
     }

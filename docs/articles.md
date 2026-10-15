@@ -107,17 +107,69 @@ services:
   lowercase, non-alphanumerics collapsed to `-`; original label kept for
   display). Labels colliding to one slug (e.g. `SEO` vs `seo`) share a
   single merged archive (see `lib/articles/tags.ts`).
-- Archives list only published articles, newest-first, 12 per page.
+- Archives list only published articles, newest-first, sharing the
+  env-driven articles page size (see Pagination below).
   Unknown tags and tags with no eligible articles 404. Single-article
   (thin) archives carry `noindex` with a canonical URL.
+
+## Entity linking (`pnpm articles:link`)
+
+Body links to locations, services and tag archives are maintained by
+`scripts/link-article-entities.mjs` — never by hand. After adding or
+editing articles, run:
+
+```sh
+pnpm articles:link   # link locations, services and tags (writes files)
+pnpm articles:sync   # regenerate the runtime index (content changed)
+```
+
+Rules (first plain-text occurrence each; existing links are never touched):
+
+- **Locations** — office place names (`Maboloka`, `Soshanguve`,
+  `Centurion`) link to `/locations/<slug>`. Place names never link to
+  tag archives.
+- **Services** — canonical service names link to `/services/<slug>`.
+  The `services:` frontmatter field is never touched (it drives the
+  related-articles sections on service pages). Dead service targets
+  (`digital-services`, `website-development`) are repaired to their
+  canonical slugs.
+- **Tags** — any known tag mentioned in the body links to
+  `/articles/tag/<slug>`. A missing tag is appended to frontmatter
+  (lowercase, quoted) so the article joins the archive it links to —
+  which also backfills old articles when new tags appear. Two guards
+  bound this: the **drift check** (a new tag must not change service
+  inference, keeping related sections stable) and the **tag budget**
+  (`ARTICLES_MAX_TAGS`, default 8 — script additions stop at the
+  limit; manually added tags beyond it stay untouched).
+- Protected spans are never link targets: existing links, fenced code,
+  inline code, HTML tags, headings, MDX imports/exports.
+
+`pnpm articles:link` is a dry-run report by default through direct
+`node` invocation; the pnpm command passes `--apply`. Variants:
+`--only=tags|services|locations|normalize|repair`,
+`--no-backfill` (link only, skip frontmatter writes),
+`--check` (exit 1 when links are pending).
 
 ## Pagination
 
 - `/articles` shows page 1; `?page=2`, `?page=3`, … show later pages.
-  Default page size is **12** (`ARTICLES_PAGE_SIZE` in `data/blog.ts`).
+  Page size is env-driven: `PAGINATION_ARTICLES_PAGE_SIZE` wins when set,
+  otherwise `PAGINATION_PAGE_SIZE`, otherwise **12** (see
+  `lib/pagination/config.ts`; `ARTICLES_PAGE_SIZE` in `data/blog.ts` is the
+  built-in fallback). Tag archives share the same size.
 - The featured article leads page 1 only and is excluded from the paginated
   grid (never duplicated). Page 1 is canonical at `/articles`; deeper pages
   carry their own canonicals and never enter the sitemap.
+- Both paginated listings (index + tag archives) render through the shared
+  `components/mogen/pagination-nav.tsx`, driven by
+  `getPaginationControls()` in `data/blog.ts`:
+  - `PAGINATION_STYLE` — `condensed` (default) centres every control in one
+    row; `justified` spreads (First, Previous) / numbers / (Next, Last)
+    across the full row width.
+  - `PAGINATION_ENDS` — `disabled` (default) always renders
+    First/Previous/Next/Last and disables the unreachable ones; `smart`
+    omits controls that would go nowhere instead. Either way First/Last
+    stay hidden under 3 pages (they would duplicate the visible 1/2).
 - Invalid values (`abc`, `0`, `-3`) normalise to page 1; a page number
   beyond the available range 404s predictably.
 

@@ -2,6 +2,7 @@ export interface Location {
   order: number;
   slug: string;
   name: string;
+  presence: "physical" | "served";
   region: string;
   description: string;
   services: string[];
@@ -14,6 +15,7 @@ export const LOCATIONS: Location[] = [
     slug: "maboloka",
     name: "Maboloka",
     region: "North West - Head Office",
+    presence: "physical",
     description:
       "Mogen is associated with Maboloka and serves businesses in the surrounding communities with practical digital services.",
     services: [
@@ -29,6 +31,7 @@ export const LOCATIONS: Location[] = [
     slug: "soshanguve",
     name: "Soshanguve",
     region: "Gauteng - Office",
+    presence: "physical",
     description:
       "Mogen's full-service Soshanguve office in Block-Y — websites, online visibility, marketing and documentation with a local team.",
     services: [
@@ -44,6 +47,7 @@ export const LOCATIONS: Location[] = [
     slug: "kgabalatsane",
     name: "Kgabalatsane",
     region: "North West - Gauteng Border",
+    presence: "served",
     description:
       "Lifting Kgabalatsane with online presence that boosts their local businesses to a new height.",
     services: ["Web Development", "SEO", "Digital Marketing"],
@@ -54,6 +58,7 @@ export const LOCATIONS: Location[] = [
     slug: "brits",
     name: "Brits",
     region: "North West",
+    presence: "served",
     description:
       "Websites, local SEO and digital marketing for businesses across Brits — from CBD to surrounding suburbs.",
     services: ["Web Development", "SEO", "Digital Marketing"],
@@ -64,6 +69,7 @@ export const LOCATIONS: Location[] = [
     slug: "pretoria",
     name: "Pretoria",
     region: "Gauteng",
+    presence: "served",
     description:
       "Websites, local SEO and digital marketing for businesses across Pretoria — from CBD to surrounding suburbs.",
     services: ["Web Development", "SEO", "Digital Marketing"],
@@ -74,6 +80,7 @@ export const LOCATIONS: Location[] = [
     slug: "centurion",
     name: "Centurion",
     region: "Gauteng - Office",
+    presence: "physical",
     description:
       "Mogen's Centurion office in Monavoni, serving Centurion and the surrounding areas on all four services.",
     services: [
@@ -89,6 +96,7 @@ export const LOCATIONS: Location[] = [
     slug: "north-west-gauteng-and-beyond",
     name: "North West, Gauteng & Beyond",
     region: "South Africa",
+    presence: "served",
     description:
       "While rooted in Maboloka and Soshanguve, Mogen works with businesses more broadly across South Africa where remote delivery is appropriate.",
     services: [
@@ -130,6 +138,7 @@ export interface LocationDetail {
   name: string;
   /** Short area label, e.g. "Maboloka, North West". No street invented. */
   area: string;
+  areaServed: string[];
   /** Location type/role, e.g. "Primary operating location". */
   role: string;
   /**
@@ -160,13 +169,22 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     slug: "maboloka",
     name: "Maboloka",
     area: "Tambo, Maboloka",
-    role: "Primary operating location",
+    areaServed: [
+      "Maboloka",
+      "Letlhabile",
+      "Kgabalatsane",
+      "Jericho",
+      "Brits",
+      "North West",
+    ],
+    role: "Head Office",
     presence: "physical",
-    metaTitle: "Mogen in Maboloka",
+    metaTitle:
+      "Web Development, SEO, Digital Services & Business Documentation in Maboloka",
     metaDescription:
       "Mogen's primary operating location in Tambo, Maboloka — web development, SEO, digital marketing and business documentation. Visits by appointment.",
     intro:
-      "Tambo, Maboloka is Mogen's primary operating location. This is where Mogen's main technical and operational work is performed.",
+      "Mogen's primary operating location in Tambo, Maboloka — web development, SEO, digital marketing and business documentation. Visits by appointment.",
     activities: [
       {
         title: "Web Development",
@@ -204,9 +222,11 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     slug: "soshanguve",
     name: "Soshanguve",
     area: "Block-Y, Soshanguve",
+    areaServed: ["Soshanguve", "Mabopane", "Ga-Rankuwa", "Hebron", "Pretoria"],
     role: "Office",
     presence: "physical",
-    metaTitle: "Mogen in Soshanguve",
+    metaTitle:
+      "Web Development, SEO, Digital Services & Business Documentation in Soshanguve",
     metaDescription:
       "Mogen's Soshanguve office in Block-Y offers web development, SEO, digital marketing and business documentation, serving Soshanguve and the surrounding areas. Visits by appointment.",
     intro:
@@ -248,9 +268,11 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     slug: "centurion",
     name: "Centurion",
     area: "Monavoni, Centurion",
+    areaServed: ["Centurion", "Pretoria", "Gauteng"],
     role: "Office",
     presence: "physical",
-    metaTitle: "Mogen in Centurion",
+    metaTitle:
+      "Web Development, SEO, Digital Services & Business Documentation in Centurion",
     metaDescription:
       "Mogen's Centurion office in Monavoni offers web development, SEO, digital marketing and business documentation, serving Centurion and the surrounding areas. Visits by appointment.",
     intro:

@@ -209,9 +209,18 @@ describe("articles listing — pagination URLs", () => {
     const listing = readSource("app/articles/page.tsx");
     expect(listing).toContain("searchParams");
     expect(listing).toContain("parsePageParam");
+    // Both paginated listings render through the shared component so
+    // layout (PAGINATION_STYLE) and boundary behaviour (PAGINATION_ENDS)
+    // can never diverge between sections.
     const block = readSource("components/mogen/blog-block.tsx");
+    expect(block).toContain("PaginationNav");
     expect(block).toContain("buildArticlesPageUrl");
-    expect(block).toContain('aria-label="Articles pagination"');
+    expect(block).toContain('navAriaLabel="Articles pagination"');
+    const tagPage = readSource("app/articles/tag/[tag]/page.tsx");
+    expect(tagPage).toContain("PaginationNav");
+    const nav = readSource("components/mogen/pagination-nav.tsx");
+    expect(nav).toContain('aria-label={navAriaLabel}');
+    expect(nav).toContain("justify-between");
   });
 });
 

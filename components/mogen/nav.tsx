@@ -4,8 +4,8 @@ import { ArrowUpRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Promotion } from "@/data/promotions";
-import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { useConversionCta } from "@/lib/conversion/use-conversion-cta";
+import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { useAnchorHref } from "@/lib/use-anchor-href";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -24,7 +24,7 @@ const NAV = [
   { label: "Pricing", href: "/pricing" },
   { label: "Growth Audit", href: "/services/seo#audit" },
   { label: "Promotions", href: "/promotions" },
-  { label: "Work", href: "/#work" },
+  // { label: "Work", href: "/#work" },
   { label: "Articles", href: "/articles" },
   { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
@@ -94,7 +94,7 @@ export default function Nav({
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open ]);
+  }, [open]);
 
   // Close the mobile menu when resizing up to desktop so it never
   // lingers open underneath the desktop navigation.
@@ -165,14 +165,14 @@ export default function Nav({
               </Link>
             ),
           )}
-          <Link
+          {/* <Link
             href="https://store.mogen.co.za"
             target="_blank"
             rel="noopener noreferrer"
             className="small-caps flex items-center gap-1 text-ink/70 transition-colors hover:text-catalyst"
           >
             Store <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-          </Link>
+          </Link> */}
         </div>
 
         <div className="hidden items-center gap-4 lg:flex">
@@ -225,7 +225,7 @@ export default function Nav({
 
       {open && (
         <div
-          id="mobile-menu"
+          id={"mobile-menu"}
           className="border-t border-ink/10 bg-bone/95 backdrop-blur-md lg:hidden"
         >
           <div className="flex flex-col px-6 py-4">

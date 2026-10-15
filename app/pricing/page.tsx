@@ -1,6 +1,6 @@
+import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -10,7 +10,8 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   path: "/pricing",
-  title: "Pricing",
+  title:
+    "Affordable Web Development, SEO, Digital Marketing & Business Documentation Pricing",
   description:
     "Mogen services and pricing — each service has its own three-tier pricing. View Web Development, SEO, Digital Marketing and Business Documentation pricing on their service pages.",
 });
@@ -22,7 +23,10 @@ export default function PricingDirectoryPage() {
       <main>
         <BlueprintGrid className="bg-bone pt-32 pb-16 lg:pt-40 lg:pb-20">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-            <SectionLabel index="// — Pricing" title="Mogen Services & Pricing" />
+            <SectionLabel
+              index="// — Pricing"
+              title="Mogen Services & Pricing"
+            />
             <div className="max-w-3xl">
               <h1 className="font-display text-5xl font-black leading-[1.02] text-ink lg:text-7xl text-balance">
                 Services &<br />
@@ -31,8 +35,8 @@ export default function PricingDirectoryPage() {
               <p className="mt-6 max-w-2xl text-lg text-ink/70">
                 Each service has its own three-tier pricing, detailed on its
                 authoritative service page. Select a service below to view its
-                current packages, add-ons and FAQs. No generic bundles — you
-                pay only for the service you need.
+                current packages, add-ons and FAQs. No generic bundles — you pay
+                only for the service you need.
               </p>
             </div>
           </div>
@@ -44,10 +48,7 @@ export default function PricingDirectoryPage() {
               {SERVICES.map((svc) => {
                 const Icon = svc.icon;
                 return (
-                  <div
-                    key={svc.slug}
-                    className="flex flex-col bg-bone p-8"
-                  >
+                  <div key={svc.slug} className="flex flex-col bg-bone p-8">
                     <div className="flex items-center gap-3">
                       <Icon
                         className="h-7 w-7 text-catalyst"
