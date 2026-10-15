@@ -141,7 +141,7 @@ describe("pagination — only published articles paginate", () => {
 
 describe("pagination — smart First/Previous/Next/Last visibility", () => {
   it("renders no controls for a single page", () => {
-    expect(getPaginationControls(1, 1)).toEqual({
+    expect(getPaginationControls(1, 1, "smart")).toEqual({
       pageNumbers: [],
       showFirst: false,
       showPrevious: false,
@@ -155,13 +155,13 @@ describe("pagination — smart First/Previous/Next/Last visibility", () => {
   });
 
   it("hides First/Last on 2 pages (they would duplicate 1/2)", () => {
-    const p1 = getPaginationControls(1, 2);
+    const p1 = getPaginationControls(1, 2, "smart");
     expect(p1.pageNumbers).toEqual([1, 2]);
     expect(p1.showPrevious).toBe(false);
     expect(p1.showNext).toBe(true);
     expect(p1.showFirst).toBe(false);
     expect(p1.showLast).toBe(false);
-    const p2 = getPaginationControls(2, 2);
+    const p2 = getPaginationControls(2, 2, "smart");
     expect(p2.showPrevious).toBe(true);
     expect(p2.showNext).toBe(false);
     expect(p2.showFirst).toBe(false);
@@ -169,7 +169,7 @@ describe("pagination — smart First/Previous/Next/Last visibility", () => {
   });
 
   it("shows every control mid-range on 5 pages", () => {
-    const mid = getPaginationControls(3, 5);
+    const mid = getPaginationControls(3, 5, "smart");
     expect(mid.pageNumbers).toEqual([1, 2, 3, 4, 5]);
     expect(mid).toMatchObject({
       showFirst: true,
@@ -180,13 +180,13 @@ describe("pagination — smart First/Previous/Next/Last visibility", () => {
   });
 
   it("hides First/Previous on page 1 and Next/Last on the final page", () => {
-    const first = getPaginationControls(1, 10);
+    const first = getPaginationControls(1, 10, "smart");
     expect(first.pageNumbers).toEqual([1, 2, "…", 9, 10]);
     expect(first.showFirst).toBe(false);
     expect(first.showPrevious).toBe(false);
     expect(first.showNext).toBe(true);
     expect(first.showLast).toBe(true);
-    const last = getPaginationControls(10, 10);
+    const last = getPaginationControls(10, 10, "smart");
     expect(last.showFirst).toBe(true);
     expect(last.showPrevious).toBe(true);
     expect(last.showNext).toBe(false);
@@ -194,7 +194,7 @@ describe("pagination — smart First/Previous/Next/Last visibility", () => {
   });
 
   it("keeps the prev/current/next window mid-range on many pages", () => {
-    const mid = getPaginationControls(5, 10);
+    const mid = getPaginationControls(5, 10, "smart");
     expect(mid.pageNumbers).toEqual([1, 2, "…", 4, 5, 6, "…", 9, 10]);
     expect(mid).toMatchObject({
       showFirst: true,

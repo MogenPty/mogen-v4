@@ -33,6 +33,8 @@
  *   - services:  `data/services.ts`  (top-level SERVICES slug/name pairs)
  *   - locations: `data/locations.ts` (LOCATION_DETAILS slug/name pairs)
  *   - tags:      every article's own `tags:` frontmatter list
+ *   - keywords: `lib/articles/service-keywords.json` (shared with
+ *     lib/articles/related.ts; drives the drift check)
  *
  * Safety: dry-run by default; `--apply` writes. Every written file keeps its
  * exact line count, ignoring added frontmatter tag lines (blank-line loss
@@ -132,14 +134,14 @@ const SERVICE_REPAIRS = {
 // --- Service inference mirror ------------------------------------------------
 // Tags drive service inference (lib/articles/related.ts) when an article has
 // no explicit `services:` frontmatter. The keyword table is loaded from the
-// source of truth — never duplicated — so the drift check below cannot rot.
+// shared lib/articles/service-keywords.json — never duplicated, never eval'd.
 function loadServiceKeywords() {
-  const src = readRepo(path.join("lib", "articles", "related.ts"));
-  const m = src.match(
-    /const SERVICE_KEYWORDS: Record<string, string\[\]> = (\{[\s\S]*?\n\});/,
-  );
-  if (!m) throw new Error("link-article-entities: SERVICE_KEYWORDS not found");
-  return new Function(`return (${m[1]});`)();
+  const raw = readRepo(path.join("lib", "articles", "service-keywords.json"));
+  const parsed = JSON.parse(raw);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("link-article-entities: service-keywords.json invalid");
+  }
+  return parsed;
 }
 const SERVICE_KEYWORDS = loadServiceKeywords();
 

@@ -65,12 +65,13 @@ export function getPaginationSettings(
   env: Record<string, string | undefined> = process.env,
   section?: string,
 ): PaginationSettings {
+  const globalSize = parsePageSize(env.PAGINATION_PAGE_SIZE);
   const sectionKey =
     section !== undefined
       ? env[`PAGINATION_${section.trim().toUpperCase()}_PAGE_SIZE`]
       : undefined;
   return {
-    pageSize: parsePageSize(sectionKey ?? env.PAGINATION_PAGE_SIZE),
+    pageSize: parsePageSize(sectionKey, globalSize),
     style: parseStyle(env.PAGINATION_STYLE),
     ends: parseEnds(env.PAGINATION_ENDS),
   };

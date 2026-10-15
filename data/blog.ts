@@ -302,7 +302,7 @@ function emptyControls(): PaginationControls {
 export function getPaginationControls(
   current: number,
   total: number,
-  ends: PaginationEnds = "smart",
+  ends: PaginationEnds = "disabled",
 ): PaginationControls {
   if (total <= 1) return emptyControls();
   const safeCurrent = Math.min(Math.max(1, Math.floor(current) || 1), total);

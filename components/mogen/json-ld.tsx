@@ -4,6 +4,7 @@ import { siteConfig } from "@/data/site";
 const organizationId = `${siteConfig.url}/#organization`;
 const websiteId = `${siteConfig.url}/#website`;
 const webpageId = `${siteConfig.url}/#webpage`;
+const professionalServiceId = `${siteConfig.url}/#professional-service`;
 
 /**
  * Minimal, type-safe JSON-LD graph for the homepage.
@@ -21,7 +22,7 @@ export default function JsonLd() {
         legalName: siteConfig.legalName,
         url: siteConfig.url,
         logo: `${siteConfig.url}${siteConfig.logo}`,
-        image: `${siteConfig.url}/og-cover.jpg`,
+        image: `${siteConfig.url}${siteConfig.ogImage}`,
         description: siteConfig.description,
         email: siteConfig.email,
         telephone: siteConfig.telephone,
@@ -37,13 +38,15 @@ export default function JsonLd() {
       },
       {
         "@type": "ProfessionalService",
+        "@id": professionalServiceId,
         name: siteConfig.name,
         url: siteConfig.url,
         logo: `${siteConfig.url}${siteConfig.logo}`,
-        image: `${siteConfig.url}/og-cover.jpg`,
+        image: `${siteConfig.url}${siteConfig.ogImage}`,
         email: siteConfig.email,
         telephone: siteConfig.telephone,
         priceRange: siteConfig.priceRange,
+        parentOrganization: { "@id": organizationId },
         address: {
           "@type": "PostalAddress",
           addressLocality: siteConfig.address.addressLocality,

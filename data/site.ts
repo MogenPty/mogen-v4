@@ -55,23 +55,6 @@ export const siteConfig = {
     addressRegion: "North West",
     addressCountry: "ZA",
     // Descriptive areas served — not a street address
-    departments: [
-      {
-        name: "Maboloka",
-        type: "Head Office",
-        url: "https://www.mogen.co.za/locations/maboloka",
-      },
-      {
-        "@type": "ProfessionalService",
-        name: "Mogen Soshanguve — Office",
-        url: "https://www.mogen.co.za/locations/soshanguve",
-      },
-      {
-        "@type": "ProfessionalService",
-        name: "Mogen Centurion — Office",
-        url: "https://www.mogen.co.za/locations/centurion",
-      },
-    ],
     areaServed: [
       "Maboloka",
       "Brits",

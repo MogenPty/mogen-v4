@@ -125,7 +125,7 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
   }
 
   const updatedAt = normalizeFrontmatterDate(data!.updatedAt ?? data!.update);
-  if (data!.updatedAt !== undefined) {
+  if (data!.updatedAt !== undefined || data!.update !== undefined) {
     if (typeof updatedAt !== "string" || !isValidDateString(updatedAt)) {
       errors.push('Invalid frontmatter: updatedAt (expected "YYYY-MM-DD")');
     }

@@ -59,12 +59,12 @@ describe("pagination config — page size", () => {
     expect(
       getPaginationSettings(
         {
-          PAGINATION_PAGE_SIZE: "12",
+          PAGINATION_PAGE_SIZE: "6",
           PAGINATION_ARTICLES_PAGE_SIZE: "bogus",
         },
         "articles",
       ).pageSize,
-    ).toBe(12);
+    ).toBe(6);
   });
 });
 

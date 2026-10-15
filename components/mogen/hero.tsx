@@ -37,8 +37,11 @@ export default function Hero() {
           <h1 className="font-display text-[11vw] leading-[0.95] font-black tracking-tight text-ink lg:text-[5vw]">
             Expert
             <br />
-            <span className="text-catalyst" aria-live="polite">
+            <span className="text-catalyst" aria-hidden="true">
               {typed}
+            </span>
+            <span className="sr-only">
+              Web Development, SEO, Digital Marketing, Business Documentation
             </span>
             <span
               className="ml-1 inline-block h-[0.8em] w-[0.08em] translate-y-[0.05em] bg-ink animate-pulse"
