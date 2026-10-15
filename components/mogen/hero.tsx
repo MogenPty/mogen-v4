@@ -35,44 +35,49 @@ export default function Hero() {
           </div>
 
           <h1 className="font-display text-[11vw] leading-[0.95] font-black tracking-tight text-ink lg:text-[5vw]">
-            Digital services
+            Expert
             <br />
-            for businesses
-            <br />
-            <span className="text-catalyst">{typed}</span>
+            <span className="text-catalyst" aria-live="polite">
+              {typed}
+            </span>
             <span
               className="ml-1 inline-block h-[0.8em] w-[0.08em] translate-y-[0.05em] bg-ink animate-pulse"
               aria-hidden="true"
             />
+            <br />
+            in Maboloka, Soshanguve &amp; Centurion
             <span className="block text-[6vw] lg:text-[2.2vw] font-black text-ink/90 mt-2">
-              that are ready to grow.
+              that wins customers.
             </span>
           </h1>
 
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink/80">
             Mogen is a South African digital services business based in
-            Maboloka. We help businesses with practical services — websites,
-            online visibility, digital marketing and business documentation —
-            appropriate to their needs.
+            Maboloka, Soshanguve and Centurion. We help businesses with
+            practical services — websites, online visibility, digital marketing
+            and business documentation — appropriate to their needs.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <MagneticButton
               as="a"
-              href="#services"
-              variant="catalyst"
-              aria-label="Explore Mogen services"
-            >
-              Explore Services
-            </MagneticButton>
-            <MagneticButton
-              as="a"
               href="#assessment"
-              variant="outline"
+              variant="catalyst"
               aria-label="Answer five questions to find your website package"
             >
               Find Your Website Package
             </MagneticButton>
+            <MagneticButton
+              as="a"
+              href="#services"
+              variant="outline"
+              aria-label="Explore Mogen services"
+            >
+              Explore Services
+            </MagneticButton>
+            <p className="text-ink/70 italic">
+              Free assessment • Reply in 1 business day • No forced package
+            </p>
           </div>
         </div>
       </div>

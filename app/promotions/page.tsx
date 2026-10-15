@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import PageShell from "@/components/mogen/page-shell";
-import PromotionCard from "@/components/mogen/promotion-card";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
-import { getPublicPromotions, getFeaturedPromotion } from "@/data/promotions";
+import PageShell from "@/components/mogen/page-shell";
+import PromotionCard from "@/components/mogen/promotion-card";
+import { getFeaturedPromotion, getPublicPromotions } from "@/data/promotions";
 import {
   buildEnquiryHref,
   parseEnquiryAttribution,
@@ -13,7 +13,8 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   path: "/promotions",
-  title: "Promotions",
+  title:
+    "Current and past Mogen promotions with clear pricing, eligibility and terms",
   description:
     "Current and past Mogen promotions — limited offers on websites and managed subscriptions, with clear pricing, eligibility and terms.",
 });
@@ -79,10 +80,7 @@ export default async function PromotionsIndexPage({
             </MagneticButton>
             <MagneticButton
               as="a"
-              href={withAttribution(
-                "/services/web-development",
-                attribution,
-              )}
+              href={withAttribution("/services/web-development", attribution)}
               variant="outline"
               className="border-white/60 text-white hover:bg-white hover:text-ink dark:hover:text-black"
             >

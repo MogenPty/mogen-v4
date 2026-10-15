@@ -5,6 +5,8 @@ import sitemap from "@/app/sitemap";
 import {
   ARTICLES_PAGE_SIZE,
   getArticles,
+  getArticlesPageSize,
+  getPaginationControls,
   getPosts,
   parsePageParam,
   type Post,
@@ -67,6 +69,21 @@ describe("pagination — 12 per page default", () => {
     expect(new Set(slugs).size).toBe(25);
   });
 
+  it("takes the default page size from the environment", () => {
+    expect(getArticlesPageSize({})).toBe(12);
+    expect(
+      getArticlesPageSize({ PAGINATION_PAGE_SIZE: "6" }),
+    ).toBe(6);
+    expect(
+      getArticlesPageSize(
+        {
+          PAGINATION_PAGE_SIZE: "12",
+          PAGINATION_ARTICLES_PAGE_SIZE: "6",
+        },
+      ),
+    ).toBe(6);
+  });
+
   it("handles invalid page values safely at the data layer", () => {
     expect(parsePageParam(undefined)).toBe(1);
     expect(parsePageParam("abc")).toBe(1);
@@ -119,5 +136,132 @@ describe("pagination — only published articles paginate", () => {
       expect(entry.url).not.toContain("?page=");
       expect(entry.url).not.toContain("/articles/tag/");
     }
+  });
+});
+
+describe("pagination — smart First/Previous/Next/Last visibility", () => {
+  it("renders no controls for a single page", () => {
+    expect(getPaginationControls(1, 1)).toEqual({
+      pageNumbers: [],
+      showFirst: false,
+      showPrevious: false,
+      showNext: false,
+      showLast: false,
+      firstDisabled: false,
+      previousDisabled: false,
+      nextDisabled: false,
+      lastDisabled: false,
+    });
+  });
+
+  it("hides First/Last on 2 pages (they would duplicate 1/2)", () => {
+    const p1 = getPaginationControls(1, 2);
+    expect(p1.pageNumbers).toEqual([1, 2]);
+    expect(p1.showPrevious).toBe(false);
+    expect(p1.showNext).toBe(true);
+    expect(p1.showFirst).toBe(false);
+    expect(p1.showLast).toBe(false);
+    const p2 = getPaginationControls(2, 2);
+    expect(p2.showPrevious).toBe(true);
+    expect(p2.showNext).toBe(false);
+    expect(p2.showFirst).toBe(false);
+    expect(p2.showLast).toBe(false);
+  });
+
+  it("shows every control mid-range on 5 pages", () => {
+    const mid = getPaginationControls(3, 5);
+    expect(mid.pageNumbers).toEqual([1, 2, 3, 4, 5]);
+    expect(mid).toMatchObject({
+      showFirst: true,
+      showPrevious: true,
+      showNext: true,
+      showLast: true,
+    });
+  });
+
+  it("hides First/Previous on page 1 and Next/Last on the final page", () => {
+    const first = getPaginationControls(1, 10);
+    expect(first.pageNumbers).toEqual([1, 2, "…", 9, 10]);
+    expect(first.showFirst).toBe(false);
+    expect(first.showPrevious).toBe(false);
+    expect(first.showNext).toBe(true);
+    expect(first.showLast).toBe(true);
+    const last = getPaginationControls(10, 10);
+    expect(last.showFirst).toBe(true);
+    expect(last.showPrevious).toBe(true);
+    expect(last.showNext).toBe(false);
+    expect(last.showLast).toBe(false);
+  });
+
+  it("keeps the prev/current/next window mid-range on many pages", () => {
+    const mid = getPaginationControls(5, 10);
+    expect(mid.pageNumbers).toEqual([1, 2, "…", 4, 5, 6, "…", 9, 10]);
+    expect(mid).toMatchObject({
+      showFirst: true,
+      showPrevious: true,
+      showNext: true,
+      showLast: true,
+    });
+  });
+});
+
+describe("pagination — disabled boundary controls", () => {
+  it("renders every control but disables the unreachable ones on page 1", () => {
+    const first = getPaginationControls(1, 10, "disabled");
+    expect(first.pageNumbers).toEqual([1, 2, "…", 9, 10]);
+    expect(first).toMatchObject({
+      showFirst: true,
+      showPrevious: true,
+      showNext: true,
+      showLast: true,
+      firstDisabled: true,
+      previousDisabled: true,
+      nextDisabled: false,
+      lastDisabled: false,
+    });
+  });
+
+  it("disables Next/Last on the final page", () => {
+    const last = getPaginationControls(10, 10, "disabled");
+    expect(last).toMatchObject({
+      showFirst: true,
+      showPrevious: true,
+      showNext: true,
+      showLast: true,
+      firstDisabled: false,
+      previousDisabled: false,
+      nextDisabled: true,
+      lastDisabled: true,
+    });
+  });
+
+  it("enables everything mid-range and hides First/Last under 3 pages", () => {
+    const mid = getPaginationControls(5, 10, "disabled");
+    expect(mid).toMatchObject({
+      firstDisabled: false,
+      previousDisabled: false,
+      nextDisabled: false,
+      lastDisabled: false,
+    });
+    const twoPages = getPaginationControls(1, 2, "disabled");
+    expect(twoPages.showFirst).toBe(false);
+    expect(twoPages.showLast).toBe(false);
+    expect(twoPages.showPrevious).toBe(true);
+    expect(twoPages.showNext).toBe(true);
+    expect(twoPages.previousDisabled).toBe(true);
+  });
+
+  it("renders no controls for a single page", () => {
+    expect(getPaginationControls(1, 1, "disabled")).toEqual({
+      pageNumbers: [],
+      showFirst: false,
+      showPrevious: false,
+      showNext: false,
+      showLast: false,
+      firstDisabled: false,
+      previousDisabled: false,
+      nextDisabled: false,
+      lastDisabled: false,
+    });
   });
 });

@@ -1,4 +1,9 @@
+import { LOCATION_DETAILS, LOCATION_SLUGS } from "@/data/locations";
 import { siteConfig } from "@/data/site";
+
+const organizationId = `${siteConfig.url}/#organization`;
+const websiteId = `${siteConfig.url}/#website`;
+const webpageId = `${siteConfig.url}/#webpage`;
 
 /**
  * Minimal, type-safe JSON-LD graph for the homepage.
@@ -6,10 +11,6 @@ import { siteConfig } from "@/data/site";
  * Only includes verified properties — no fabricated business information.
  */
 export default function JsonLd() {
-  const organizationId = `${siteConfig.url}/#organization`;
-  const websiteId = `${siteConfig.url}/#website`;
-  const webpageId = `${siteConfig.url}/#webpage`;
-
   const graph = {
     "@context": "https://schema.org",
     "@graph": [
@@ -20,6 +21,7 @@ export default function JsonLd() {
         legalName: siteConfig.legalName,
         url: siteConfig.url,
         logo: `${siteConfig.url}${siteConfig.logo}`,
+        image: `${siteConfig.url}/og-cover.jpg`,
         description: siteConfig.description,
         email: siteConfig.email,
         telephone: siteConfig.telephone,
@@ -32,6 +34,42 @@ export default function JsonLd() {
         },
         // sameAs only when verified — intentionally empty if no repo-confirmed profile
         ...(siteConfig.sameAs.length > 0 ? { sameAs: siteConfig.sameAs } : {}),
+      },
+      {
+        "@type": "ProfessionalService",
+        name: siteConfig.name,
+        url: siteConfig.url,
+        logo: `${siteConfig.url}${siteConfig.logo}`,
+        image: `${siteConfig.url}/og-cover.jpg`,
+        email: siteConfig.email,
+        telephone: siteConfig.telephone,
+        priceRange: siteConfig.priceRange,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: siteConfig.address.addressLocality,
+          addressRegion: siteConfig.address.addressRegion,
+          addressCountry: siteConfig.address.addressCountry,
+        },
+        areaServed: [
+          ...siteConfig.address.areaServed.map((area) => ({
+            "@type": "City",
+            name: area,
+          })),
+        ],
+        sameAs: ["https://store.mogen.co.za", "https://seo.mogen.co.za"],
+        department: [
+          ...LOCATION_SLUGS.filter((slug) => {
+            const loc = LOCATION_DETAILS[slug];
+            return loc?.presence === "physical";
+          }).map((slug) => {
+            const loc = LOCATION_DETAILS[slug];
+            return {
+              "@type": "ProfessionalService",
+              name: `Mogen ${loc.name} — ${loc.role}`,
+              url: `${siteConfig.url}/locations/${loc.slug}`,
+            };
+          }),
+        ],
       },
       {
         "@type": "WebSite",
@@ -63,4 +101,59 @@ export default function JsonLd() {
       dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
     />
   );
+}
+
+interface Props {
+  organization?: boolean;
+  website?: boolean;
+}
+
+export function CustomJsonLd({ organization, website }: Readonly<Props>) {
+  const graph = {
+    "@context": "https://schema.org",
+    "@graph": [organization ? Organisation() : {}, website ? WebSite() : {}],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: No workaround for JSON-LD injection
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+    />
+  );
+}
+
+function Organisation() {
+  return {
+    "@type": "Organization",
+    "@id": organizationId,
+    name: siteConfig.name,
+    legalName: siteConfig.legalName,
+    url: siteConfig.url,
+    logo: `${siteConfig.url}${siteConfig.logo}`,
+    description: siteConfig.description,
+    email: siteConfig.email,
+    telephone: siteConfig.telephone,
+    // Minimal address — city/region/country only, no invented street
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: siteConfig.address.addressLocality,
+      addressRegion: siteConfig.address.addressRegion,
+      addressCountry: siteConfig.address.addressCountry,
+    },
+    // sameAs only when verified — intentionally empty if no repo-confirmed profile
+    ...(siteConfig.sameAs.length > 0 ? { sameAs: siteConfig.sameAs } : {}),
+  };
+}
+
+function WebSite() {
+  return {
+    "@type": "WebSite",
+    "@id": websiteId,
+    url: siteConfig.url,
+    name: siteConfig.name,
+    description: siteConfig.description,
+    publisher: { "@id": organizationId },
+    inLanguage: siteConfig.lang,
+  };
 }

@@ -219,6 +219,19 @@
       margin-bottom: 6px !important;
       font-weight: 600;
     }
+
+    & a {
+      @apply text-accent hover:text-accent-hover;
+    }
+  }
+
+  article > table {
+    & th,
+    & td {
+      padding: 0px 20px 0px 0px;
+      text-align: start;
+      vertical-align: top;
+    }
   }
 }
 

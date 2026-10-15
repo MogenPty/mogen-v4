@@ -107,17 +107,31 @@ services:
   lowercase, non-alphanumerics collapsed to `-`; original label kept for
   display). Labels colliding to one slug (e.g. `SEO` vs `seo`) share a
   single merged archive (see `lib/articles/tags.ts`).
-- Archives list only published articles, newest-first, 12 per page.
+- Archives list only published articles, newest-first, sharing the
+  env-driven articles page size (see Pagination below).
   Unknown tags and tags with no eligible articles 404. Single-article
   (thin) archives carry `noindex` with a canonical URL.
 
 ## Pagination
 
 - `/articles` shows page 1; `?page=2`, `?page=3`, … show later pages.
-  Default page size is **12** (`ARTICLES_PAGE_SIZE` in `data/blog.ts`).
+  Page size is env-driven: `PAGINATION_ARTICLES_PAGE_SIZE` wins when set,
+  otherwise `PAGINATION_PAGE_SIZE`, otherwise **12** (see
+  `lib/pagination/config.ts`; `ARTICLES_PAGE_SIZE` in `data/blog.ts` is the
+  built-in fallback). Tag archives share the same size.
 - The featured article leads page 1 only and is excluded from the paginated
   grid (never duplicated). Page 1 is canonical at `/articles`; deeper pages
   carry their own canonicals and never enter the sitemap.
+- Both paginated listings (index + tag archives) render through the shared
+  `components/mogen/pagination-nav.tsx`, driven by
+  `getPaginationControls()` in `data/blog.ts`:
+  - `PAGINATION_STYLE` — `condensed` (default) centres every control in one
+    row; `justified` spreads (First, Previous) / numbers / (Next, Last)
+    across the full row width.
+  - `PAGINATION_ENDS` — `disabled` (default) always renders
+    First/Previous/Next/Last and disables the unreachable ones; `smart`
+    omits controls that would go nowhere instead. Either way First/Last
+    stay hidden under 3 pages (they would duplicate the visible 1/2).
 - Invalid values (`abc`, `0`, `-3`) normalise to page 1; a page number
   beyond the available range 404s predictably.
 

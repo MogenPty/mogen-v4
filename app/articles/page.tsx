@@ -19,12 +19,15 @@ function firstParam(value: string | string[] | undefined): string | undefined {
   return value;
 }
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata> {
   const params = await searchParams;
   const page = parsePageParam(firstParam(params.page));
   const base = pageMetadata({
     path: "/articles",
-    title: "Articles",
+    title:
+      "Articles, news and practical growth advice for South African businesses",
     description:
       "Industry articles and practical growth advice for South African businesses — local SEO, websites, Google Business Profile and conversion.",
   });
@@ -51,5 +54,7 @@ export default async function Articles({ searchParams }: Props) {
     ...params,
   };
   delete preservedParams.page;
-  return <BlogBlock numbering={9} page={page} preservedParams={preservedParams} />;
+  return (
+    <BlogBlock numbering={9} page={page} preservedParams={preservedParams} />
+  );
 }

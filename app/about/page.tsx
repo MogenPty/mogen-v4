@@ -23,7 +23,8 @@ export const metadata: Metadata = {
   // Rendered title becomes "About Mogen | Mogen" via the layout template.
   // The fuller "About Mogen | Digital Services for South African Businesses"
   // form is used for Open Graph / Twitter titles below.
-  title: "About Mogen",
+  title:
+    "About Mogen - A Web Development Agency in Maboloka, Soshanguve and Centurion, South Africa",
   description:
     "Mogen is a South African digital services business based in Maboloka, North West — web development, SEO, digital marketing and business documentation for businesses across South Africa.",
   alternates: {

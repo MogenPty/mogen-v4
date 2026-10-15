@@ -1,5 +1,10 @@
-import { loadArticles, type LoadArticlesOptions } from "@/lib/articles/loader";
+import { type LoadArticlesOptions, loadArticles } from "@/lib/articles/loader";
 import type { ArticleSummary } from "@/lib/articles/types";
+import {
+  DEFAULT_PAGINATION_PAGE_SIZE,
+  getPaginationSettings,
+  type PaginationEnds,
+} from "@/lib/pagination/config";
 
 export interface Post {
   slug: string;
@@ -7,6 +12,7 @@ export interface Post {
   category: string;
   excerpt: string;
   date: string;
+  updatedAt?: string;
   readTime: string;
   author: string;
   body: string;
@@ -22,8 +28,24 @@ export interface Post {
   featured?: boolean;
 }
 
-/** Default articles per index page (single configuration constant). */
-export const ARTICLES_PAGE_SIZE = 12;
+/**
+ * Default articles per index page when no valid page-size env value is set.
+ * Kept as a constant for backwards compatibility — the runtime default is
+ * env-driven (see `getArticlesPageSize()`).
+ */
+export const ARTICLES_PAGE_SIZE = DEFAULT_PAGINATION_PAGE_SIZE;
+
+/**
+ * Effective articles page size: `PAGINATION_ARTICLES_PAGE_SIZE` wins when
+ * set to a positive integer, otherwise `PAGINATION_PAGE_SIZE`, otherwise
+ * the built-in default. Read at call time so `.env` flips apply without
+ * a redeploy.
+ */
+export function getArticlesPageSize(
+  env: Record<string, string | undefined> = process.env,
+): number {
+  return getPaginationSettings(env, "articles").pageSize;
+}
 
 function toPost(summary: ArticleSummary, body: string): Post {
   return {
@@ -31,7 +53,8 @@ function toPost(summary: ArticleSummary, body: string): Post {
     title: summary.title,
     category: summary.category,
     excerpt: summary.description,
-    date: summary.publishedAt,
+    date: summary.publishedAt ?? summary.date,
+    updatedAt: summary.updatedAt ?? summary.update,
     readTime: summary.readTime,
     author: summary.author,
     body,
@@ -171,17 +194,27 @@ export interface GetArticlesOptions {
  * Data-level pagination for the normal listing.
  * IMPORTANT: the featured article is excluded BEFORE pagination so page
  * sizes stay consistent and no article goes missing.
+ * The default page size is env-driven (`PAGINATION_ARTICLES_PAGE_SIZE` →
+ * `PAGINATION_PAGE_SIZE` → 12); an explicit `pageSize` still wins.
  */
 export function getArticles({
   page = 1,
-  pageSize = ARTICLES_PAGE_SIZE,
+  pageSize,
   posts,
 }: GetArticlesOptions = {}): PaginatedResult {
-  const safePageSize = Number.isInteger(pageSize) && pageSize > 0 ? pageSize : ARTICLES_PAGE_SIZE;
+  const fallback = getArticlesPageSize();
+  const safePageSize =
+    Number.isInteger(pageSize) && (pageSize as number) > 0
+      ? (pageSize as number)
+      : fallback;
   const regular = getRegularPosts(posts);
   const totalItems = regular.length;
-  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / safePageSize);
-  const currentPage = totalItems === 0 ? 1 : Math.min(Math.max(1, Math.floor(page) || 1), totalPages);
+  const totalPages =
+    totalItems === 0 ? 0 : Math.ceil(totalItems / safePageSize);
+  const currentPage =
+    totalItems === 0
+      ? 1
+      : Math.min(Math.max(1, Math.floor(page) || 1), totalPages);
   const start = (currentPage - 1) * safePageSize;
   return {
     items: regular.slice(start, start + safePageSize),
@@ -193,10 +226,23 @@ export function getArticles({
 }
 
 /** Condensed page numbers, e.g. [1, 2, 3, "…", 8] for large libraries. */
-export function getPageNumbers(current: number, total: number): (number | "…")[] {
+export function getPageNumbers(
+  current: number,
+  total: number,
+): (number | "…")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const pages = new Set<number>([1, 2, current - 1, current, current + 1, total - 1, total]);
-  const sorted = [...pages].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
+  const pages = new Set<number>([
+    1,
+    2,
+    current - 1,
+    current,
+    current + 1,
+    total - 1,
+    total,
+  ]);
+  const sorted = [...pages]
+    .filter((n) => n >= 1 && n <= total)
+    .sort((a, b) => a - b);
   const out: (number | "…")[] = [];
   let prev = 0;
   for (const n of sorted) {
@@ -205,6 +251,90 @@ export function getPageNumbers(current: number, total: number): (number | "…")
     prev = n;
   }
   return out;
+}
+
+export interface PaginationControls {
+  /** Numbered buttons plus "…" gaps (empty when there is 0–1 page). */
+  pageNumbers: (number | "…")[];
+  /** Whether to render each boundary control. */
+  showFirst: boolean;
+  showPrevious: boolean;
+  showNext: boolean;
+  showLast: boolean;
+  /** Whether a rendered boundary control goes nowhere (disabled mode). */
+  firstDisabled: boolean;
+  previousDisabled: boolean;
+  nextDisabled: boolean;
+  lastDisabled: boolean;
+}
+
+function emptyControls(): PaginationControls {
+  return {
+    pageNumbers: [],
+    showFirst: false,
+    showPrevious: false,
+    showNext: false,
+    showLast: false,
+    firstDisabled: false,
+    previousDisabled: false,
+    nextDisabled: false,
+    lastDisabled: false,
+  };
+}
+
+/**
+ * Visibility for the full control set:
+ * First, Previous, numbers (1, 2, …, A B C, …, Y Z), Next, Last.
+ *
+ * `ends` (from `PAGINATION_ENDS`) selects the boundary behaviour:
+ * - `disabled` (default): every applicable control renders; the ones that
+ *   would go nowhere render disabled instead (layout-stable).
+ * - `smart`: controls that would go nowhere are omitted entirely.
+ *
+ * Shared rules (both modes):
+ * - 0–1 pages: no pagination at all.
+ * - 2 pages: First/Last stay hidden (they would duplicate 1/2); only
+ *   Previous (past page 1), 1–2, Next (before page 2).
+ * - Numbered buttons reuse `getPageNumbers`: every page when there are
+ *   7 or fewer, otherwise the condensed 1, 2, …, prev/current/next,
+ *   …, last−1, last window (e.g. page 1 of many → 1, 2, …, Y, Z).
+ */
+export function getPaginationControls(
+  current: number,
+  total: number,
+  ends: PaginationEnds = "smart",
+): PaginationControls {
+  if (total <= 1) return emptyControls();
+  const safeCurrent = Math.min(Math.max(1, Math.floor(current) || 1), total);
+  const atStart = safeCurrent <= 1;
+  const atEnd = safeCurrent >= total;
+  if (ends === "disabled") {
+    return {
+      pageNumbers: getPageNumbers(safeCurrent, total),
+      // First/Last duplicate the visible 1/2 buttons under 3 pages.
+      showFirst: total >= 3,
+      showPrevious: true,
+      showNext: true,
+      showLast: total >= 3,
+      firstDisabled: atStart,
+      previousDisabled: atStart,
+      nextDisabled: atEnd,
+      lastDisabled: atEnd,
+    };
+  }
+  return {
+    pageNumbers: getPageNumbers(safeCurrent, total),
+    // First/Last are shortcuts for long jumps — redundant when the target
+    // page number is already one step away or when there are only 2 pages.
+    showFirst: total >= 3 && !atStart,
+    showPrevious: !atStart,
+    showNext: !atEnd,
+    showLast: total >= 3 && !atEnd,
+    firstDisabled: false,
+    previousDisabled: false,
+    nextDisabled: false,
+    lastDisabled: false,
+  };
 }
 
 /**

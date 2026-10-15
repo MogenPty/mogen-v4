@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ServiceDetail from "@/components/mogen/service-detail";
-import { getService, SERVICES } from "@/data/services";
 import { getActivePromotions, getFeaturedPromotion } from "@/data/promotions";
+import { getService, SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { getRelatedArticlesForService } from "@/lib/articles/related";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!service) return { title: "Service not found" };
   return pageMetadata({
     path: `/services/${service.slug}`,
-    title: service.name,
+    title: service.metaTitle,
     description: service.tagline,
   });
 }
