@@ -8,6 +8,8 @@
     "build": "next build",
     "prebuild": "node scripts/generate-articles-index.mjs",
     "articles:sync": "node scripts/generate-articles-index.mjs",
+    "articles:link": "node scripts/link-article-entities.mjs --apply",
+    "articles:link:check": "node scripts/link-article-entities.mjs --check",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
