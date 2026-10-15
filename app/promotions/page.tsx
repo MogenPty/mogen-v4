@@ -13,8 +13,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   path: "/promotions",
-  title:
-    "Current and past Mogen promotions with clear pricing, eligibility and terms",
+  title: "Current and past promotions",
   description:
     "Current and past Mogen promotions — limited offers on websites and managed subscriptions, with clear pricing, eligibility and terms.",
 });

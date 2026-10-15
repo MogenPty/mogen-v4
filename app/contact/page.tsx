@@ -10,7 +10,7 @@ import {
 const PAGE_URL = `${siteConfig.url}/contact`;
 
 export const metadata: Metadata = {
-  title: "Contact Mogen",
+  title: "Contact Us",
   description:
     "Contact Mogen — explain what you need. Mogen reviews every enquiry and replies within one business day with a practical next step.",
   alternates: {

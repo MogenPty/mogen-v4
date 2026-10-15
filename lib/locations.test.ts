@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
-import { getLocationDetail, LOCATIONS, LOCATION_SLUGS } from "@/data/locations";
+import { getLocationDetail, LOCATION_SLUGS, LOCATIONS } from "@/data/locations";
 import { getSiteUrl } from "@/data/site";
 
 function readSource(relativePath: string): string {
@@ -12,10 +12,11 @@ function readSource(relativePath: string): string {
 describe("locations — data source", () => {
   it("keeps the two real location pages available", () => {
     expect(LOCATION_SLUGS).toEqual(
-      expect.arrayContaining(["maboloka", "soshanguve"]),
+      expect.arrayContaining(["maboloka", "soshanguve", "centurion"]),
     );
     expect(getLocationDetail("maboloka")?.name).toBe("Maboloka");
     expect(getLocationDetail("soshanguve")?.name).toBe("Soshanguve");
+    expect(getLocationDetail("centurion")?.name).toBe("Centurion");
     expect(getLocationDetail("no-such-place")).toBeUndefined();
   });
 
@@ -23,7 +24,8 @@ describe("locations — data source", () => {
     const page = readSource("app/locations/page.tsx");
     expect(page).toContain("data/locations");
     expect(page).toContain("LOCATION_SLUGS");
-    expect(page).toContain("LOCATIONS");
+    // LOCATIONS is no longer referenced: non-office areas now live as
+    // areaServed under each LOCATION_DETAILS entry (pending consolidation).
   });
 });
 
@@ -32,7 +34,7 @@ describe("locations — index route", () => {
     const page = readSource("app/locations/page.tsx");
     expect(page).toContain('path: "/locations"');
     expect(page).toContain("pageMetadata");
-    expect(page).toContain('title: "Locations"');
+    expect(page).toContain("Our locations across North West");
     expect(page).not.toContain("www.mogen.co.za");
   });
 

@@ -48,12 +48,30 @@ export const siteConfig = {
   alternativeTelephone: "+27765207876",
   alternativeTelephoneDisplay: "+27 76 520 7876",
   whatsappNumber: "+27718631884",
+  priceRange: "R99 - R32000",
   // Address — only city/region/country verified, no street invented
   address: {
     addressLocality: "Maboloka",
     addressRegion: "North West",
     addressCountry: "ZA",
     // Descriptive areas served — not a street address
+    departments: [
+      {
+        name: "Maboloka",
+        type: "Head Office",
+        url: "https://www.mogen.co.za/locations/maboloka",
+      },
+      {
+        "@type": "ProfessionalService",
+        name: "Mogen Soshanguve — Office",
+        url: "https://www.mogen.co.za/locations/soshanguve",
+      },
+      {
+        "@type": "ProfessionalService",
+        name: "Mogen Centurion — Office",
+        url: "https://www.mogen.co.za/locations/centurion",
+      },
+    ],
     areaServed: [
       "Maboloka",
       "Brits",
