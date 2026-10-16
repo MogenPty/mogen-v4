@@ -42,7 +42,8 @@ describe("pricing — directory stays a navigator (no duplicated tables)", () =>
     const page = readSource("app/pricing/page.tsx");
     expect(page).toContain('path: "/pricing"');
     expect(page).toContain("pageMetadata");
-    expect(page).toContain("Affordable Web Development");
+    // Pricing copy lives in the metadata registry (SEO remediation).
+    expect(page).toContain('STATIC_META["/pricing"]');
     expect(page).toContain('href="/faq"');
   });
 

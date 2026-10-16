@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogBlock from "@/components/mogen/blog-block";
 import { getArticles, parsePageParam } from "@/data/blog";
-import { getSiteUrl } from "@/data/site";
+import { getSiteUrl, siteConfig } from "@/data/site";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 interface ArticlesSearchParams {
   page?: string | string[];
@@ -26,10 +27,8 @@ export async function generateMetadata({
   const page = parsePageParam(firstParam(params.page));
   const base = pageMetadata({
     path: "/articles",
-    title:
-      "Articles, news and practical growth advice for South African businesses",
-    description:
-      "Industry articles and practical growth advice for South African businesses — local SEO, websites, Google Business Profile and conversion.",
+    title: STATIC_META["/articles"].title,
+    description: STATIC_META["/articles"].description,
   });
   // First page stays canonical at /articles; deeper pages are distinct
   // paginated listing URLs (never injected into the article sitemap).
@@ -55,6 +54,37 @@ export default async function Articles({ searchParams }: Props) {
   };
   delete preservedParams.page;
   return (
-    <BlogBlock numbering={9} page={page} preservedParams={preservedParams} />
+    <>
+      <ArticlesIndexJsonLd />
+      <BlogBlock numbering={9} page={page} preservedParams={preservedParams} />
+    </>
+  );
+}
+
+function ArticlesIndexJsonLd() {
+  const pageUrl = `${siteConfig.url}/articles`;
+  // Collection schema only — per-article Article JSON-LD lives on detail pages.
+  const graph = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${pageUrl}#webpage`,
+        url: pageUrl,
+        name: `${STATIC_META["/articles"].title} | ${siteConfig.name}`,
+        description: STATIC_META["/articles"].description,
+        isPartOf: { "@id": `${siteConfig.url}/#website` },
+        about: { "@id": `${siteConfig.url}/#organization` },
+        publisher: { "@id": `${siteConfig.url}/#organization` },
+        inLanguage: siteConfig.lang,
+      },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: No workaround for JSON-LD injection
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+    />
   );
 }

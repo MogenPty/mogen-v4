@@ -7,12 +7,12 @@ import ServiceFAQ from "@/components/mogen/service-faq";
 import { SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/faq",
-  title: "Frequently Asked Questions",
-  description:
-    "Answers to common questions about Mogen's Web Development, SEO, Digital Marketing and Business Documentation services — timelines, pricing pointers, process and next steps.",
+  title: STATIC_META["/faq"].title,
+  description: STATIC_META["/faq"].description,
 });
 
 // Service FAQs change rarely; hourly regeneration keeps the directory,

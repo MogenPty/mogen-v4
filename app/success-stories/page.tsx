@@ -4,12 +4,12 @@ import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/success-stories",
-  title: "Success Stories",
-  description:
-    "How Mogen approaches hospitality, clinic, service and retail sites — structure, local relevance and clear enquiry paths.",
+  title: STATIC_META["/success-stories"].title,
+  description: STATIC_META["/success-stories"].description,
 });
 
 const STORIES = [
@@ -53,6 +53,7 @@ export default function SuccessStories() {
     <PageShell
       index="// 15 — Selected Work"
       label="Selected Work"
+      barVariant="journey"
       title={
         <>
           Selected work, <span className="text-catalyst">practical approach.</span>

@@ -34,7 +34,8 @@ describe("locations — index route", () => {
     const page = readSource("app/locations/page.tsx");
     expect(page).toContain('path: "/locations"');
     expect(page).toContain("pageMetadata");
-    expect(page).toContain("Our locations across North West");
+    // Directory copy lives in the metadata registry (SEO remediation).
+    expect(page).toContain('STATIC_META["/locations"]');
     expect(page).not.toContain("www.mogen.co.za");
   });
 

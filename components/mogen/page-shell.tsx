@@ -29,6 +29,12 @@ interface Props {
   featuredPromotion?: Promotion | null;
   /** UTM attribution forwarded into enquiry destinations. */
   attribution?: EnquiryAttribution;
+  /**
+   * ConversionBar variant. `journey` shows a Page Journey progress
+   * indicator instead of an enquiry CTA — for informational/company/legal
+   * pages. Defaults to `conversion`.
+   */
+  barVariant?: "conversion" | "journey";
 }
 
 export default function PageShell({
@@ -41,9 +47,10 @@ export default function PageShell({
   defaultServiceSlug,
   featuredPromotion,
   attribution,
+  barVariant = "conversion",
 }: Readonly<Props>) {
   return (
-    <div className="bg-bone">
+    <div id="top" className="bg-bone">
       <Nav
         serviceSlug={serviceSlug}
         defaultServiceSlug={defaultServiceSlug}
@@ -71,6 +78,7 @@ export default function PageShell({
         featuredPromotion={featuredPromotion}
       />
       <ConversionBar
+        variant={barVariant}
         serviceSlug={serviceSlug}
         defaultServiceSlug={defaultServiceSlug}
         attribution={attribution}

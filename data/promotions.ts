@@ -202,7 +202,7 @@ export const PROMOTIONS: Promotion[] = [
     slug: "mogen-sprout-first-100",
     name: "Mogen Sprout Website",
     shortDescription:
-      "Mogen's managed website subscription — professional website, hosting, maintenance and email handled for one monthly price. Available to the first 100 eligible customers.",
+      "Mogen's managed website subscription — design, hosting, maintenance and email for one monthly price. First 100 customers save.",
     description:
       "Mogen Sprout is the managed way to get online: Mogen designs and builds your website, then keeps it hosted, maintained and supported for one monthly subscription. This launch promotion discounts the setup fee and the monthly subscription for the first 12 months for the first 100 eligible customers.",
     status: "scheduled",

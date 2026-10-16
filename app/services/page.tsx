@@ -3,12 +3,12 @@ import Footer from "@/components/mogen/footer";
 import Nav from "@/components/mogen/nav";
 import Services from "@/components/mogen/services";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata = pageMetadata({
   path: "/services",
-  title: "Services",
-  description:
-    "Four services, clearly scoped — Web Development, SEO, Digital Marketing and Business Documentation. Each a distinct offering so you know what you are paying for.",
+  title: STATIC_META["/services"].title,
+  description: STATIC_META["/services"].description,
 });
 
 export default function ServicesIndexPage() {

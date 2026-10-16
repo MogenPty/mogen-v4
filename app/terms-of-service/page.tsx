@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import PageShell from "@/components/mogen/page-shell";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/terms-of-service",
-  title: "Terms of Service",
-  description:
-    "The terms governing Mogen's web development, documentation, SEO and marketing services under South African law.",
+  title: STATIC_META["/terms-of-service"].title,
+  description: STATIC_META["/terms-of-service"].description,
 });
 
 const SECTIONS = [
@@ -62,6 +62,7 @@ export default function TermsOfService() {
     <PageShell
       index="// 12 — Legal"
       label="Terms of Service"
+      barVariant="journey"
       title={
         <>
           The terms of <span className="text-catalyst">growing together.</span>

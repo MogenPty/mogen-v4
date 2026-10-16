@@ -8,8 +8,20 @@ import { useConversionCta } from "@/lib/conversion/use-conversion-cta";
 import { cn } from "@/lib/utils";
 
 /**
- * ConversionBar — floating quick-action bar that tracks the visitor's
- * "Conversion Readiness" as they scroll deeper into the funnel.
+ * ConversionBar — floating quick-action bar.
+ *
+ * Two variants:
+ * - `conversion` (default): tracks the visitor's "Conversion Readiness"
+ *   as they scroll, with the page's conversion CTA beside it. For demand
+ *   and discovery pages (homepage, services, promotions, contact, FAQ,
+ *   articles, locations).
+ * - `journey`: a "Page Journey" progress indicator (how far down the page
+ *   the visitor is) with a back-to-top action instead of an enquiry CTA.
+ *   For informational/company/legal pages (about, pricing index, process,
+ *   resources, partners, success stories, privacy, terms).
+ *
+ * The "Conversion Readiness" label is UI chrome with no SEO value; the
+ * variant choice is a conversion/UX decision, not an SEO one.
  *
  * CTA copy comes from `data/services.ts` (`Service.conversionBar`);
  * destinations target the effective service's conversion component
@@ -18,6 +30,10 @@ import { cn } from "@/lib/utils";
  * surfaces resolve identically on every page.
  */
 type ConversionBarProps = {
+  /**
+   * Bar variant. Defaults to `conversion`.
+   */
+  variant?: "conversion" | "journey";
   /**
    * Page service context (service pages pass their slug — always wins).
    * Omitted on the homepage and generic pages.
@@ -39,6 +55,7 @@ type ConversionBarProps = {
 };
 
 export default function ConversionBar({
+  variant = "conversion",
   serviceSlug,
   defaultServiceSlug,
   attribution,
@@ -75,16 +92,16 @@ export default function ConversionBar({
         "fixed inset-x-0 bottom-0 z-40 transition-transform duration-300",
         visible ? "translate-y-0" : "translate-y-full",
       )}
-      aria-label="Conversion readiness"
+      aria-label={variant === "journey" ? "Page journey" : "Conversion readiness"}
     >
       <div className="mx-auto max-w-[1600px] px-3 pb-3 sm:px-4 sm:pb-4">
         <div className="flex items-center justify-between gap-3 border border-ink/15 bg-bone/90 px-3 py-3 backdrop-blur-md sm:px-6">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <span className="small-caps shrink-0 truncate text-muted-foreground max-[380px]:hidden">
-              Conversion Readiness
+              {variant === "journey" ? "Page Journey" : "Conversion Readiness"}
             </span>
             <span className="small-caps shrink-0 text-muted-foreground min-[381px]:hidden">
-              Ready
+              {variant === "journey" ? "Journey" : "Ready"}
             </span>
             <div
               className="hidden h-2 w-32 bg-ink/10 sm:block"
@@ -99,13 +116,23 @@ export default function ConversionBar({
               {ready}%
             </span>
           </div>
-          <Link
-            href={cta.href}
-            className="small-caps shrink-0 whitespace-nowrap bg-catalyst px-4 py-2 text-white transition-colors hover:bg-ink sm:px-5 dark:hover:text-black"
-            aria-label={cta.ariaLabel}
-          >
-            {cta.label}
-          </Link>
+          {variant === "journey" ? (
+            <a
+              href="#top"
+              className="small-caps shrink-0 whitespace-nowrap bg-catalyst px-4 py-2 text-white transition-colors hover:bg-ink sm:px-5 dark:hover:text-black"
+              aria-label="Back to top of page"
+            >
+              Top ↑
+            </a>
+          ) : (
+            <Link
+              href={cta.href}
+              className="small-caps shrink-0 whitespace-nowrap bg-catalyst px-4 py-2 text-white transition-colors hover:bg-ink sm:px-5 dark:hover:text-black"
+              aria-label={cta.ariaLabel}
+            >
+              {cta.label}
+            </Link>
+          )}
         </div>
       </div>
     </section>

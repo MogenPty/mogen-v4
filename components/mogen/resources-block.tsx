@@ -86,6 +86,7 @@ export default function ResourcesBlock({ numbering = 1 }: Readonly<Props>) {
     <PageShell
       index={`// ${formatNumber(numbering)} — Resources`}
       label="Resource Library"
+      barVariant="journey"
       title={
         <>
           Free tools to <span className="text-catalyst">fuel your growth.</span>

@@ -6,44 +6,16 @@ import {
   parseEnquiryContext,
   resolveEnquiryDetails,
 } from "@/lib/enquiry/enquiry";
+import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 const PAGE_URL = `${siteConfig.url}/contact`;
 
-export const metadata: Metadata = {
-  title: "Contact Us",
-  description:
-    "Contact Mogen — explain what you need. Mogen reviews every enquiry and replies within one business day with a practical next step.",
-  alternates: {
-    canonical: PAGE_URL,
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  openGraph: {
-    type: "website",
-    url: PAGE_URL,
-    siteName: siteConfig.name,
-    title: "Contact Mogen | Digital Services for South African Businesses",
-    description:
-      "Contact Mogen — explain what you need. Mogen reviews every enquiry and replies within one business day with a practical next step.",
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: siteConfig.ogImageWidth,
-        height: siteConfig.ogImageHeight,
-        alt: siteConfig.ogImageAlt,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Contact Mogen | Digital Services for South African Businesses",
-    description:
-      "Contact Mogen — explain what you need. Mogen reviews every enquiry and replies within one business day with a practical next step.",
-    images: [siteConfig.ogImage],
-  },
-};
+export const metadata: Metadata = pageMetadata({
+  path: "/contact",
+  title: STATIC_META["/contact"].title,
+  description: STATIC_META["/contact"].description,
+});
 
 function ContactJsonLd() {
   const organizationId = `${siteConfig.url}/#organization`;
