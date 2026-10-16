@@ -180,9 +180,9 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     role: "Head Office",
     presence: "physical",
     metaTitle:
-      "Web Development, SEO, Digital Services & Business Documentation in Maboloka",
+      "Web Development & SEO Services in Maboloka",
     metaDescription:
-      "Mogen's primary operating location in Tambo, Maboloka — web development, SEO, digital marketing and business documentation. Visits by appointment.",
+      "Mogen's head office in Tambo, Maboloka — websites, SEO, marketing and documentation. Visits by appointment.",
     intro:
       "Mogen's primary operating location in Tambo, Maboloka — web development, SEO, digital marketing and business documentation. Visits by appointment.",
     activities: [
@@ -226,9 +226,9 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     role: "Office",
     presence: "physical",
     metaTitle:
-      "Web Development, SEO, Digital Services & Business Documentation in Soshanguve",
+      "Web Development & SEO Services in Soshanguve",
     metaDescription:
-      "Mogen's Soshanguve office in Block-Y offers web development, SEO, digital marketing and business documentation, serving Soshanguve and the surrounding areas. Visits by appointment.",
+      "Mogen's Soshanguve office in Block-Y — websites, SEO, marketing and documentation for local businesses. Visits by appointment.",
     intro:
       "Soshanguve is a full-service Mogen office based in Block-Y. Businesses in Soshanguve and the surrounding areas work directly with the local team — from first enquiry to final delivery.",
     activities: [
@@ -272,9 +272,9 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     role: "Office",
     presence: "physical",
     metaTitle:
-      "Web Development, SEO, Digital Services & Business Documentation in Centurion",
+      "Web Development & SEO Services in Centurion",
     metaDescription:
-      "Mogen's Centurion office in Monavoni offers web development, SEO, digital marketing and business documentation, serving Centurion and the surrounding areas. Visits by appointment.",
+      "Mogen's Centurion office in Monavoni — websites, SEO, marketing and documentation for local businesses. Visits by appointment.",
     intro:
       "Mogen's Centurion office in Monavoni services Centurion and the surrounding areas across all four services — web development, SEO, digital marketing and business documentation — so local businesses work directly with people nearby, from first enquiry to final delivery.",
     activities: [

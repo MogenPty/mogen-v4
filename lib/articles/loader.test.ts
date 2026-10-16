@@ -33,7 +33,7 @@ describe("articles — discovery", () => {
     expect(slugs).toContain("local-seo-pretoria-2026");
     const article = getArticleBySlug("local-seo-pretoria-2026");
     expect(article?.title).toBe(
-      "The 2026 Local SEO Playbook for Pretoria Businesses",
+      "2026 Local SEO Playbook for Pretoria Businesses",
     );
     expect(article?.description).toContain("map pack");
   });

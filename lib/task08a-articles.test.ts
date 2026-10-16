@@ -10,8 +10,13 @@ function readSource(relativePath: string): string {
 describe("task 8A — /blog migrates to /articles", () => {
   it("provides /articles listing and detail routes", () => {
     expect(readSource("app/articles/page.tsx")).toContain('path: "/articles"');
+    // Listing copy lives in the metadata registry (SEO remediation) so
+    // regression tests assert the served values, not source snippets.
     expect(readSource("app/articles/page.tsx")).toContain(
-      "Articles, news and practical growth advice",
+      'STATIC_META["/articles"]',
+    );
+    expect(readSource("lib/seo/metadata-registry.ts")).toContain(
+      "Practical Growth Advice",
     );
     expect(readSource("app/articles/[slug]/page.tsx")).toContain(
       "generateMetadata",

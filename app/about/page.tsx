@@ -15,49 +15,17 @@ import Services from "@/components/mogen/services";
 import WhatMogenDoes from "@/components/mogen/what-mogen-does";
 import WhyMogen from "@/components/mogen/why-mogen";
 import { siteConfig } from "@/data/site";
+import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 import { formatNumber } from "@/lib/utils";
 
 const PAGE_URL = `${siteConfig.url}/about`;
 
-export const metadata: Metadata = {
-  // Rendered title becomes "About Mogen | Mogen" via the layout template.
-  // The fuller "About Mogen | Digital Services for South African Businesses"
-  // form is used for Open Graph / Twitter titles below.
-  title:
-    "About Mogen - A Web Development Agency in Maboloka, Soshanguve and Centurion, South Africa",
-  description:
-    "Mogen is a South African digital services business based in Maboloka, North West — web development, SEO, digital marketing and business documentation for businesses across South Africa.",
-  alternates: {
-    canonical: PAGE_URL,
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  openGraph: {
-    type: "website",
-    url: PAGE_URL,
-    siteName: siteConfig.name,
-    title: "About Mogen | Digital Services for South African Businesses",
-    description:
-      "Who Mogen is, what Mogen does, how Mogen works, and where Mogen operates — practical digital services based in Maboloka, serving South African businesses.",
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: siteConfig.ogImageWidth,
-        height: siteConfig.ogImageHeight,
-        alt: siteConfig.ogImageAlt,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "About Mogen | Digital Services for South African Businesses",
-    description:
-      "Who Mogen is, what Mogen does, how Mogen works, and where Mogen operates — practical digital services based in Maboloka, serving South African businesses.",
-    images: [siteConfig.ogImage],
-  },
-};
+export const metadata: Metadata = pageMetadata({
+  path: "/about",
+  title: STATIC_META["/about"].title,
+  description: STATIC_META["/about"].description,
+});
 
 const HOW_STEPS = [
   {
@@ -160,6 +128,7 @@ export default function About() {
     <PageShell
       index="// 01 — About Mogen"
       label="About Mogen"
+      barVariant="journey"
       title={
         <>
           MO<span className="text-catalyst">GEN.</span>

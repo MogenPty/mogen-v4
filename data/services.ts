@@ -61,6 +61,8 @@ interface Service {
   >;
   tagline: string;
   metaTitle: string;
+  /** Standalone meta description (may elaborate beyond the visible tagline). */
+  metaDescription: string;
   intro: string;
   deliverables?: string[];
   process?: Process[];
@@ -75,7 +77,9 @@ export const SERVICES: Service[] = [
   {
     slug: "web-development",
     name: "Web Development",
-    metaTitle: "Web Development & Web Design for South African Businesses",
+    metaTitle: "Custom Web Development & Design for SA Business",
+    metaDescription:
+      "Custom websites engineered to convert — fast, mobile-first builds with on-page SEO, WhatsApp integration and analytics.",
     action: "build",
     icon: Code2,
     tagline: "Custom websites engineered to convert visitors into customers.",
@@ -221,8 +225,9 @@ export const SERVICES: Service[] = [
   {
     slug: "seo",
     name: "SEO",
-    metaTitle:
-      "Local SEO, Google Business Profile & Search Engine Optimisation",
+    metaTitle: "Local SEO & Google Business Profile Services",
+    metaDescription:
+      "Local SEO that gets you found on Google — audits, Google Business Profile optimisation and content that brings nearby enquiries.",
     action: "rank",
     icon: Search,
     tagline:
@@ -368,7 +373,9 @@ export const SERVICES: Service[] = [
   {
     slug: "digital-marketing",
     name: "Digital Marketing",
-    metaTitle: "Digital Marketing Services for South African Businesses",
+    metaTitle: "Digital Marketing Services for SA Businesses",
+    metaDescription:
+      "Content, social and paid campaigns that put your business in front of the right people — with clear monthly reporting.",
     action: "manage",
     icon: Megaphone,
     tagline:
@@ -509,7 +516,9 @@ export const SERVICES: Service[] = [
   {
     slug: "business-documentation",
     name: "Business Documentation",
-    metaTitle: "Business Documentation Services for South African Businesses",
+    metaTitle: "Professional Business Documentation Services",
+    metaDescription:
+      "Professional business documents — policies, procedures, forms and templates that keep your operations clear and consistent.",
     action: "prepare",
     icon: FileText,
     tagline:

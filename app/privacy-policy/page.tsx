@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import PageShell from "@/components/mogen/page-shell";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/privacy-policy",
-  title: "Privacy Policy",
-  description:
-    "How Mogen collects, uses and protects personal information shared through forms and the Growth Audit, in line with POPIA.",
+  title: STATIC_META["/privacy-policy"].title,
+  description: STATIC_META["/privacy-policy"].description,
 });
 
 const SECTIONS = [
@@ -58,6 +58,7 @@ export default function PrivacyPolicy() {
     <PageShell
       index="// 12 — Legal"
       label="Privacy Policy"
+      barVariant="journey"
       title={
         <>
           Your data, <span className="text-catalyst">handled with care.</span>

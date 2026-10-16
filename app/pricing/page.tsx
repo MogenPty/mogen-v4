@@ -7,18 +7,17 @@ import Footer from "@/components/mogen/footer";
 import Nav from "@/components/mogen/nav";
 import { SERVICES } from "@/data/services";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/pricing",
-  title:
-    "Affordable Web Development, SEO, Digital Marketing & Business Documentation Pricing",
-  description:
-    "Mogen services and pricing — each service has its own three-tier pricing. View Web Development, SEO, Digital Marketing and Business Documentation pricing on their service pages.",
+  title: STATIC_META["/pricing"].title,
+  description: STATIC_META["/pricing"].description,
 });
 
 export default function PricingDirectoryPage() {
   return (
-    <div className="bg-bone">
+    <div id="top" className="bg-bone">
       <Nav defaultServiceSlug="web-development" />
       <main>
         <BlueprintGrid className="bg-bone pt-32 pb-16 lg:pt-40 lg:pb-20">
@@ -101,7 +100,7 @@ export default function PricingDirectoryPage() {
         </BlueprintGrid>
       </main>
       <Footer defaultServiceSlug="web-development" />
-      <ConversionBar defaultServiceSlug="web-development" />
+      <ConversionBar variant="journey" defaultServiceSlug="web-development" />
     </div>
   );
 }

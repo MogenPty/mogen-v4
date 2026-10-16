@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return pageMetadata({
     path: `/services/${service.slug}`,
     title: service.metaTitle,
-    description: service.tagline,
+    description: service.metaDescription,
   });
 }
 

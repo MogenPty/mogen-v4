@@ -77,6 +77,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Apply the persisted accent before first paint (no flash). */}
         {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Using this to inject an HTML */}
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
+        {/* Rampify site tracker (all pages): deferred, loads after parsing. */}
+        <script
+          defer
+          src="https://www.rampify.dev/tracker.js"
+          data-site-id="70828220-693a-4215-b8e7-e3ab3c4235bd"
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider

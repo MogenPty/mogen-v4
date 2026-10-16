@@ -14,7 +14,10 @@ describe("faq — directory route", () => {
     const page = readSource("app/faq/page.tsx");
     expect(page).toContain('path: "/faq"');
     expect(page).toContain("pageMetadata");
-    expect(page).toContain("Frequently Asked Questions");
+    // FAQ copy lives in the metadata registry (SEO remediation). The
+    // visible H1 ("Frequently asked questions.") is unchanged.
+    expect(page).toContain('STATIC_META["/faq"]');
+    expect(page).toContain("Frequently asked");
     expect(page).toContain("revalidate");
     expect(page).not.toContain("www.mogen.co.za");
   });

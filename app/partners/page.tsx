@@ -3,12 +3,12 @@ import AuditGrid from "@/components/mogen/audit-grid";
 import PageShell from "@/components/mogen/page-shell";
 import PartnersGrid from "@/components/mogen/partners-grid";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/partners",
-  title: "Partners",
-  description:
-    "Software partners and recommended tools Mogen uses alongside its services to compound client results.",
+  title: STATIC_META["/partners"].title,
+  description: STATIC_META["/partners"].description,
 });
 
 export default function Partners() {
@@ -16,6 +16,7 @@ export default function Partners() {
     <PageShell
       index="// 13 — Partners"
       label="Partner Network"
+      barVariant="journey"
       title={
         <>
           Tools we trust,{" "}

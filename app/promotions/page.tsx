@@ -10,12 +10,12 @@ import {
   withAttribution,
 } from "@/lib/enquiry/enquiry";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/promotions",
-  title: "Current and past promotions",
-  description:
-    "Current and past Mogen promotions — limited offers on websites and managed subscriptions, with clear pricing, eligibility and terms.",
+  title: STATIC_META["/promotions"].title,
+  description: STATIC_META["/promotions"].description,
 });
 
 // Date transitions (start/end) and the fallback-featuring env flag take

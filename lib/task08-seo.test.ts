@@ -121,12 +121,12 @@ describe("task 8 — title generation (no Mogen | Mogen)", () => {
     // root layout appends "| Mogen" via its template, so page sources
     // must not repeat the brand suffix themselves.
     for (const [file, snippet] of [
-      ["app/services/page.tsx", 'title: "Services"'],
-      ["app/promotions/page.tsx", 'title: "Current and past promotions"'],
-      ["app/pricing/page.tsx", '"Affordable Web Development'],
+      ["app/services/page.tsx", 'STATIC_META["/services"]'],
+      ["app/promotions/page.tsx", 'STATIC_META["/promotions"]'],
+      ["app/pricing/page.tsx", 'STATIC_META["/pricing"]'],
       [
         "app/articles/page.tsx",
-        '"Articles, news and practical growth advice',
+        'STATIC_META["/articles"]',
       ],
     ] as const) {
       const source = readSource(file);

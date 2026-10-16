@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import ResourcesBlock from "@/components/mogen/resources-block";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/resources",
-  title: "Resources",
-  description:
-    "Free playbooks, checklists and templates for South African businesses — local SEO, landing pages, growth audits and Google Business Profile.",
+  title: STATIC_META["/resources"].title,
+  description: STATIC_META["/resources"].description,
 });
 
 export default function Resources() {

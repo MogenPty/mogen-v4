@@ -50,6 +50,37 @@ const nextConfig: NextConfig = {
         destination: "/services",
         permanent: false,
       },
+      // SEO remediation: legacy URLs with search impressions but no v4
+      // equivalent page. Each target is the genuine successor surface —
+      // never a blanket homepage redirect.
+      {
+        // Brits is a served area (no office page); the directory covers it.
+        source: "/locations/brits",
+        destination: "/locations",
+        permanent: true,
+      },
+      {
+        // Legacy work showcase → the v4 approach/success-stories surface.
+        source: "/portfolio",
+        destination: "/success-stories",
+        permanent: true,
+      },
+      {
+        source: "/portfolio/:slug",
+        destination: "/success-stories",
+        permanent: true,
+      },
+      {
+        // Legacy terms URL seen in search data.
+        source: "/terms-conditions",
+        destination: "/terms-of-service",
+        permanent: true,
+      },
+      {
+        source: "/terms-conditions/:slug",
+        destination: "/terms-of-service",
+        permanent: true,
+      },
     ];
   },
 };

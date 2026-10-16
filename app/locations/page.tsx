@@ -4,14 +4,75 @@ import Link from "next/link";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import PageShell from "@/components/mogen/page-shell";
 import { getLocationDetail, LOCATION_SLUGS } from "@/data/locations";
+import { siteConfig } from "@/data/site";
 import { pageMetadata } from "@/lib/seo";
+import { STATIC_META } from "@/lib/seo/metadata-registry";
 
 export const metadata: Metadata = pageMetadata({
   path: "/locations",
-  title: "Our locations across North West, Gauteng and South Africa in general",
-  description:
-    "Mogen's offices in Maboloka, Soshanguve and Centurion — web development, SEO, digital marketing and business documentation for businesses across Gauteng, North West and beyond.",
+  title: STATIC_META["/locations"].title,
+  description: STATIC_META["/locations"].description,
 });
+
+function LocationsIndexJsonLd() {
+  const organizationId = `${siteConfig.url}/#organization`;
+  const websiteId = `${siteConfig.url}/#website`;
+  const pageUrl = `${siteConfig.url}/locations`;
+  // Directory schema only: references the three real office pages.
+  // LocalBusiness detail stays on each office page (no duplicate entities).
+  const graph = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${pageUrl}#webpage`,
+        url: pageUrl,
+        name: `${STATIC_META["/locations"].title} | ${siteConfig.name}`,
+        description: STATIC_META["/locations"].description,
+        isPartOf: { "@id": websiteId },
+        about: { "@id": organizationId },
+        publisher: { "@id": organizationId },
+        inLanguage: siteConfig.lang,
+      },
+      {
+        "@type": "ItemList",
+        itemListElement: LOCATION_SLUGS.map((slug, index) => {
+          const loc = getLocationDetail(slug)!;
+          return {
+            "@type": "ListItem",
+            position: index + 1,
+            url: `${siteConfig.url}/locations/${loc.slug}`,
+            name: `Mogen ${loc.name} — ${loc.role}`,
+          };
+        }),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: `${siteConfig.url}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Locations",
+            item: pageUrl,
+          },
+        ],
+      },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: No workaround for JSON-LD injection
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+    />
+  );
+}
 
 // Directory content changes rarely; hourly regeneration keeps the sitemap,
 // detail backlinks and this listing consistent without a redeploy.
@@ -24,7 +85,9 @@ export default function LocationsIndex() {
   ).filter(Boolean);
 
   return (
-    <PageShell
+    <>
+      <LocationsIndexJsonLd />
+      <PageShell
       index="// 01 — Locations"
       label="Where We Work"
       title={
@@ -77,6 +140,7 @@ export default function LocationsIndex() {
         </div>
       </BlueprintGrid>
 
-    </PageShell>
+      </PageShell>
+    </>
   );
 }
