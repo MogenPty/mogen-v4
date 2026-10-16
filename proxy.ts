@@ -77,6 +77,22 @@ function shouldSkipPath(pathname: string): boolean {
   return false;
 }
 
+/**
+ * Strip query strings (and fragments) before sending URLs to Rampify:
+ * query params can carry tokens or PII and fragment pageview rows, and
+ * the project's canonical URLs exclude them (see `canonicalUrl` in
+ * `lib/seo.ts`). Returns null for absent or unparseable input.
+ */
+function originAndPath(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const parsed = new URL(value);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return null;
+  }
+}
+
 function trackPageview(request: NextRequest): void {
   const apiKey = process.env.RAMPIFY_API_KEY;
   // Fail-silent: site renders normally even when the env var is missing.
@@ -93,8 +109,10 @@ function trackPageview(request: NextRequest): void {
   const region = request.headers.get('x-vercel-ip-country-region');
 
   const body = JSON.stringify({
-    url: request.url,
-    ref: request.headers.get('referer'),
+    // Query-free: request.url is runtime-provided (always parseable), but
+    // keep the raw value rather than null on the impossible failure path.
+    url: originAndPath(request.url) ?? request.url,
+    ref: originAndPath(request.headers.get('referer')),
     ua,
     country,
     region,

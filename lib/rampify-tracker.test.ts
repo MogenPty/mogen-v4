@@ -56,6 +56,17 @@ describe("rampify tracker — server proxy (bots/LLM fetchers)", () => {
     expect(proxy).toContain("/_next/");
   });
 
+  it("strips query strings from tracked URLs and referers", () => {
+    const proxy = readSource("proxy.ts");
+    // Query params can carry tokens/PII and fragment pageview rows;
+    // canonical URLs exclude them (see lib/seo.ts).
+    expect(proxy).toContain("originAndPath");
+    expect(proxy).toContain("parsed.origin");
+    expect(proxy).toContain("parsed.pathname");
+    expect(proxy).not.toContain("url: request.url,");
+    expect(proxy).not.toContain("ref: request.headers.get('referer'),");
+  });
+
   it("documents the server key without committing a value", () => {
     const example = readSource(".env.example");
     expect(example).toContain("RAMPIFY_API_KEY");
