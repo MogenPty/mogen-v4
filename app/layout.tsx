@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { siteConfig } from "@/data/site";
 import { ACCENT_INIT_SCRIPT, DEFAULT_ACCENT } from "@/lib/accent";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,8 +60,8 @@ export const metadata: Metadata = {
     images: [siteConfig.ogImage],
   },
   icons: {
-    icon: [{ url: siteConfig.icon, type: "image/svg+xml" }],
-    apple: [{ url: siteConfig.appleIcon, type: "image/svg+xml" }],
+    icon: [{ url: siteConfig.icon, type: "image/png" }],
+    apple: [{ url: siteConfig.appleIcon, type: "image/png" }],
   },
   category: "business",
 };
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
       </body>
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-VNJC7G7B37"} />
     </html>
   );
 }
