@@ -66,16 +66,14 @@ export const siteConfig = {
       "South Africa",
     ],
   },
-  // Logo / icon assets — created as part of this task from MOGEN wordmark
-  // No external logo file existed in repo; icons are minimal SVG wordmarks
-  logo: "/icon.svg",
-  icon: "/icon.svg",
-  appleIcon: "/apple-icon.svg",
-  // OG image — no dedicated OG image existed; using brand icon as fallback.
-  // A dedicated 1200x630 OG image would improve sharing appearance later.
-  ogImage: "/icon.svg",
-  ogImageWidth: 512,
-  ogImageHeight: 512,
+  // Official brand images (public/images/mogen/). These are the canonical
+  // assets for logo, favicon, apple-touch and OG/Twitter sharing.
+  logo: "/images/mogen/mogen-512x512.png",
+  icon: "/images/mogen/mogen-fav-32x32.png",
+  appleIcon: "/images/mogen/mogen-fav-180x180.png",
+  ogImage: "/images/mogen/mogen-1200x450.png",
+  ogImageWidth: 1200,
+  ogImageHeight: 450,
   ogImageAlt: "MOGEN — Digital services for South African businesses",
   // Social profiles — ONLY verified via repo or official Mogen-owned profile.
   // Known evidence: https://za.linkedin.com/company/mogenpty exists but NOT confirmed in repo.
