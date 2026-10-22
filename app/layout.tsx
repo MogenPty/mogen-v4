@@ -95,7 +95,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
       </body>
-      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-VNJC7G7B37"} />
+      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+      ) : null}
     </html>
   );
 }

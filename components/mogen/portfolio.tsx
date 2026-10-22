@@ -61,7 +61,7 @@ export default function Portfolio({ numbering = 1 }: Readonly<Props>) {
             <span className="text-catalyst">and live sites.</span>
           </h2>
           <p className="max-w-md text-lg text-ink/70">
-            Selected work and demonstrations from the Mogen ecosystem —
+            Selected work and live sites from the Mogen ecosystem —
             illustrating how we structure websites for clarity and discovery.
           </p>
         </div>
