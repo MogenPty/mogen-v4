@@ -23,6 +23,16 @@ export function useTypewriter(
     let t: NodeJS.Timeout;
     if (!deleting && text === current) {
       t = setTimeout(() => setDeleting(true), hold);
+    } else if (deleting && text.length === 1) {
+      // Transition straight to the next word's first character instead of
+      // letting text become "" in between — that empty frame used to flash
+      // the SSR default location (Maboloka) between two offices.
+      const next = words[(i + 1) % Math.max(words.length, 1)];
+      t = setTimeout(() => {
+        setI((v) => v + 1);
+        setDeleting(false);
+        setText(next ? next.slice(0, 1) : "");
+      }, erase);
     } else if (deleting && text === "") {
       // Defer synchronous setState to avoid cascading render
       // (react-hooks/set-state-in-effect). Scheduling via timeout
