@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { siteConfig } from "@/data/site";
 import { ACCENT_INIT_SCRIPT, DEFAULT_ACCENT } from "@/lib/accent";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
+        <SpeedInsights />
       </body>
       {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
