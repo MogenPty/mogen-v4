@@ -12,7 +12,9 @@ export function useTypewriter(
   words: string[],
   { type = 90, erase = 45, hold = 1600 }: TypewriterOptions = {},
 ) {
-  const [text, setText] = useState("");
+  // Start fully typed on the first word so SSR and the first client render
+  // agree (no empty -> partial flicker); rotation then holds and erases.
+  const [text, setText] = useState(() => (words[0] ?? ""));
   const [i, setI] = useState(0);
   const [deleting, setDeleting] = useState(false);
 
