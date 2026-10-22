@@ -16,28 +16,28 @@ import MagneticButton from "./magnet-button";
 
 const PROJECTS = [
   {
-    name: "Molefe Plumbing",
-    category: "Demonstration · Local Business",
-    desc: "Demonstration website featuring WhatsApp booking and service layout.",
-    img: "https://media.base44.com/images/public/6a9593f32823a9ba2917bec0/d15ea8711_generated_a33e55cb.jpg",
-    image: "/images/d15ea8711_generated_a33e55cb.jpg",
-    tags: ["Web Design", "WhatsApp Booking", "Local SEO"],
+    name: "Mogen",
+    category: "Live site · Digital Services",
+    desc: "Mogen's own site — services, SEO and local discovery for South African businesses.",
+    url: "https://www.mogen.co.za",
+    image: "/images/mogen-01-home.png",
+    tags: ["Web Development", "SEO", "Local Discovery"],
   },
   {
-    name: "Lighters of the World",
-    category: "Demonstration · Community Project",
-    desc: "Demonstration website illustrating donation and documentation structure.",
-    img: "https://media.base44.com/images/public/6a9593f32823a9ba2917bec0/545dd9c3f_generated_e75836b5.jpg",
-    image: "/images/545dd9c3f_generated_e75836b5.jpg",
-    tags: ["Web Development", "Donations", "Business Documentation"],
+    name: "Masoko Psychology",
+    category: "Live site · Psychology Practice",
+    desc: "Practice website presenting services and making it easy for clients to reach out.",
+    url: "https://www.masokopsychology.co.za",
+    image: "/images/masoko-01-home.png",
+    tags: ["Web Design", "Service Pages", "Enquiry Paths"],
   },
   {
-    name: "TechStart SA",
-    category: "Demonstration · Startup",
-    desc: "Demonstration landing page with lead capture and analytics setup.",
-    img: "https://media.base44.com/images/public/6a9593f32823a9ba2917bec0/23760dfef_generated_d82b3c44.jpg",
-    image: "/images/23760dfef_generated_d82b3c44.jpg",
-    tags: ["Landing Page", "Lead Capture", "Analytics"],
+    name: "Down2Earth Health & Beauty Spa",
+    category: "Live site · Health & Beauty Spa",
+    desc: "Spa website showcasing treatments and guiding visitors to book.",
+    url: "https://www.d2espa.co.za",
+    image: "/images/d2es-01-home.png",
+    tags: ["Web Design", "Bookings", "Local SEO"],
   },
 ];
 
@@ -58,10 +58,10 @@ export default function Portfolio({ numbering = 1 }: Readonly<Props>) {
           <h2 className="font-display text-4xl font-black leading-[1.05] text-ink lg:text-6xl text-balance">
             Selected work
             <br />
-            <span className="text-catalyst">and demonstrations.</span>
+            <span className="text-catalyst">and live sites.</span>
           </h2>
           <p className="max-w-md text-lg text-ink/70">
-            Selected work and demonstrations from the Mogen ecosystem —
+            Selected work and live sites from the Mogen ecosystem —
             illustrating how we structure websites for clarity and discovery.
           </p>
         </div>
@@ -69,11 +69,11 @@ export default function Portfolio({ numbering = 1 }: Readonly<Props>) {
         <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-3">
           {PROJECTS.map((p) => (
             <article key={p.name} className="group relative bg-bone">
-              <div className="relative aspect-4/3 overflow-hidden bg-ink/5">
+              <div className="relative aspect-[2/1] overflow-hidden bg-ink/5">
                 <Image
                   src={p.image}
                   alt={`${p.name} — ${p.desc}`}
-                  className="h-full w-full transition-transform duration-700 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   fill={true}
                   priority
                 />
@@ -87,10 +87,15 @@ export default function Portfolio({ numbering = 1 }: Readonly<Props>) {
               </div>
               <div className="p-6">
                 <h3 className="font-display text-2xl font-black text-ink">
-                  {p.name}
+                  {p.url ? (
+                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="hover:text-catalyst">{p.name}</a>
+                  ) : (
+                    p.name
+                  )}
                 </h3>
                 <p className="mt-2 text-sm text-ink/70">{p.desc}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <p className="mt-4 small-caps text-ink/40">Services delivered</p>
+                <div className="mt-1 flex flex-wrap gap-2">
                   {p.tags.map((t) => (
                     <span
                       key={t}
