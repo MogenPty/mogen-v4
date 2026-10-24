@@ -154,7 +154,7 @@ describe("task 7A — service consumers stay consistent", () => {
     for (const file of ["components/mogen/nav.tsx", "components/mogen/footer.tsx"]) {
       const source = readSource(file);
       // Exact hrefs (closing quote): the Growth Audit link targets
-      // `/services/seo#audit` and must not count as the SEO service link.
+      // `/services/seo/#audit` and must not count as the SEO service link.
       const order = [
         source.indexOf('"/services/web-development"'),
         source.indexOf('"/services/seo"'),

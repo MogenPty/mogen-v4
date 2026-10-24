@@ -78,7 +78,7 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
       >
         <BlueprintGrid className="bg-bone pb-24">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-            <MagneticButton as="a" href="/services/seo#audit" variant="catalyst">
+            <MagneticButton as="a" href="/services/seo/#audit" variant="catalyst">
               Run Free Growth Audit <ArrowRight className="h-4 w-4" />
             </MagneticButton>
           </div>

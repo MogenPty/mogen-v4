@@ -37,7 +37,7 @@ export default function CallToAction({ numbering = 1 }: Readonly<Props>) {
             </MagneticButton>
             <MagneticButton
               as="a"
-              href="/services/seo#audit"
+              href="/services/seo/#audit"
               variant="outline"
               className="border-white/60 text-white hover:bg-white hover:text-ink dark:hover:text-black"
             >

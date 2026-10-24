@@ -10,7 +10,7 @@ interface Props {
 
 export default function FinalCTA({
   numbering = 1,
-  auditHref = "/services/seo#audit",
+  auditHref = "/services/seo/#audit",
 }: Readonly<Props>) {
   return (
     <BlueprintGrid id="final-cta" className="bg-catalyst py-24 text-white lg:py-32">
