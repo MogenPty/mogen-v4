@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation";
  * `#section` href so the browser jumps straight to the section. On every
  * other route we keep the `/#section` form so the link still navigates
  * home and lands on the right section. (The Growth Audit moved to the SEO
- * service page in Phase 3, so its links point at `/services/seo#audit`
+ * service page in Phase 3, so its links point at `/services/seo/#audit`
  * and pass through untouched on every route.)
  */
 export function useAnchorHref(): (href: string) => string {

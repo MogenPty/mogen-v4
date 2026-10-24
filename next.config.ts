@@ -25,14 +25,10 @@ const nextConfig: NextConfig = {
         destination: "/articles/:slug",
         permanent: true,
       },
+      // Legacy /news/* (old thin articles since removed) → the articles hub.
       {
-        source: "/news",
+        source: "/news/:path*",
         destination: "/articles",
-        permanent: true,
-      },
-      {
-        source: "/news/:slug",
-        destination: "/articles/:slug",
         permanent: true,
       },
       {

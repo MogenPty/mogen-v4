@@ -251,7 +251,7 @@ const SERVICE_COMPONENT: Record<string, { page: string; anchor: string }> = {
  * Collapse a `path#hash` audit href to its bare `#hash` anchor when the
  * visitor is already on that path. Cross-route hrefs are returned as-is
  * so they still navigate to the audit's page (e.g. the homepage SEO
- * promotion override links to `/services/seo#audit`).
+ * promotion override links to `/services/seo/#audit`).
  */
 function collapseToSamePageAnchor(
   href: string,
@@ -259,7 +259,7 @@ function collapseToSamePageAnchor(
 ): string {
   const hashIndex = href.indexOf("#");
   if (hashIndex < 0 || !pathname) return href;
-  const hrefPath = href.slice(0, hashIndex) || "/";
+  const hrefPath = (href.slice(0, hashIndex) || "/").replace(/\/+$/, "") || "/";
   if (hrefPath === pathname) return href.slice(hashIndex);
   return href;
 }

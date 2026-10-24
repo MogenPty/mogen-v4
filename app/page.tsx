@@ -97,7 +97,7 @@ export default async function Home({
         <Portfolio numbering={numbering++} />
         <ArticlesPreview numbering={numbering++} />
         <LocationsPreview numbering={numbering++} />
-        <FinalCTA numbering={numbering++} auditHref="/services/seo#audit" />
+        <FinalCTA numbering={numbering++} auditHref="/services/seo/#audit" />
       </main>
       <Footer
         defaultServiceSlug="web-development"

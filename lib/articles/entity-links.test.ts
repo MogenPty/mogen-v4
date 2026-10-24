@@ -54,7 +54,10 @@ describe("entity links — tag bidirectionality", () => {
       .sort()) {
       const body = readFileSync(join(dir, f), "utf8").replace(/\r\n/g, "\n");
       for (const m of body.matchAll(/\(["']?\/services\/([^)"']+)["']?\)/g)) {
-        if (!valid.has(m[1])) dead.push(`${f}: /services/${m[1]}`);
+        // Strip a trailing fragment/anchor (e.g. /services/seo/#audit) so
+        // anchor links to a valid service page don't get flagged as dead.
+        const slug = m[1].split("#")[0].replace(/\/+$/, "");
+        if (!valid.has(slug)) dead.push(`${f}: /services/${m[1]}`);
       }
     }
     expect(dead).toEqual([]);

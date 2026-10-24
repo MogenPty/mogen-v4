@@ -16,7 +16,7 @@ export default function ServicesIndexPage() {
     <div className="bg-bone">
       <Nav defaultServiceSlug="web-development" />
       <main>
-        <Services numbering={2} auditHref="/services/seo#audit" />
+        <Services numbering={2} auditHref="/services/seo/#audit" />
       </main>
       <Footer defaultServiceSlug="web-development" />
       <ConversionBar defaultServiceSlug="web-development" />

@@ -55,7 +55,7 @@ describe("conversion settings (data-driven)", () => {
       expect(settings?.href).toBeTruthy();
     }
     expect(getConversionBarSettings("seo")?.href).toBe(
-      "/services/seo#audit",
+      "/services/seo/#audit",
     );
     expect(getConversionBarSettings("web-development")?.href).toBe(
       "/contact",
@@ -203,7 +203,7 @@ describe("conversion selection (service pages win)", () => {
       pathname: "/",
       today: TODAY,
     });
-    expect(home.href).toBe("/services/seo#audit");
+    expect(home.href).toBe("/services/seo/#audit");
 
     const elsewhere = resolveConversion({
       serviceSlug: "seo",
@@ -211,7 +211,7 @@ describe("conversion selection (service pages win)", () => {
       pathname: "/about",
       today: TODAY,
     });
-    expect(elsewhere.href).toBe("/services/seo#audit");
+    expect(elsewhere.href).toBe("/services/seo/#audit");
   });
 });
 
@@ -250,7 +250,7 @@ describe("homepage and promotions routes (promotion applies)", () => {
     expect(cta.overridden).toBe(true);
     expect(cta.kind).toBe("seo-audit");
     // The audit lives on the SEO service page — no same-page collapse.
-    expect(cta.href).toBe("/services/seo#audit");
+    expect(cta.href).toBe("/services/seo/#audit");
   });
 
   it("a featured Web promotion on the homepage stays on the questionnaire", () => {

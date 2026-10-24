@@ -111,7 +111,7 @@ export default function BlogPostBlock({
           </h2>
           <MagneticButton
             as="a"
-            href="/services/seo#audit"
+            href="/services/seo/#audit"
             variant="solid"
             className="bg-ink text-bone hover:bg-bone hover:text-ink"
           >

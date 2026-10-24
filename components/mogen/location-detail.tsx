@@ -266,7 +266,7 @@ export default function LocationDetail({
       </BlueprintGrid>
 
       {/* Next step */}
-      <FinalCTA numbering={numbering + 4} auditHref="/services/seo#audit" />
+      <FinalCTA numbering={numbering + 4} auditHref="/services/seo/#audit" />
     </PageShell>
   );
 }
