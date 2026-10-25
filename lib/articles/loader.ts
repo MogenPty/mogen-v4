@@ -101,6 +101,10 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
 
   if (typeof title !== "string" || title.trim().length === 0) {
     errors.push("Missing required frontmatter: title");
+  } else if (title.trim().length > 52) {
+    errors.push(
+      `title is ${title.trim().length} characters (max 52 so final title with suffix ≤ 60)`,
+    );
   }
   if (typeof slug !== "string" || slug.trim().length === 0) {
     errors.push("Missing required frontmatter: slug");
@@ -111,6 +115,10 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
   }
   if (typeof description !== "string" || description.trim().length === 0) {
     errors.push("Missing required frontmatter: description");
+  } else if (description.trim().length > 160) {
+    errors.push(
+      `description is ${description.trim().length} characters (max 160)`,
+    );
   }
   if (typeof publishedAt !== "string" || !isValidDateString(publishedAt)) {
     errors.push(
@@ -124,7 +132,9 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
     );
   }
 
-  const updatedAt = normalizeFrontmatterDate(data!.updatedAt ?? data!.update);
+  const updatedAt = normalizeFrontmatterDate(
+    data!.updatedAt ?? data!.update ?? data!.updated,
+  );
   if (data!.updatedAt !== undefined || data!.update !== undefined) {
     if (typeof updatedAt !== "string" || !isValidDateString(updatedAt)) {
       errors.push('Invalid frontmatter: updatedAt (expected "YYYY-MM-DD")');
