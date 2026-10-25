@@ -1,0 +1,304 @@
+---
+title: "Why Your Website Is Not Indexed by Google: Checklist"
+slug: "why-website-pages-not-indexed-google-checklist"
+description: "Find out why important pages may not appear in Google and use Search Console, sitemap checks and technical troubleshooting to diagnose indexing problems."
+publishedAt: "2026-10-22"
+updatedAt: "2026-10-22"
+author: "Mogen"
+category: "SEO"
+type: "evergreen"
+primaryKeyword: "why website pages are not indexed by Google"
+secondaryKeywords:
+  - "Google Search Console URL Inspection"
+  - "website indexing problems"
+  - "Google crawling errors"
+  - "XML sitemap troubleshooting"
+  - "technical SEO South Africa"
+  - "SEO Maboloka"
+  - "SEO Soshanguve"
+  - "SEO Centurion"
+tags:
+  - "seo"
+  - "technical seo"
+  - "google indexing"
+  - "search console"
+  - "small business"
+  - "south africa"
+  - "maboloka"
+  - "soshanguve"
+  - "centurion"
+featured: false
+---
+  You publish a new service page, article or product page, search for it on Google and cannot find it. The immediate assumption may be that the website needs more SEO work, but several different issues can produce this result.
+
+  Google must discover a URL, crawl it when appropriate, process its content and decide whether to include it in its index. A page can fail at different stages, and each stage requires a different investigation.
+
+  For small businesses in Maboloka, Soshanguve, Centurion and surrounding areas, understanding this process helps prevent unnecessary changes. Before rewriting an article or commissioning a larger SEO project, establish what is actually happening to the page.
+
+  This guide explains a practical troubleshooting sequence using official Google tools and documentation.
+
+  ## 1. Understand crawling, indexing and ranking
+
+  These terms describe different stages of search visibility.
+
+  **Crawling** is when Google accesses a URL and retrieves its content or resources.
+
+  **Indexing** involves processing information about the page and deciding whether it should be included in Google's index.
+
+  **Ranking** concerns the ordering of eligible results for a particular search.
+
+  A page can be crawled without being indexed. A page can be indexed without ranking prominently for the queries a business cares about. Fixing a crawling problem does not guarantee indexing, and indexing does not guarantee traffic.
+
+  Google's [crawling and indexing troubleshooting guidance](https://developers.google.com/search/docs/crawling-indexing/troubleshoot-crawling-errors) explains these distinctions and provides a diagnostic approach.
+
+  Begin by identifying which problem you are trying to solve.
+
+  ## 2. Inspect the exact URL in Google Search Console
+
+  If you have access to Google Search Console for the website, start with the URL Inspection tool.
+
+  Enter the full URL of the page you want to investigate. Check the information Google provides about its indexed status, the last crawl, any relevant indexing restrictions and the canonical URL selected by Google.
+
+  The [URL Inspection documentation](https://support.google.com/webmasters/answer/9012289?hl=en) explains how the tool helps site owners understand how Google sees an individual page.
+
+  Pay attention to whether the information describes the version currently in Google's index or the result of a live test. These are not identical checks.
+
+  If the page has recently changed, Google's stored information may not yet reflect the latest version. A live inspection can help determine whether the current page is accessible and whether an apparent problem remains.
+
+  Record the reported issue before changing the website. This creates a useful baseline for checking whether the fix worked.
+
+  ## 3. Check whether the page is accessible
+
+  A search engine cannot reliably process a page it cannot retrieve.
+
+  Open the URL in a private browser window or another session that is not already authenticated. Confirm that the page loads as intended without requiring an account or special access.
+
+  Check for:
+  - A `404 Not Found` response when the page should exist.
+  - A `403 Forbidden` or `401 Unauthorized` response.
+  - Server errors.
+  - Redirects to an unexpected destination.
+  - Redirect loops.
+  - A page that loads but displays an error or almost no useful content.
+  - Temporary hosting or deployment failures.
+
+  A page that looks normal in your browser may still behave differently for a crawler if the server, routing or required resources are not working correctly.
+
+  If the page returns an unexpected status code, resolve that problem before repeatedly requesting indexing.
+
+  If the page has permanently moved to a clear replacement, implement an appropriate permanent redirect. If the content has genuinely been removed and no replacement exists, the correct response may be a not-found status rather than redirecting every missing URL to the homepage.
+
+  ## 4. Check for accidental indexing restrictions
+
+  A common technical problem is publishing a page with a directive that tells search engines not to index it.
+
+  Inspect the page's HTML and HTTP response headers for a `noindex` directive, including a robots meta tag or an `X-Robots-Tag` response header.
+
+  Google explains these controls in its [guide to controlling what you share on Search](https://developers.google.com/search/docs/crawling-indexing/control-what-you-share).
+
+  A restriction can be appropriate for private account pages, internal search results, staging environments or content that should not appear in search.
+
+  It becomes a problem when the directive is accidentally applied to a public service page or article that the business wants to be eligible for Search.
+
+  Review the final production output rather than relying only on settings in the content management system. A page may inherit a directive from a template, deployment configuration or plugin.
+
+  ### Do not confuse robots.txt with noindex
+
+  These controls serve different purposes.
+
+  A robots.txt rule can restrict crawling. A `noindex` directive tells a search engine not to index the content when the crawler can access and process that directive.
+
+  If crawling is blocked, Google may not be able to read a page-level `noindex` directive. Therefore, do not treat robots.txt as a replacement for a page-level indexing instruction.
+
+  Review Google's documentation before changing these controls, particularly if the website contains sensitive or private content.
+
+  ## 5. Check the sitemap
+
+  An XML sitemap helps communicate which URLs a website considers important and eligible for discovery.
+
+  Confirm that the sitemap:
+  - Loads successfully.
+  - Uses the intended canonical URLs.
+  - Includes the important public pages.
+  - Does not list URLs that return errors.
+  - Does not unnecessarily include redirected or non-canonical URLs.
+  - Is updated when the relevant site content changes.
+
+  If the website has multiple sitemap files, confirm that the sitemap index points to the correct files.
+
+  You can submit the sitemap through Search Console and inspect any reported processing issues.
+
+  However, a sitemap is not a command that forces Google to index every listed page. It is a discovery aid, and Google may choose not to index a URL.
+
+  Google's [crawling troubleshooting guide](https://developers.google.com/search/docs/crawling-indexing/troubleshoot-crawling-errors) specifically cautions against expecting sitemap submission to cause immediate crawling.
+
+  ## 6. Confirm that important pages can be discovered through links
+
+  A page can be present in a sitemap and still be difficult for users and search engines to discover through the site's navigation.
+
+  Check whether the page is linked from a relevant, accessible page on the website.
+
+  For example, a service page should usually be reachable through a sensible navigation structure, a services overview or another relevant page.
+
+  Use ordinary crawlable links rather than relying entirely on a button that works only after a complex client-side interaction.
+
+  Also inspect whether the page is accidentally orphaned: a URL that exists but receives no meaningful internal links.
+
+  Internal links help users navigate and provide context about how pages relate to one another. They should be descriptive and useful rather than inserted merely to repeat keywords.
+
+  A page intended to support a business's main service should have a clear relationship to that service within the site's structure.
+
+  ## 7. Investigate canonical URLs and duplicate content
+
+  Websites can expose similar or identical content through several URLs.
+
+  For example, the same content might be available through different URL parameters, trailing-slash variations or alternative paths. A website may also have an older page and a new page covering substantially the same subject.
+
+  A canonical link helps communicate which URL should be treated as the preferred version among duplicates or very similar pages.
+
+  Inspect the canonical URL declared by the page and compare it with the canonical URL Google reports, where available.
+
+  Ask:
+  - Does the canonical point to the intended page?
+  - Does it accidentally point to the homepage?
+  - Does it point to a staging domain?
+  - Is the preferred URL accessible?
+  - Do internal links consistently use the intended URL?
+  - Are redirects and sitemap entries aligned with the preferred version?
+
+  A canonical declaration is a signal, not an absolute guarantee that Google will select that URL. The page's overall configuration and duplicate-content relationship still matter.
+
+  Avoid using canonical tags to solve unrelated technical problems or to make substantially different pages appear equivalent.
+
+  ## 8. Check whether the page provides enough distinct value
+
+  Not every indexing issue is caused by a technical error.
+
+  Google may crawl a page and still decide not to include it in the index. Pages that provide little distinct value, duplicate other content or satisfy no clear user need may struggle to earn inclusion.
+
+  Review the page from the visitor's perspective.
+
+  Does it:
+  - Answer a genuine question?
+  - Explain a service accurately?
+  - Provide information that is useful beyond a repeated keyword?
+  - Match what the page title promises?
+  - Offer a clear purpose within the wider website?
+  - Contain enough relevant information for its intended role?
+
+  Google's [people-first content guidance](https://developers.google.com/search/docs/fundamentals/creating-helpful-content) recommends producing useful content for people rather than creating pages primarily to manipulate search rankings.
+
+  For businesses serving Maboloka, Soshanguve and Centurion, this means that location pages should reflect real service information and meaningful differences where applicable. Repeating the same paragraphs while replacing a town name does not automatically create useful local content.
+
+  If the page adds little value, improve or consolidate it rather than repeatedly submitting it for indexing.
+
+  ## 9. Check rendering and required resources
+
+  Some websites depend on JavaScript to display important content or generate links.
+
+  If the initial HTML contains very little useful information and the page relies on scripts to render the main content, investigate whether the required resources load correctly and whether the rendered page contains the expected information.
+
+  Check for:
+  - JavaScript errors.
+  - Blocked or unavailable resources.
+  - API requests that fail.
+  - Content that appears only after a user interaction.
+  - Empty or incomplete output during rendering.
+  - Differences between the intended page and the version available to crawlers.
+
+  Google can process JavaScript, but implementation details can affect how efficiently and reliably content is discovered and rendered.
+
+  If a page displays a blank screen or an error to the crawler, it may be interpreted differently from the complete page a developer sees locally.
+
+  Use live inspection and appropriate browser or server diagnostics to identify the cause before rewriting the content.
+
+  ## 10. Understand redirects and website migrations
+
+  If you recently changed the website's structure, moved pages or migrated to another platform, review the redirect and canonical configuration carefully.
+
+  Typical migration issues include:
+  - Old URLs returning errors instead of redirecting to relevant replacements.
+  - Redirect chains that pass through several intermediate URLs.
+  - Important internal links still pointing to old paths.
+  - Canonical tags referencing the previous domain.
+  - Sitemaps listing obsolete URLs.
+  - Pages accidentally left behind in a staging environment.
+  - Important content missing from the new version.
+
+  Google explains that site moves can cause temporary fluctuations while URLs are crawled and reprocessed. Recovery time varies according to the size of the website, the changes involved and Google's processing.
+
+  Do not assume that every temporary ranking change means the migration has failed. Investigate the technical configuration and monitor the affected pages.
+
+  If the business has a substantial indexed website, plan the migration, maintain an old-to-new URL map and test critical URLs before switching traffic.
+
+  ## 11. Give Google time to process legitimate changes
+
+  After correcting an issue, use the relevant Search Console tools to verify the current state and request recrawling where appropriate.
+
+  Avoid submitting the same unchanged sitemap repeatedly or assuming that an indexing request guarantees inclusion.
+
+  Google's troubleshooting guidance notes that many websites should not expect new pages to be crawled and indexed on the same day they are published.
+
+  Once a page is technically accessible and correctly configured, allow time for processing and monitor its status.
+
+  If the issue persists, return to the diagnostic evidence rather than making unrelated changes simply because the page has not appeared yet.
+
+  ## A practical indexing troubleshooting table
+
+  | Symptom | What to inspect first | Possible next step |
+  |---|---|---|
+  | URL returns an error | HTTP status and server logs | Fix routing, hosting or the intended URL response |
+  | Page has a `noindex` directive | HTML and response headers | Remove the directive if indexing is intended |
+  | Page is blocked from crawling | robots.txt rules and relevant access settings | Correct unintended restrictions |
+  | Sitemap reports errors | Sitemap contents and availability | Fix malformed entries and remove unsuitable URLs |
+  | Google selects another canonical | Canonical tag, redirects and duplicate content | Align URL signals and content structure |
+  | Page is crawled but not indexed | Content value, duplication and technical output | Improve distinct value and check rendering |
+  | Pages disappeared after a migration | Redirect map, canonicals, internal links and sitemap | Correct migration issues and monitor affected URLs |
+  | Page is indexed but gets little traffic | Search queries, content relevance and competition | Investigate ranking and search-intent issues separately |
+
+  > **CTA — Review your SEO**
+  >
+  > If important pages are not appearing in search, explore Mogen's SEO service to understand how technical SEO, indexation and content issues can be investigated.
+  >
+  > [Explore Mogen SEO](/services/seo)
+
+  ## Frequently asked questions
+
+  ### Does submitting a sitemap guarantee that Google will index my pages?
+
+  No. A sitemap helps search engines discover URLs, but it does not guarantee crawling, indexing or ranking.
+
+  ### How long does Google take to index a new page?
+
+  There is no guaranteed timeline. Google may take several days or longer to discover and process a page. Technical problems, discovery, content value and search demand can all affect the outcome.
+
+  ### Should I use the `site:` search operator to check indexing?
+
+  It can provide a rough indication, but it is not an exhaustive index report. Google recommends URL Inspection in Search Console for more reliable diagnosis of an individual URL.
+
+  ### If a page is indexed, does that mean it will rank well?
+
+  No. Indexing makes a page eligible to appear in relevant search results; it does not guarantee prominent rankings or traffic.
+
+  > **CTA — Try Mogen's Growth Audit**
+  >
+  > Mogen's SEO page includes a Growth Audit that examines selected technical and on-page signals from your public website. Use it as an initial diagnostic, not as a substitute for Google Search Console data or a full investigation.
+  >
+  > [Open Mogen's SEO page and Growth Audit](/services/seo/#audit)
+
+  ## Conclusion
+
+  When a page is missing from Google, diagnose the actual problem before making broad changes.
+
+  Inspect the URL, confirm that it is accessible, check indexing restrictions and canonicals, review the sitemap and internal links, and assess whether the page provides distinct value.
+
+  For businesses in Maboloka, Soshanguve, Centurion and surrounding areas, a consistent technical checklist can help distinguish genuine indexing problems from normal processing delays or ranking challenges.
+
+  The aim is not to force every URL into Google's index. It is to make important, useful pages accessible, discoverable and correctly configured.
+
+  ## Sources
+
+  - [Google Search Central: Troubleshoot crawling errors](https://developers.google.com/search/docs/crawling-indexing/troubleshoot-crawling-errors)
+  - [Google Search Console Help: URL Inspection tool](https://support.google.com/webmasters/answer/9012289?hl=en)
+  - [Google Search Central: Control what you share on Search](https://developers.google.com/search/docs/crawling-indexing/control-what-you-share)
+  - [Google Search Central: Creating helpful, reliable, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)

@@ -113,6 +113,25 @@ describe("articles — validation", () => {
     );
   });
 
+  it("fails when title exceeds 60 characters", () => {
+    const longTitle = "A".repeat(61);
+    const raw = validRaw().replace('title: "Test Article"', `title: "${longTitle}"`);
+    expect(() => parseArticleFile("test-article.mdx", raw)).toThrow(/title/);
+    expect(() => parseArticleFile("test-article.mdx", raw)).toThrow(/60/);
+  });
+
+  it("fails when description exceeds 160 characters", () => {
+    const longDesc = "D".repeat(161);
+    const raw = validRaw().replace(
+      'description: "A test description."',
+      `description: "${longDesc}"`,
+    );
+    expect(() => parseArticleFile("test-article.mdx", raw)).toThrow(
+      /description/,
+    );
+    expect(() => parseArticleFile("test-article.mdx", raw)).toThrow(/160/);
+  });
+
   it("fails on filename/slug mismatch with both values", () => {
     const raw = validRaw().replace('slug: "test-article"', 'slug: "other-slug"');
     // Filename says test-article, slug says other-slug.
