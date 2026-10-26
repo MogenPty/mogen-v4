@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
+import JSAnalytics from "@/components/mogen/js-analytics";
+import RampifyAnalytics from "@/components/mogen/rampify-analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { siteConfig } from "@/data/site";
 import { ACCENT_INIT_SCRIPT, DEFAULT_ACCENT } from "@/lib/accent";
-import { GoogleAnalytics } from "@next/third-parties/google";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -84,12 +86,8 @@ export default function RootLayout({
         {/* Apply the persisted accent before first paint (no flash). */}
         {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Using this to inject an HTML */}
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
-        {/* Rampify site tracker (all pages): deferred, loads after parsing. */}
-        <script
-          defer
-          src="https://www.rampify.dev/tracker.js"
-          data-site-id="70828220-693a-4215-b8e7-e3ab3c4235bd"
-        />
+        {process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID && <RampifyAnalytics />}
+        <JSAnalytics />
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider
@@ -103,9 +101,9 @@ export default function RootLayout({
         <SpeedInsights />
         <Analytics />
       </body>
-      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
-      ) : null}
+      )}
     </html>
   );
 }

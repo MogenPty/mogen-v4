@@ -1,5 +1,7 @@
 "use client";
 
+import { trackConversion } from "@/lib/rampify-tracker";
+
 import {
   ArrowRight,
   CheckCircle2,
@@ -73,6 +75,7 @@ export default function ResourcesBlock({ numbering = 1 }: Readonly<Props>) {
       //     status: "new",
       //   });
       setSaving(false);
+      trackConversion("contact");
       setDone(true);
     } catch {
       setSaving(false);
