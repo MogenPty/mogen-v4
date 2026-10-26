@@ -86,11 +86,8 @@ export default function RootLayout({
         {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Using this to inject an HTML */}
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
         {/* Rampify site tracker (all pages): deferred, loads after parsing. */}
-        <script
-          defer
-          src="https://www.rampify.dev/tracker.js"
-          data-site-id="70828220-693a-4215-b8e7-e3ab3c4235bd"
-        />
+
+        <JSAnalytics />
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider
@@ -104,7 +101,9 @@ export default function RootLayout({
         <SpeedInsights />
         <Analytics />
       </body>
-      <JSAnalytics />
+      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+      )}
     </html>
   );
 }

@@ -1,7 +1,5 @@
 "use client";
 
-import { GoogleAnalytics } from "@next/third-parties/google";
-
 export default function JSAnalytics() {
   return (
     <>
@@ -10,10 +8,14 @@ export default function JSAnalytics() {
           src="https://analytics.ahrefs.com/analytics.js"
           data-key={process.env.NEXT_PUBLIC_AHREFS_ANALYTICS_ID}
           async
-        ></script>
+        />
       )}
-      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+      {process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID && (
+        <script
+          defer
+          src="https://www.rampify.dev/tracker.js"
+          data-site-id={process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID}
+        />
       )}
     </>
   );
