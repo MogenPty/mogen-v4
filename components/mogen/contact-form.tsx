@@ -9,6 +9,7 @@ import { siteConfig } from "@/data/site";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import MagneticButton from "./magnet-button";
+import { trackConversion } from "@/lib/rampify-tracker";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const TURNSTILE_ACTION = "contact";
@@ -204,6 +205,7 @@ export default function ContactForm({
         return;
       }
       setSaving(false);
+      trackConversion("contact");
       setDone(true);
     } catch {
       setSaving(false);

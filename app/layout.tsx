@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
 import JSAnalytics from "@/components/mogen/js-analytics";
+import RampifyAnalytics from "@/components/mogen/rampify-analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { siteConfig } from "@/data/site";
 import { ACCENT_INIT_SCRIPT, DEFAULT_ACCENT } from "@/lib/accent";
@@ -85,8 +86,7 @@ export default function RootLayout({
         {/* Apply the persisted accent before first paint (no flash). */}
         {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Using this to inject an HTML */}
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
-        {/* Rampify site tracker (all pages): deferred, loads after parsing. */}
-
+        {process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID && <RampifyAnalytics />}
         <JSAnalytics />
       </head>
       <body className="min-h-full flex flex-col">

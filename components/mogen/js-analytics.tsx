@@ -10,13 +10,6 @@ export default function JSAnalytics() {
           async
         />
       )}
-      {process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID && (
-        <script
-          defer
-          src="https://www.rampify.dev/tracker.js"
-          data-site-id={process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID}
-        />
-      )}
     </>
   );
 }

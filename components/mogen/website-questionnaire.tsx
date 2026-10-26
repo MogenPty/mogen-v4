@@ -1,5 +1,7 @@
 "use client";
 
+import { trackConversion } from "@/lib/rampify-tracker";
+
 import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import Script from "next/script";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -347,6 +349,7 @@ export default function WebsiteQuestionnaire({
         );
       }
       setSaving(false);
+      trackConversion("contact");
       setDone(true);
     } catch (err) {
       setSaving(false);

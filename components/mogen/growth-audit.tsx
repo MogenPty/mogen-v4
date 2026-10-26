@@ -1,5 +1,7 @@
 "use client";
 
+import { trackConversion } from "@/lib/rampify-tracker";
+
 import {
   ArrowRight,
   CheckCircle2,
@@ -283,6 +285,7 @@ export default function GrowthAudit({ numbering = 1 }: Readonly<Props>) {
         // Storage failure must not block the success state — the PDF is emailed.
       }
       setSaving(false);
+      trackConversion("contact");
       setStep(3);
       setDone(true);
     } catch (err) {
