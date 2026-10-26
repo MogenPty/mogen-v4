@@ -26,7 +26,7 @@ export interface ArticleFrontmatter {
   category?: string;
   tags?: string[];
   featured?: boolean;
-  heroImage?: string;
+  heroImage?: string | string[];
   heroImageAlt?: string;
   /**
    * Optional explicit service associations as stable service slugs

@@ -9,7 +9,7 @@ import { getPosts, sortPostsByDateDesc, toArticleSummary } from "@/data/blog";
 import { slugifyTag, tagArchivePath } from "@/lib/articles/tags";
 import type { ArticleSummary } from "@/lib/articles/types";
 import { formatNumber } from "@/lib/utils";
-import ArticleImage from "./article-image";
+import ArticleHeroSlideshow from "./article-hero-slideshow";
 
 interface Props {
   article: ArticleSummary;
@@ -34,38 +34,33 @@ export default function BlogPostBlock({
   ].filter(Boolean);
   const intro = introParts.join(" · ");
 
+  const heroImages = article.heroImage ? [...article.heroImage] : [];
+
   return (
     <PageShell
       index={`// ${formatNumber(numbering)} — Insights`}
       label={article.category}
       title={article.title}
       intro={intro}
+      headerMedia={
+        heroImages.length > 0 ? (
+          <ArticleHeroSlideshow
+            images={heroImages}
+            alt={article.heroImageAlt ?? article.title}
+          />
+        ) : undefined
+      }
+      headerFooter={
+        <Link
+          href="/articles"
+          className="small-caps inline-flex items-center gap-2 text-ink/60 hover:text-catalyst"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to articles
+        </Link>
+      }
     >
-      <BlueprintGrid className="bg-bone pb-20">
-        <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-          <Link
-            href="/articles"
-            className="small-caps inline-flex items-center gap-2 text-ink/60 hover:text-catalyst"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to articles
-          </Link>
-        </div>
-      </BlueprintGrid>
-
-      {article.heroImage ? (
-        <BlueprintGrid className="bg-bone pb-12">
-          <div className="mx-auto max-w-190 px-6 lg:px-10">
-            <ArticleImage
-              src={article.heroImage}
-              alt={article.heroImageAlt ?? article.title}
-              priority
-            />
-          </div>
-        </BlueprintGrid>
-      ) : null}
-
       <BlueprintGrid className="bg-bone pb-24">
-        <div className="mx-auto max-w-190 px-6 lg:px-10">
+        <div className="w-full px-4 sm:px-6 lg:mx-auto lg:max-w-190 lg:px-10">
           {article.updatedAt && article.updatedAt !== article.publishedAt ? (
             <p className="small-caps mb-6 text-ink/50">
               Updated {article.updatedAt}
