@@ -71,9 +71,10 @@ export const siteConfig = {
   logo: "/images/mogen/mogen-512x512.png",
   icon: "/images/mogen/mogen-fav-32x32.png",
   appleIcon: "/images/mogen/mogen-fav-180x180.png",
-  ogImage: "/images/mogen/mogen-1200x450.png",
+  ogImageOld: "/images/mogen/mogen-1200x450.png",
+  ogImage: "/images/mogen/mogen-1200x630.png",
   ogImageWidth: 1200,
-  ogImageHeight: 450,
+  ogImageHeight: 630,
   ogImageAlt: "MOGEN — Digital services for South African businesses",
   // Social profiles — ONLY verified via repo or official Mogen-owned profile.
   // Known evidence: https://za.linkedin.com/company/mogenpty exists but NOT confirmed in repo.

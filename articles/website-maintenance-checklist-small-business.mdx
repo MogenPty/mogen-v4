@@ -1,0 +1,286 @@
+---
+title: "Checklist: Website Maintenance for Small Businesses"
+slug: "website-maintenance-checklist-small-business"
+description: "A practical website maintenance checklist for South African small businesses covering backups, updates, security, uptime, performance and recovery planning."
+publishedAt: "2026-10-27"
+updatedAt: "2026-10-27"
+author: "Mogen"
+category: "Web Development"
+type: "evergreen"
+primaryKeyword: "website maintenance for small businesses"
+secondaryKeywords:
+  - "website maintenance checklist"
+  - "website security updates"
+  - "website backup and recovery"
+  - "website performance monitoring"
+  - "small business website management"
+  - "Core Web Vitals"
+tags:
+  - "web development"
+  - "website maintenance"
+  - "website security"
+  - "website performance"
+  - "small business"
+  - "websites"
+  - "website architecture"
+  - "accessibility"
+featured: false
+heroImage: "/images/articles/modern-web-development-workspace-1.png"
+heroImageAlt: "Modern web development workspace"
+---
+  A business website is not a once-off project that can be ignored after launch. Software changes, security vulnerabilities are discovered, contact details become outdated, and the services advertised on the site evolve. Even a simple brochure website can develop problems that prevent customers from contacting the business or finding accurate information.
+
+  For a [small business](/articles/tag/small-business), [website maintenance](/articles/tag/website-maintenance) does not necessarily mean commissioning a redesign every few months. It means establishing a repeatable process for keeping the website secure, available, accurate and useful.
+
+  This is particularly important for South African businesses that depend on their [websites](/articles/tag/websites) to answer customer questions, generate enquiries or support sales. A website must work for people using different devices and internet connections, not just for the person checking it on the office computer.
+
+  This guide provides a practical website maintenance checklist that owners can follow themselves or use to manage a web developer or hosting provider.
+
+  ## What does website maintenance actually include?
+
+  Website maintenance is the ongoing work required to keep a website functioning as intended. It usually covers several connected areas:
+
+  - **Security:** applying updates, protecting administrator accounts and monitoring suspicious activity.
+  - **Reliability:** checking availability, forms, navigation and other important functions.
+  - **Recovery:** maintaining backups and knowing how to restore the website after a failure.
+  - **Performance:** checking loading speed, responsiveness and mobile usability.
+  - **Content accuracy:** ensuring that contact details, prices, services and business information remain correct.
+  - **Technical health:** reviewing domains, certificates, integrations, dependencies and hosting arrangements.
+
+  Not every business needs an elaborate maintenance contract. A small informational website may require a simpler routine than an online store, booking platform or application that processes customer information.
+
+  The important thing is to match maintenance to the website's purpose and risk.
+
+  ## 1. Back up the website and test recovery
+
+  A backup is useful only if it contains the information needed to recover the website and can actually be restored.
+
+  Depending on the technology used, a complete backup may need to include:
+
+  - Website files, themes and configuration.
+  - The database and customer-generated content.
+  - Uploaded documents and images.
+  - Relevant configuration files and deployment settings.
+  - Information needed to reconnect the domain, hosting and external services.
+
+  A static website may not need a database backup, while a content-managed website or online store usually has additional information that must be protected.
+
+  Keep backups separate from the main website where practical. If the only backup is stored in the same account as the live website, a compromised account or serious hosting failure could affect both.
+
+  ### Choose a backup schedule
+
+  The appropriate frequency depends on how frequently the website changes and how much information the business can afford to lose.
+
+  For example:
+
+  - A website that changes occasionally may need a scheduled backup before updates and another routine backup.
+  - A site publishing content every day should back up its content more frequently.
+  - An online store may need much more frequent database protection because orders and customer records change continuously.
+
+  Record who is responsible for backups, where they are stored, how long they are retained and how recovery is performed.
+
+  ### Test a restoration
+
+  A backup job reporting success does not prove that a complete restoration will work. Periodically restore a backup to a safe test environment and verify that the website loads, its content is present and important functions operate correctly.
+
+  WordPress's [official update guidance](https://wordpress.org/documentation/article/updating-wordpress/) recommends backing up before an update so the website can be restored if something goes wrong.
+
+  ## 2. Keep software and dependencies up to date
+
+  Websites often depend on multiple layers of software. A WordPress installation may use the core platform, a theme and several plugins. A custom-built application may depend on a runtime, frameworks, libraries, APIs and deployment tools.
+
+  Each dependency can introduce maintenance responsibilities.
+
+  The [OWASP Top 10:2025](https://top10.owasp.org/2025/A03_2025-Software_Supply_Chain_Failures/) identifies software supply-chain failures as an important application-security risk. Outdated, unsupported or vulnerable components can expose a website to problems even when the website's own code appears unchanged.
+
+  A sensible update process includes the following steps:
+
+  1. Review available updates and security advisories.
+  2. Check whether the update affects compatibility or functionality.
+  3. Confirm that a recent backup is available.
+  4. Apply updates in a test environment when the website is complex or business-critical.
+  5. Test the main pages and customer journeys.
+  6. Deploy the change and check the live website.
+  7. Record the update and any problems encountered.
+
+  Automatic updates can reduce the time software remains unpatched, but they do not remove the need to check that the website still works. WordPress, for example, supports automatic updates for eligible plugins and themes; its [plugin and theme auto-update documentation](https://wordpress.org/documentation/article/plugins-themes-auto-updates/) also discusses backups and troubleshooting.
+
+  Do not install updates blindly on a business-critical website without considering the recovery process. Equally, do not leave software unsupported indefinitely simply because the owner is worried that an update might cause a problem.
+
+  ## 3. Review access, passwords and security settings
+
+  [Website security](/articles/tag/website-security) is not limited to the hosting provider. Weak passwords, unnecessary administrator accounts and forgotten third-party integrations can create avoidable risks.
+
+  Review these areas monthly:
+
+  - Remove accounts belonging to people who no longer need access.
+  - Use unique passwords for the website, hosting, domain registrar and related accounts.
+  - Enable multi-factor authentication where supported.
+  - Give users only the permissions necessary for their responsibilities.
+  - Check that administrative access is protected.
+  - Review unfamiliar changes, unexpected redirects and suspicious files.
+  - Confirm that the domain and its renewal details are under appropriate control.
+
+  Keep the website's software, hosting environment and relevant dependencies supported. If a developer uses a source-code repository or deployment platform, make sure the business knows who controls those accounts and how access would be transferred if the working relationship ended.
+
+  For a small business, ownership and access documentation matter. A website may look healthy while the business owner lacks the credentials required to update it or recover it during an emergency.
+
+  ## 4. Test the website as a customer would
+
+  A successful homepage load is not proof that a website is working properly.
+
+  Test the actions that matter to the business:
+
+  - Can a visitor find the contact details?
+  - Do email links and telephone links work on mobile?
+  - Does the enquiry form submit successfully?
+  - Does the correct person receive the enquiry?
+  - Do important buttons lead to the intended destination?
+  - Are product or service details accurate?
+  - Do navigation menus work on smaller screens?
+  - Are important pages returning errors?
+  - Do booking, payment or other integrations behave as expected?
+
+  Where forms are involved, submit a controlled test enquiry and verify the complete journey, including delivery to the intended inbox or system. Use a test address and avoid sending unnecessary personal information.
+
+  If the website supports purchases, bookings or account access, include those functions in the maintenance plan. A broken checkout can be more serious than a minor visual defect because it directly affects the transaction.
+
+  ## 5. Check performance, particularly on mobile
+
+  [Website performance](/articles/tag/website-performance) affects whether people can use the site comfortably. Large images, excessive scripts, slow server responses and unstable page layouts can make a website frustrating, especially on less capable devices or slower connections.
+
+  Google’s [Core Web Vitals guidance](https://web.dev/articles/vitals) identifies three key measurements:
+
+  - **Largest Contentful Paint (LCP):** how quickly the main visible content loads. The recommended good threshold is 2.5 seconds or less.
+  - **Interaction to Next Paint (INP):** how responsive the page is to user interactions. The recommended good threshold is 200 milliseconds or less.
+  - **Cumulative Layout Shift (CLS):** how much unexpected movement occurs in visible page content. The recommended good threshold is 0.1 or less.
+
+  These thresholds are evaluated at the 75th percentile of page loads, with mobile and desktop considered separately.
+
+  They are useful performance targets, not a promise of rankings or sales. A website should also be tested against its actual purpose and audience.
+
+  During a maintenance review:
+
+  1. Check important pages with PageSpeed Insights or suitable browser tools.
+  2. Review oversized images and unnecessary third-party scripts.
+  3. Confirm that fonts, images and embedded content do not cause disruptive layout movement.
+  4. Test forms, menus and buttons on a phone.
+  5. Compare results over time instead of relying on a single score.
+
+  A business serving customers in areas where connectivity varies should pay particular attention to page weight and unnecessary interactions. A visitor should not have to download a large collection of animations or marketing scripts just to find a telephone number.
+
+  ## 6. Review content, links and business information
+
+  Website maintenance also includes editorial checks.
+
+  Review the following information regularly:
+
+  - Business name and contact details.
+  - Opening hours and appointment arrangements.
+  - Current services and product descriptions.
+  - Prices, where published.
+  - Staff information and biographies.
+  - Policies, terms and privacy notices.
+  - Expired promotions and outdated announcements.
+  - Broken links, missing images and old downloads.
+
+  Remove claims that are no longer accurate. If the business has changed its operating model or service area, make sure the website reflects the real situation.
+
+  Avoid leaving temporary notices, unfinished pages or outdated promotional material online. They can create confusion and reduce trust.
+
+  ## 7. Monitor availability and important errors
+
+  Uptime monitoring can notify the responsible person when a website stops responding. It is especially useful when the website is an important source of enquiries or supports transactions.
+
+  A basic monitoring arrangement should identify:
+
+  - What is monitored.
+  - How frequently checks run.
+  - Who receives alerts.
+  - How incidents are escalated.
+  - What recovery steps are available.
+
+  A monitoring alert should lead to a defined response. If nobody checks the notification, the monitoring system provides limited operational value.
+
+  Also review hosting resource limits, domain expiry dates, SSL/TLS certificate status, failed scheduled tasks and relevant application logs. The precise checks depend on the hosting platform and [website architecture](/articles/tag/website-architecture).
+
+  ## A practical monthly maintenance schedule
+
+  | Frequency | Suggested tasks |
+  | --- | --- |
+  | Weekly | Review important alerts, check availability and investigate reported problems. |
+  | Monthly | Review updates, test forms, check content, examine performance and verify access. |
+  | Before major changes | Create a backup, assess risk, test the change and prepare a rollback plan. |
+  | Quarterly | Test restoration, review user permissions, remove unused integrations and assess ongoing needs. |
+  | Annually | Review hosting, domain ownership, software support, business goals and maintenance arrangements. |
+
+  This is a starting point, not a universal timetable. An online store may need more frequent checks, while a low-change informational website may need fewer routine interventions.
+
+  **Need help identifying technical priorities?** A website assessment can help establish which areas deserve attention first.
+
+  > **Website assessment:** [Request an assessment from Mogen](/#assessment) to discuss the website's current condition and the improvements that may be appropriate.
+
+  ## 8. Decide who is responsible for maintenance
+
+  Website maintenance becomes unreliable when responsibilities are unclear.
+
+  The owner may be responsible for approving content, while a developer handles technical updates and a hosting provider manages infrastructure. These roles should be documented rather than assumed.
+
+  At minimum, record:
+
+  - The person responsible for routine maintenance.
+  - Who controls the domain and hosting accounts.
+  - Where backups are stored and how restoration works.
+  - Which software and external services the website depends on.
+  - How problems are reported and prioritised.
+  - What maintenance is included in any service agreement.
+  - Which activities require a separate quotation or approval.
+
+  Do not assume that hosting automatically includes application updates, content editing, backups or restoration. Confirm what the provider actually supplies.
+
+  If the website was built by a previous developer, obtain the necessary access details and technical documentation before a problem occurs.
+
+  ## 9. When should you consider professional maintenance?
+
+  Professional assistance is worth considering when the website processes payments or personal information, uses complex integrations, has recurring failures, or depends on software that the owner cannot safely update.
+
+  It may also be appropriate when nobody can explain how the website would be recovered after a serious incident.
+
+  The aim is not to make every business buy a large maintenance package. It is to ensure that the level of support matches the website's importance and complexity.
+
+  If you are planning a new website, include maintainability in the original discussion. Ask how updates will be handled, who owns the source code and accounts, how backups work, and what happens if the website needs to be moved to another provider.
+
+  > **Web development options:** 
+  > 
+  > Visit [Mogen's website](/services/web-development) to explore web development options and discuss an approach that fits your business requirements.
+
+  ## Frequently asked questions
+
+  ### How often should a small business website be maintained?
+
+  Review important functions and alerts regularly, perform a structured maintenance review monthly, and test recovery periodically. Increase the frequency when the website changes frequently or supports important transactions.
+
+  ### Are website backups enough to keep a website secure?
+
+  No. Backups support recovery, but they do not replace security updates, access controls, monitoring and incident response.
+
+  ### Should every website use automatic updates?
+
+  Automatic updates can be useful, but suitability depends on the platform, compatibility risks and recovery arrangements. Use a process that keeps software supported while checking that important functions continue to work.
+
+  ### Does website maintenance improve Google rankings?
+
+  Good technical maintenance can support [accessibility](/articles/tag/accessibility), usability and performance. However, maintenance alone does not guarantee rankings. Search visibility also depends on relevance, useful content, competition and other factors.
+
+  ## Conclusion
+
+  A reliable website is maintained deliberately rather than left unattended. Regular backups, sensible updates, access reviews, performance checks and functional testing reduce avoidable problems and help the business remain in control of its online presence.
+
+  Start with a simple checklist, assign responsibility and document what was checked. As the website becomes more important to the business, expand the maintenance process to match its risks and requirements.
+
+  ## Sources
+
+  - [WordPress: Updating WordPress](https://wordpress.org/documentation/article/updating-wordpress/)
+  - [WordPress: Plugin and theme auto-updates](https://wordpress.org/documentation/article/plugins-themes-auto-updates/)
+  - [OWASP Top 10:2025 — Software Supply Chain Failures](https://top10.owasp.org/2025/A03_2025-Software_Supply_Chain_Failures/)
+  - [web.dev: Web Vitals](https://web.dev/articles/vitals)
