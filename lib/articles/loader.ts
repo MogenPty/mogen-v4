@@ -143,7 +143,13 @@ export function parseArticleFile(fileName: string, raw: string): ParsedArticle {
 
   const heroImage = data!.heroImage;
   if (heroImage !== undefined) {
-    if (typeof heroImage !== "string" || !isAllowedArticleImageSrc(heroImage)) {
+    const candidates = Array.isArray(heroImage) ? heroImage : [heroImage];
+    if (
+      candidates.length === 0 ||
+      candidates.some(
+        (src) => typeof src !== "string" || !isAllowedArticleImageSrc(src),
+      )
+    ) {
       errors.push(
         `Invalid heroImage path: ${JSON.stringify(heroImage)} (expected a web path under "${ARTICLE_IMAGE_PREFIX}")`,
       );

@@ -33,7 +33,9 @@ export function articleMetadata(article: ArticleSummary): Metadata {
     ogType: "article",
   });
 
-  const image = article.heroImage;
+  const image = Array.isArray(article.heroImage)
+    ? article.heroImage[0]
+    : article.heroImage;
   if (!image) return base;
 
   const absolute = absoluteImageUrl(image);
@@ -78,7 +80,10 @@ export function articleJsonLd(article: ArticleSummary): Record<string, unknown> 
     inLanguage: siteConfig.lang,
   };
   if (article.updatedAt) node.dateModified = article.updatedAt;
-  if (article.heroImage) node.image = [absoluteImageUrl(article.heroImage)];
+  const jsonLdImage = Array.isArray(article.heroImage)
+    ? article.heroImage[0]
+    : article.heroImage;
+  if (jsonLdImage) node.image = [absoluteImageUrl(jsonLdImage)];
 
   return {
     "@context": "https://schema.org",

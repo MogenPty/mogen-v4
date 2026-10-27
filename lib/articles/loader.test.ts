@@ -260,10 +260,13 @@ describe("articles — local image path policy", () => {
 
   it("real articles use valid hero paths or none at all", () => {
     for (const article of loadArticles()) {
-      if (article.meta.heroImage) {
-        expect(
-          isAllowedArticleImageSrc(article.meta.heroImage),
-        ).toBe(true);
+      const images = Array.isArray(article.meta.heroImage)
+        ? article.meta.heroImage
+        : article.meta.heroImage
+          ? [article.meta.heroImage]
+          : [];
+      for (const img of images) {
+        expect(isAllowedArticleImageSrc(img)).toBe(true);
       }
     }
   });

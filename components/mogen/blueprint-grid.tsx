@@ -71,10 +71,7 @@ export function SectionLabel({ index, title }: Readonly<SectionLabelProps>) {
   return (
     <div className="flex items-center gap-4 mb-10">
       <span className="small-caps text-catalyst">{index}</span>
-      <span
-        className="h-px flex-1 max-w-[120px] bg-ink/30"
-        aria-hidden="true"
-      />
+      <span className="h-px flex-1 max-w-30 bg-ink/30" aria-hidden="true" />
       <span className="small-caps text-muted-foreground">{title}</span>
     </div>
   );
