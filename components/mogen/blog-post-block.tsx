@@ -18,6 +18,12 @@ interface Props {
   numbering?: number;
 }
 
+function getHeroImages(images?: string | string[]) {
+  if (Array.isArray(images)) return images;
+
+  return images ? [images] : [];
+}
+
 export default function BlogPostBlock({
   article,
   content,
@@ -34,7 +40,7 @@ export default function BlogPostBlock({
   ].filter(Boolean);
   const intro = introParts.join(" · ");
 
-  const heroImages = article.heroImage ? [...article.heroImage] : [];
+  const heroImages = getHeroImages(article.heroImage);
 
   return (
     <PageShell
