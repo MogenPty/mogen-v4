@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Pause, Play } from "lucide-react";
 
 interface Props {
   images: string[];
@@ -13,6 +14,7 @@ const DEFAULT_INTERVAL_MS = 5000;
 export default function ArticleHeroSlideshow({ images, alt }: Readonly<Props>) {
   const list = images.filter(Boolean);
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   const intervalMs = Number(
     process.env.NEXT_PUBLIC_ARTICLE_HERO_SLIDESHOW_INTERVAL_MS ??
@@ -20,12 +22,12 @@ export default function ArticleHeroSlideshow({ images, alt }: Readonly<Props>) {
   );
 
   useEffect(() => {
-    if (list.length <= 1) return;
+    if (list.length <= 1 || paused) return;
     const id = window.setInterval(() => {
       setIndex((i) => (i + 1) % list.length);
     }, Number.isFinite(intervalMs) && intervalMs > 0 ? intervalMs : DEFAULT_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [list.length, intervalMs]);
+  }, [list.length, intervalMs, paused]);
 
   if (list.length === 0) return null;
 
@@ -63,6 +65,21 @@ export default function ArticleHeroSlideshow({ images, alt }: Readonly<Props>) {
             />
           ))}
         </div>
+      ) : null}
+      {list.length > 1 ? (
+        <button
+          type="button"
+          onClick={() => setPaused((value) => !value)}
+          aria-pressed={paused}
+          aria-label={paused ? "Resume slideshow" : "Pause slideshow"}
+          className="absolute bottom-3 left-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-bone/80 text-ink shadow-sm backdrop-blur transition-colors hover:bg-bone focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-catalyst"
+        >
+          {paused ? (
+            <Play className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <Pause className="h-4 w-4" aria-hidden="true" />
+          )}
+        </button>
       ) : null}
     </div>
   );

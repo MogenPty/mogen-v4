@@ -20,8 +20,8 @@ interface Props {
 
 function getHeroImages(images?: string | string[]) {
   if (Array.isArray(images)) return images;
-
-  return images ? [images] : [];
+  if (images) return [images];
+  return [];
 }
 
 export default function BlogPostBlock({
