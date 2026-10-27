@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "predev": "node scripts/normalize-articles.mjs --apply && node scripts/generate-articles-index.mjs",
+    "predev": "node scripts/fix-articles.mjs",
     "build": "next build",
-    "prebuild": "node scripts/normalize-articles.mjs --apply && node scripts/generate-articles-index.mjs",
-    "articles:sync": "node scripts/normalize-articles.mjs --apply && node scripts/generate-articles-index.mjs",
+    "prebuild": "node scripts/fix-articles.mjs",
+    "articles:sync": "node scripts/fix-articles.mjs",
     "articles:normalize": "node scripts/normalize-articles.mjs",
     "articles:normalize:check": "node scripts/normalize-articles.mjs --check",
     "articles:link": "node scripts/normalize-articles.mjs --apply && node scripts/link-article-entities.mjs --apply",
