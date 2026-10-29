@@ -1,0 +1,288 @@
+---
+title: "Make Your Website Faster on Mobile Data"
+slug: "make-website-faster-mobile-data"
+description: "Improve mobile website speed with practical steps for images, scripts, fonts, hosting and Core Web Vitals without sacrificing useful content."
+publishedAt: "2026-10-29"
+updatedAt: "2026-10-29"
+author: "Mogen"
+category: "Web Development"
+type: "evergreen"
+primaryKeyword: "mobile website speed optimisation"
+secondaryKeywords:
+  - "website performance optimisation"
+  - "fast loading website"
+  - "Core Web Vitals"
+  - "mobile website performance"
+  - "website image optimisation"
+  - "website loading speed"
+tags:
+  - "web development"
+  - "website performance"
+  - "mobile websites"
+  - "Core Web Vitals"
+  - "small business"
+  - "service pages"
+  - "landing pages"
+  - "user experience"
+featured: true
+heroImage: "/images/articles/modern-web-development-workspace-4.png"
+heroImageAlt: "Modern Web Development Workspace"
+---
+A website can look impressive on a designer's computer and still frustrate customers when they open it on a mobile phone. Large photographs, unnecessary animations, excessive scripts and poorly optimised fonts can make important information slow to appear.
+
+For a [small business](/articles/tag/small-business), that delay matters. A potential customer might be trying to find your telephone number, check whether you provide a particular service or submit a quotation request while travelling or using a limited mobile data connection.
+
+South African businesses serve customers with different devices, network conditions and data budgets. Whether a visitor is browsing from [Maboloka](/locations/maboloka), [Soshanguve](/locations/soshanguve), [Centurion](/locations/centurion) or another area, a website should prioritise useful information and make essential actions straightforward.
+
+Improving website speed does not necessarily mean removing every photograph or building the simplest possible design. It means deciding which resources are necessary, delivering them efficiently and testing the experience visitors actually receive.
+
+## What makes a website slow on mobile?
+
+[Website performance](/articles/tag/website-performance) is affected by several factors working together.
+
+The server must respond to the request. The browser must download and process the page's HTML, stylesheets, scripts, fonts and images. It must then display the content and respond when the visitor interacts with menus, forms or buttons.
+
+A problem at any stage can make the experience feel slow.
+
+Common causes include:
+
+- Large images that are much bigger than their displayed dimensions.
+- Videos that load before a visitor chooses to play them.
+- Excessive JavaScript that delays interaction.
+- Too many third-party tracking or marketing scripts.
+- Fonts that delay the display of text.
+- Hosting or server configuration that delays the first response.
+- Layout changes that move buttons while a visitor is trying to use them.
+- Unnecessary redirects between different versions of a URL.
+
+The first step is to measure the website rather than immediately buying a more expensive hosting package or commissioning a complete redesign.
+
+## 1. Measure the experience before making changes
+
+Start by testing the pages that matter most to the business.
+
+These usually include the homepage, main [service pages](/articles/tag/service-pages), contact page, quotation or enquiry journey, and important [landing pages](/articles/tag/landing-pages) used in advertising.
+
+Google's PageSpeed Insights can help identify performance problems. It provides laboratory diagnostics and, when sufficient real-user data is available, field data from the Chrome [User Experience](/articles/tag/user-experience) Report.
+
+These two kinds of data answer different questions.
+
+Laboratory tests provide a repeatable way to investigate problems under a particular test environment. Field data helps show how real visitors experience a page across supported devices and network conditions.
+
+A page can perform well in one laboratory test but provide a different experience for some actual visitors. Conversely, a temporary laboratory failure does not automatically mean every visitor experiences the same problem.
+
+Test several important pages, record the findings and compare results after changes. Do not treat a single score as a complete assessment of website quality.
+
+Google's [Core Web Vitals guidance](https://web.dev/articles/vitals) explains the metrics used to assess loading, responsiveness and visual stability.
+
+## 2. Understand the three Core Web Vitals
+
+[Core Web Vitals](/articles/tag/core-web-vitals) provide useful measures of important aspects of a page's user experience.
+
+| Metric | What it measures | Good target |
+| --- | --- | --- |
+| Largest Contentful Paint (LCP) | How quickly the main visible content appears | 2.5 seconds or less |
+| Interaction to Next Paint (INP) | How quickly the page responds to user interactions | 200 milliseconds or less |
+| Cumulative Layout Shift (CLS) | How much unexpected layout movement occurs | 0.1 or less |
+
+These recommended thresholds are assessed at the 75th percentile of page loads, with mobile and desktop experiences considered separately. They are useful targets, not guarantees of rankings or conversions.
+
+**LCP** can be affected by a slow server response, a large hero image, render-blocking resources or a main image that the browser discovers too late.
+
+**INP** can be affected by JavaScript work that prevents the browser from responding promptly to a click, tap or keyboard interaction.
+
+**CLS** can be affected by images without reserved dimensions, late-loading advertisements, fonts that change text layout or interface elements inserted above existing content.
+
+The right fix depends on which metric is failing and why. Reducing an image's file size may help LCP, for example, but it will not necessarily fix a menu that freezes because of excessive JavaScript.
+
+Read [web.dev's guide to improving Core Web Vitals](https://web.dev/articles/top-cwv) for practical optimisation techniques.
+
+## 3. Optimise images before removing them
+
+Images are often one of the largest parts of a business website's downloaded content.
+
+A photograph uploaded directly from a modern smartphone may contain far more pixels than the website needs. If it is displayed in a relatively small card, downloading the original file wastes bandwidth.
+
+Start by reviewing the images on the most important pages.
+
+### Resize images to their actual purpose
+
+An image displayed at a small thumbnail size does not usually need to be delivered at the same dimensions as a full-width banner.
+
+Prepare suitable image sizes for their intended use. For responsive layouts, use responsive image techniques such as `srcset` and `sizes` where appropriate, so browsers can choose a suitable resource.
+
+### Choose suitable formats
+
+WebP and AVIF can offer efficient compression for many photographic images. JPEG and PNG may still be appropriate in particular situations, while SVG can be useful for logos and vector illustrations.
+
+Choose formats according to the image, quality requirements and browser support. Do not convert every file blindly.
+
+### Lazy-load images that are further down the page
+
+Images below the initial viewport can often be loaded when they are approaching the visitor's view. This reduces the work required to display the initial screen.
+
+However, do not automatically lazy-load the main hero image if it is the element responsible for LCP. Delaying the most important visible image can make the page feel slower.
+
+### Remove decorative images that add little value
+
+Ask whether each image helps visitors understand the service, recognise a product or make a decision.
+
+If a photograph contributes nothing meaningful, replacing it with a simpler visual may be reasonable. If it demonstrates actual work or explains a product, optimise it rather than removing useful evidence.
+
+## 4. Reduce unnecessary JavaScript
+
+JavaScript powers interactive features, forms, menus, analytics and many modern website experiences. The problem is not JavaScript itself; it is downloading and executing more code than the visitor needs.
+
+A website may accumulate scripts from several sources:
+
+- The main website application.
+- Analytics and conversion tracking.
+- Chat widgets.
+- Advertising platforms.
+- Social media embeds.
+- Animation libraries.
+- Customer support or scheduling tools.
+
+Each additional script can introduce download, execution or third-party availability costs.
+
+Review which tools are genuinely useful. Remove scripts that are no longer used, avoid loading heavy widgets on every page when only a few pages need them, and defer non-critical work where appropriate.
+
+Be careful with business-critical functionality. Removing a script without understanding its purpose could break enquiry tracking, forms or other interactions.
+
+A developer should inspect performance traces and test the affected user journeys before and after making changes.
+
+## 5. Make text appear quickly
+
+Fonts influence both appearance and performance.
+
+A website that downloads several font families and numerous weights may require more resources than necessary. Some font-loading arrangements can also delay the display of text or cause visible layout changes when the final font arrives.
+
+Consider the following improvements:
+
+- Use only the font families the design needs.
+- Reduce the number of font weights and styles.
+- Use appropriately subsetted font files where practical.
+- Configure font loading to suit the page.
+- Provide sensible fallback fonts.
+- Check whether text changes size or position after loading.
+
+Readability should remain the priority. A faster page is not an improvement if the resulting text is difficult to read or the visual hierarchy becomes confusing.
+
+## 6. Improve the first server response
+
+Before the browser can display much of a page, it needs a response from the server.
+
+Slow server response times can be caused by hosting constraints, expensive database queries, application work, network latency, redirects or other infrastructure issues.
+
+Measure the time to first byte and investigate the server-side causes before assuming that the only solution is a hosting upgrade.
+
+Possible improvements include:
+
+- Reducing unnecessary redirects.
+- Caching content that does not need to be generated for every request.
+- Optimising slow database operations.
+- Reducing unnecessary server-side processing.
+- Serving static resources efficiently.
+- Using a content delivery network where it provides a genuine benefit.
+- Reviewing the hosting plan against actual traffic and resource requirements.
+
+The best solution depends on the website's architecture. A static information website has different infrastructure needs from an online store or a web application with frequent database operations.
+
+A more expensive server will not automatically solve a page that spends most of its time downloading a huge image or executing unnecessary client-side code.
+
+## 7. Design for constrained connections
+
+Mobile performance is not only about download speed. It is also about the amount of data a visitor must use and how quickly the website becomes useful.
+
+A practical approach is to prioritise the content and actions people need most.
+
+Put the main heading, a short explanation and the most important next step where visitors can find them without waiting for a large video or animation to finish loading.
+
+Consider whether the homepage really needs autoplay video, several large background photographs or multiple third-party embeds. If those elements are not essential, delay them, simplify them or provide a lighter alternative.
+
+Keep navigation concise. Avoid forcing visitors to load several decorative sections before they can find contact details.
+
+Test the website at mobile widths and under throttled network conditions. Where possible, also ask real users with different devices to complete common tasks.
+
+Do not assume that every customer has the latest phone, a large screen or a consistently fast connection.
+
+## 8. Prevent layout movement
+
+A page can download quickly but still be frustrating if its content moves unexpectedly.
+
+Imagine a visitor preparing to tap a contact button when a late-loading banner pushes it down the page. The visitor may tap the wrong element or need to find the button again.
+
+Reserve space for images, video embeds and other content whose dimensions are known. Avoid inserting new content above existing content without accounting for the resulting movement.
+
+Review cookie notices, promotional banners, chat widgets and dynamically loaded components. These may be useful, but they should not unexpectedly displace essential controls.
+
+Fonts should also be tested because switching from a fallback font to a web font can change line lengths and element heights.
+
+## 9. Test the entire enquiry journey
+
+A fast homepage is not enough if the contact form or service page is difficult to use.
+
+After performance improvements, test the complete customer journey:
+
+1. Open the homepage on a phone.
+2. Find the relevant service.
+3. Navigate to the contact or enquiry page.
+4. Complete the form.
+5. Submit the request.
+6. Confirm that the expected success message appears.
+
+Repeat the process using keyboard navigation where appropriate and check that the page remains stable while controls load.
+
+Confirm that analytics and other essential business functions still work. Performance improvements should support the business objective rather than accidentally remove the ability to measure or receive enquiries.
+
+> **Website assessment:** If you want to identify performance issues on your existing website, start with Mogen's [website assessment](/#assessment) and discuss the areas that need attention.
+
+## 10. Prioritise fixes by impact and effort
+
+Small businesses rarely have unlimited time for technical improvements. A simple priority list helps prevent low-impact cosmetic work from taking attention away from important problems.
+
+| Priority | Example | Reason |
+| --- | --- | --- |
+| High | Main content takes too long to appear | Visitors cannot quickly understand the page |
+| High | Enquiry form freezes or responds slowly | The main conversion action is affected |
+| High | Large images delay the initial page | Significant resources may be wasted |
+| Medium | Excessive fonts or third-party scripts | Additional resources may slow rendering or interaction |
+| Medium | Layout shifts around buttons | Visitors may struggle to use the page |
+| Ongoing | Monitor real-user performance | New content and features can introduce regressions |
+
+These priorities are a practical starting point rather than a universal ranking. Actual impact depends on the page and the problems found.
+
+Re-test after each significant change. If several changes are made simultaneously, it becomes harder to determine which improvement helped and which change caused an unexpected side effect.
+
+> **Web development options:** Explore [web development](/services/web-development) options and discuss the requirements of your business website.
+
+## Frequently asked questions
+
+### Does a faster website automatically rank higher?
+
+No. Performance contributes to user experience, but it does not guarantee a particular search ranking. Google considers many factors, including relevance and content quality.
+
+### Should I remove all large images?
+
+No. Important images can help visitors understand a service or evaluate a product. Resize and compress them appropriately, and remove only those that do not justify their cost.
+
+### Is a high PageSpeed Insights score enough?
+
+No. A score is a useful diagnostic signal, but you should also review field data where available and test the website's actual customer journeys.
+
+### Does a small business need a content delivery network?
+
+Not necessarily. A CDN can help in suitable circumstances, but its value depends on the website, its audience, the location of its visitors and its existing hosting arrangement.
+
+## Conclusion
+
+A fast mobile website prioritises useful content, avoids unnecessary downloads and responds predictably when visitors interact with it.
+
+Start with measurement, optimise important images, reduce unnecessary scripts, investigate server delays and test the complete enquiry journey. Make changes based on evidence rather than assuming that every website needs the same technical solution.
+
+The objective is not simply to achieve a better performance score. It is to make the website easier to use for the people who need it.
+
+## Sources
+
+- [web.dev: Web Vitals](https://web.dev/articles/vitals)
+- [web.dev: The most effective ways to improve Core Web Vitals](https://web.dev/articles/top-cwv)
