@@ -1,0 +1,90 @@
+# Mogen
+
+> Mogen (Motsoane Global Enterprise (Pty) Ltd) is a South African digital services business for small and growing companies: custom web development engineered to convert, SEO built on a proprietary 37-step framework, digital marketing management, and business documentation. Offices in Maboloka (North West), Soshanguve (Gauteng) and Centurion (Pretoria); serves greater Pretoria, Brits and the North West. Reply-within-one-business-day promise; prices published plainly, no bundled jargon, no inflated claims.
+
+## What it does
+
+- **Web development** — custom websites engineered to convert visitors into customers; fast, mobile-first, with clear enquiry paths.
+- **SEO** — Google Business Profile, local grid mapping, technical + on-page work via a 37-step, 4-band framework (Critical / Reactive / Strategic / Deferred bands).
+- **Digital marketing** — content strategy, social media management, paid ads, email.
+- **Business documentation** — policies, procedures, forms, templates and related documents, delivered print-ready and editable.
+
+## Who it is for
+
+Owners of small and growing South African businesses — the practice, the shop, the clinic, the contractor, the retailer.
+
+## Pricing
+
+All prices as published on the site (October 2026), in South African rand (R):
+
+Web development:
+- **Seed** — R99 once-off (promo; was R199): starter website structure, mobile-first, contact/enquiry path.
+- **Sprout** — R299/month + R900 setup for the first 12 months (promo; was R399/mo + R1,200): designed starter website, hosting, maintenance, support, up to 5 email accounts, launch-ready SEO structure.
+- **Vegetative** — R1,500/month + R2,000 setup: unlimited pages, e-commerce/booking, schema & A/B-test ready, priority support, dedicated project lead.
+- Web add-ons: extra page R650 · blog R1,500 · e-commerce R6,500 (up to 50 products) · copywriting R450/page.
+
+SEO:
+- **Ignition** — R8,500/mo: core 17 of 37 steps, local grid mapping (Pretoria), Core Web Vitals remediation.
+- **Scale** — R16,500/mo: all 37 steps, schema, competitor backlink work (recommended).
+- **Dominance** — R32,000/mo: aggressive remedy, multi-location, executive briefs.
+- SEO add-ons: extra location R2,500/mo · landing page R2,900 · content R650/article · backlink audit R3,500.
+
+Digital marketing:
+- **Starter** R3,500/mo · **Growth** R7,500/mo · **Dominate** R15,000/mo.
+- Add-ons: extra platform R1,500/mo · influencer outreach R3,500 · landing page R2,900 · extra ad-spend management 15% of spend.
+
+Business documentation:
+- **Essential** R1,900 · **Standard** R4,500 · **Complete** from R4,900.
+- Add-ons: extra document R750 · template conversion R650 · procedure manual R2,500 · form design R550.
+
+## Integrations (named on the site)
+
+Google Analytics · Google Search Console · Google Business Profile · Shopify · WordPress · Stripe · Meta Business · Hotjar. "No certifications, partnerships, or accreditations are claimed — only the work itself."
+
+## Results (named projects, as published)
+
+- **Mogen** (own site) — mogen.co.za — services, SEO and local discovery pages.
+- **Masoko Psychology** — masokopsychology.co.za — practice website with service pages and enquiry paths.
+- **Down2Earth Health & Beauty Spa** — d2espa.co.za — spa website with bookings and local SEO.
+- No client result numbers are published: "Result numbers stay out until our clients say so — we don't invent them."
+
+## FAQ (verbatim)
+
+- **How long does a website take to build?** A Seed site typically launches in 2 weeks, Sprout in 3–4 weeks, and Vegetative depends on scope. We confirm a timeline after the discovery call.
+- **Is SEO included?** Every site ships with on-page SEO foundations and Google Search Console setup. For ongoing ranking work, see our SEO service.
+- **Will my site work on mobile?** Yes — every build is mobile-first and tested across devices, with Core Web Vitals optimised for speed.
+- **Do you offer hosting?** We can set up and manage hosting or hand off to your provider. Ask about our monthly care plans.
+- **Can I edit the site myself?** Yes — Sprout and Vegetative builds include a CMS and a training session so you can edit content.
+- **How long until I see results?** Technical fixes can lift rankings within weeks; compounding content and authority work typically shows clear movement in 3–6 months.
+- **Do you guarantee #1 rankings?** No reputable SEO guarantees #1 — Google's algorithm changes. We guarantee a rigorous process, transparent reporting and measurable progress.
+- **Is this for local or national SEO?** Both. Ignition focuses on local Pretoria visibility; Scale and Dominance expand to national and multi-location.
+- **What's the 37-step framework?** Our proprietary process covering crawl, indexation, content, links, technical, local and reporting — explore it on seo.mogen.co.za.
+- **Do you write the content?** Yes — SEO content writing is included in Scale and Dominance, and available as an add-on for Ignition.
+- **Which platforms do you manage?** Facebook, Instagram, X, LinkedIn, TikTok and Google. We recommend the channels where your customers actually are.
+- **Is ad spend included?** Packages cover management. Ad budget is separate and we advise on the right spend for your goals.
+- **Do you create the content?** Yes — we handle design, copy and scheduling. You approve everything before it goes live.
+- **Is there a minimum contract?** We work month-to-month after an initial 3-month setup period, so campaigns have time to compound.
+- **How do you report?** A clear monthly report covering reach, engagement, leads and cost-per-result — no vanity metrics.
+- **What types of documents do you create?** Policies, procedures, forms, templates, manuals and related business documents — structured for clarity and consistency.
+- **Do you handle specialist logo or graphic design?** Business Documentation focuses on structured documents. Where specialist brand or graphic design is needed, we coordinate with trusted external providers.
+- **What files do I receive?** You receive a print-ready PDF and an editable source file, formatted consistently across your document set.
+- **Can you work from my existing documents?** Yes — we can refine and reformat existing documents into a consistent, professional system.
+- **Do you include printing?** We deliver print-ready files. Printing can be arranged via a partner provider if required.
+
+## Links
+
+- Homepage: https://www.mogen.co.za/
+- Prices (page section): https://www.mogen.co.za/#prices
+- Recent work (page section): https://www.mogen.co.za/#work
+- FAQ (page section): https://www.mogen.co.za/#faq
+- Free growth audit tool: https://www.mogen.co.za/services/seo/#audit
+- WhatsApp: https://wa.me/27718631884
+- Phone: +27 71 863 1884 · Alt +27 76 520 7876
+- Email: info@mogen.co.za (also maboloka@, soshanguve@, centurion@mogen.co.za)
+- Facebook: https://www.facebook.com/MogenPTY
+- TikTok: https://www.tiktok.com/@MogenPTY
+- X/Twitter: https://www.mogen.co.za/MogenPTY
+- Instagram: https://www.mogen.co.za/MogenPTY
+- GitHub: https://github.com/MogenPTY
+- LinkedIn: https://www.linkedin.com/company/MogenPTY
+- Readable homepage copy for AI crawlers: https://www.mogen.co.za/index.md

@@ -1,34 +1,37 @@
+/** biome-ignore-all lint/a11y/useSemanticElements: By design */
 "use client";
 
-import { trackConversion } from "@/lib/rampify-tracker";
+import { useSupermetry } from "@supermetry/react";
 
-import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+} from "lucide-react";
 import Script from "next/script";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getService } from "@/data/services";
 import type { Promotion } from "@/data/promotions";
+import { getService } from "@/data/services";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { withAttribution } from "@/lib/enquiry/enquiry";
+import { trackConversion } from "@/lib/rampify-tracker";
 import { formatNumber } from "@/lib/utils";
+import {
+  promotionPriceLines,
+  resolveDisplayPromotion,
+} from "@/lib/web-requirements/promotion-pricing";
 import {
   buildWebsiteEnquiryPayload,
   canProceed,
   DEFAULT_REQUIREMENTS,
   EMPTY_CONTACT,
   QUESTIONNAIRE_STEPS,
+  type QuestionnaireContact,
   validateContact,
   validateWebsiteUrl,
   WEBSITE_ASSESSMENT_ANCHOR,
-  type QuestionnaireContact,
 } from "@/lib/web-requirements/questionnaire";
-import {
-  promotionPriceLines,
-  resolveDisplayPromotion,
-} from "@/lib/web-requirements/promotion-pricing";
-import {
-  recommendPackage,
-  recommendationPriceDisplay,
-} from "@/lib/web-requirements/recommendation";
 import type {
   BusinessLocation,
   BusinessPresence,
@@ -39,12 +42,15 @@ import type {
   WebsiteNeed,
   WebsiteRequirements,
 } from "@/lib/web-requirements/recommendation";
+import {
+  recommendationPriceDisplay,
+  recommendPackage,
+} from "@/lib/web-requirements/recommendation";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
-type TurnstileWidgetId = string;
 interface TurnstileApi {
   render: (
     container: HTMLElement,
@@ -56,8 +62,8 @@ interface TurnstileApi {
       "expired-callback"?: () => void;
       "error-callback"?: () => void;
     },
-  ) => TurnstileWidgetId;
-  reset: (widgetId: TurnstileWidgetId) => void;
+  ) => string;
+  reset: (widgetId: string) => void;
 }
 
 declare global {
@@ -67,7 +73,7 @@ declare global {
 }
 
 interface WidgetSlot {
-  id: TurnstileWidgetId | null;
+  id: string | null;
   /** Container element the widget was rendered into (remounts need a fresh render). */
   el: HTMLElement | null;
 }
@@ -164,6 +170,7 @@ export default function WebsiteQuestionnaire({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const turnstileContainer = useRef<HTMLDivElement>(null);
   const turnstileSlot = useRef<WidgetSlot>({ id: null, el: null });
+  const supermetry = useSupermetry();
 
   const recommendation = useMemo(
     () => recommendPackage(requirements),
@@ -200,6 +207,7 @@ export default function WebsiteQuestionnaire({
     }
     setGateError("");
     setStep(next);
+    supermetry.track("Website Assessment: ", { page: next });
     // Move keyboard focus to the new step heading.
     requestAnimationFrame(() => headingRef.current?.focus());
   }
@@ -390,10 +398,9 @@ export default function WebsiteQuestionnaire({
               <span className="text-catalyst">fits your business?</span>
             </h2>
             <p className="mt-6 max-w-md text-lg text-white/70 dark:text-secondary-foreground/70">
-              Answer five quick questions about your business and website
-              needs. You will get a clear package recommendation — Seed,
-              Sprout or Vegetative — and can send it straight to Mogen as an
-              enquiry.
+              Answer five quick questions about your business and website needs.
+              You will get a clear package recommendation — Seed, Sprout or
+              Vegetative — and can send it straight to Mogen as an enquiry.
             </p>
 
             <ol className="mt-10 flex flex-wrap items-center gap-2">
@@ -428,9 +435,13 @@ export default function WebsiteQuestionnaire({
                 </li>
               ))}
             </ol>
-            <p className="mt-4 text-xs text-white/60 dark:text-secondary-foreground/60" role="status">
-              Step {step + 1} of {totalSteps} — {QUESTIONNAIRE_STEPS[step].label}.
-              Your answers are kept when you move between steps.
+            <p
+              className="mt-4 text-xs text-white/60 dark:text-secondary-foreground/60"
+              role="status"
+            >
+              Step {step + 1} of {totalSteps} —{" "}
+              {QUESTIONNAIRE_STEPS[step].label}. Your answers are kept when you
+              move between steps.
             </p>
           </div>
 
@@ -460,13 +471,12 @@ export default function WebsiteQuestionnaire({
                 </h3>
                 <p className="mt-3 max-w-sm text-white/70 dark:text-secondary-foreground/70">
                   Thanks
-                  {contact.name ? `, ${contact.name.split(" ")[0]}` : ""}.
-                  Mogen will review your requirements
+                  {contact.name ? `, ${contact.name.split(" ")[0]}` : ""}. Mogen
+                  will review your requirements
                   {recommendation.packageId
                     ? ` (${recommendation.packageId})`
-                    : ""}
-                  {" "}and reply within one business day with a practical next
-                  step.
+                    : ""}{" "}
+                  and reply within one business day with a practical next step.
                 </p>
                 <MagneticButton
                   as="a"
@@ -530,7 +540,7 @@ export default function WebsiteQuestionnaire({
                         Company website
                       </label>
                       <input
-                        id="wq-company-website"
+                        id={"wq-company-website"}
                         name="companyWebsite"
                         type="text"
                         tabIndex={-1}
@@ -673,8 +683,8 @@ export default function WebsiteQuestionnaire({
                       }
                     />
                     <p className="mt-4 text-sm text-white/60 dark:text-secondary-foreground/60">
-                      Mogen is based in Maboloka and serves Pretoria,
-                      Soshanguve and businesses across South Africa.
+                      Mogen is based in Maboloka and serves Pretoria, Soshanguve
+                      and businesses across South Africa.
                     </p>
                   </div>
                 )}
@@ -812,9 +822,7 @@ export default function WebsiteQuestionnaire({
                       disabled={saving}
                       aria-label="Send my website requirements to Mogen"
                     >
-                      {saving
-                        ? "Sending…"
-                        : "Send My Requirements to Mogen"}
+                      {saving ? "Sending…" : "Send My Requirements to Mogen"}
                       {!saving && <ArrowRight className="h-4 w-4" />}
                     </MagneticButton>
                     <MagneticButton
@@ -887,8 +895,8 @@ export default function WebsiteQuestionnaire({
         </div>
         <p className="mt-8 text-xs text-white/40">
           Recommendations follow Mogen&apos;s documented Seed, Sprout and
-          Vegetative package scope. Anything beyond that scope is flagged for
-          a tailored consultation — never forced into a package.
+          Vegetative package scope. Anything beyond that scope is flagged for a
+          tailored consultation — never forced into a package.
         </p>
       </div>
     </BlueprintGrid>
@@ -919,7 +927,8 @@ function FormAlert({
   );
 }
 
-interface TextFieldProps {  label: string;
+interface TextFieldProps {
+  label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;

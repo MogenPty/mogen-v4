@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { SupermetryProvider } from "@supermetry/react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
@@ -96,7 +97,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <SupermetryProvider
+              site="vymccwn7ggad"
+              host="https://app.supermetry.com"
+            >
+              {children}
+            </SupermetryProvider>
+          </TooltipProvider>
         </ThemeProvider>
         <SpeedInsights />
         <Analytics />
