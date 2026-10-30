@@ -1,17 +1,17 @@
 import {
   getEffectiveStatus,
   isFallbackFeaturingEnabled,
-  todayISO,
   type Promotion,
+  todayISO,
 } from "@/data/promotions";
 import {
+  type ConversionBarSettings,
   getConversionBarSettings,
   getService,
-  type ConversionBarSettings,
 } from "@/data/services";
 import {
-  withAttribution,
   type EnquiryAttribution,
+  withAttribution,
 } from "@/lib/enquiry/enquiry";
 import { WEBSITE_ASSESSMENT_ANCHOR } from "@/lib/web-requirements/questionnaire";
 
@@ -117,9 +117,7 @@ function cleanSlug(value: string | null | undefined): string | undefined {
 }
 
 function findService(slug: string) {
-  return (
-    getService(slug) ?? getService(slug.toLowerCase()) ?? undefined
-  );
+  return getService(slug) ?? getService(slug.toLowerCase()) ?? undefined;
 }
 
 /**
@@ -129,7 +127,9 @@ function findService(slug: string) {
 function settingsFor(slug: string): ConversionBarSettings {
   return (
     getConversionBarSettings(slug) ??
-    getConversionBarSettings(DEFAULT_CONVERSION_SERVICE_SLUG) as ConversionBarSettings
+    (getConversionBarSettings(
+      DEFAULT_CONVERSION_SERVICE_SLUG,
+    ) as ConversionBarSettings)
   );
 }
 
@@ -251,12 +251,9 @@ const SERVICE_COMPONENT: Record<string, { page: string; anchor: string }> = {
  * Collapse a `path#hash` audit href to its bare `#hash` anchor when the
  * visitor is already on that path. Cross-route hrefs are returned as-is
  * so they still navigate to the audit's page (e.g. the homepage SEO
- * promotion override links to `/services/seo/#audit`).
+ * promotion override links to `/services/seo#audit`).
  */
-function collapseToSamePageAnchor(
-  href: string,
-  pathname?: string,
-): string {
+function collapseToSamePageAnchor(href: string, pathname?: string): string {
   const hashIndex = href.indexOf("#");
   if (hashIndex < 0 || !pathname) return href;
   const hrefPath = (href.slice(0, hashIndex) || "/").replace(/\/+$/, "") || "/";
@@ -282,10 +279,7 @@ export function buildConversionCta(
       kind: selection.kind,
       label: selection.settings.label,
       ariaLabel: selection.settings.ariaLabel,
-      href: collapseToSamePageAnchor(
-        selection.settings.href,
-        input.pathname,
-      ),
+      href: collapseToSamePageAnchor(selection.settings.href, input.pathname),
       effectiveServiceSlug: selection.effectiveServiceSlug,
       promotionSlug: undefined,
       overridden: selection.overridden,
@@ -301,8 +295,7 @@ export function buildConversionCta(
   // Development service page.
   const samePage =
     input.pathname === component.page ||
-    (input.pathname === "/" &&
-      component.anchor === WEBSITE_ASSESSMENT_ANCHOR);
+    (input.pathname === "/" && component.anchor === WEBSITE_ASSESSMENT_ANCHOR);
   const href = samePage
     ? `#${component.anchor}`
     : withAttribution(target, attribution);

@@ -1,8 +1,6 @@
 /** biome-ignore-all lint/a11y/useSemanticElements: By design */
 "use client";
 
-import { useSupermetry } from "@supermetry/react";
-
 import {
   AlertTriangle,
   ArrowLeft,
@@ -170,7 +168,6 @@ export default function WebsiteQuestionnaire({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const turnstileContainer = useRef<HTMLDivElement>(null);
   const turnstileSlot = useRef<WidgetSlot>({ id: null, el: null });
-  const supermetry = useSupermetry();
 
   const recommendation = useMemo(
     () => recommendPackage(requirements),
@@ -207,7 +204,12 @@ export default function WebsiteQuestionnaire({
     }
     setGateError("");
     setStep(next);
-    supermetry.track("Website Assessment: ", { page: next });
+    window.supermetry.track(
+      `Website Assessment: ${QUESTIONNAIRE_STEPS[next].id}`,
+      {
+        page: next,
+      },
+    );
     // Move keyboard focus to the new step heading.
     requestAnimationFrame(() => headingRef.current?.focus());
   }
@@ -856,6 +858,8 @@ export default function WebsiteQuestionnaire({
                     </MagneticButton>
                     {step === 0 ? (
                       <MagneticButton
+                        data-supermetry-event="Web Assessment"
+                        data-supermetry-prop-action="Start"
                         onClick={nextFromContact}
                         variant="catalyst"
                         className="text-black hover:bg-ink hover:text-white dark:hover:text-black"

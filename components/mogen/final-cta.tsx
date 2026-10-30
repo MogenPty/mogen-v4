@@ -10,10 +10,13 @@ interface Props {
 
 export default function FinalCTA({
   numbering = 1,
-  auditHref = "/services/seo/#audit",
+  auditHref = "/services/seo#audit",
 }: Readonly<Props>) {
   return (
-    <BlueprintGrid id="final-cta" className="bg-catalyst py-24 text-white lg:py-32">
+    <BlueprintGrid
+      id="final-cta"
+      className="bg-catalyst py-24 text-white lg:py-32"
+    >
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <div>

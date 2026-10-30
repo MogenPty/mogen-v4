@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { getPromotionBySlug, getPublicPromotions } from "@/data/promotions";
 import { getPost, POSTS } from "@/data/blog";
+import { getPromotionBySlug, getPublicPromotions } from "@/data/promotions";
 import { getService, SERVICES } from "@/data/services";
 import { getSiteUrl } from "@/data/site";
 import { canonicalUrl, normalizePath, pageMetadata } from "@/lib/seo";
@@ -31,10 +31,8 @@ describe("task 8 — environment-driven site URL", () => {
   });
 
   it("strips query strings, hashes and trailing slashes from canonicals", () => {
-    expect(normalizePath("/contact?service=seo&utm_source=x")).toBe(
-      "/contact",
-    );
-    expect(normalizePath("/services/seo/")).toBe("/services/seo");
+    expect(normalizePath("/contact?service=seo&utm_source=x")).toBe("/contact");
+    expect(normalizePath("/services/seo")).toBe("/services/seo");
     expect(normalizePath("/")).toBe("/");
     expect(canonicalUrl("/contact?promotion=mogen-sprout-first-100")).toBe(
       `${getSiteUrl()}/contact`,
@@ -124,10 +122,7 @@ describe("task 8 — title generation (no Mogen | Mogen)", () => {
       ["app/services/page.tsx", 'STATIC_META["/services"]'],
       ["app/promotions/page.tsx", 'STATIC_META["/promotions"]'],
       ["app/pricing/page.tsx", 'STATIC_META["/pricing"]'],
-      [
-        "app/articles/page.tsx",
-        'STATIC_META["/articles"]',
-      ],
+      ["app/articles/page.tsx", 'STATIC_META["/articles"]'],
     ] as const) {
       const source = readSource(file);
       expect(source).toContain(snippet);

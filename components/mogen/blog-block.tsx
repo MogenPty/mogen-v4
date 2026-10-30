@@ -132,9 +132,7 @@ export default function BlogBlock({
                   controls={controls}
                   layout={settings.style}
                   navAriaLabel="Articles pagination"
-                  hrefForPage={(p) =>
-                    buildArticlesPageUrl(p, preservedParams)
-                  }
+                  hrefForPage={(p) => buildArticlesPageUrl(p, preservedParams)}
                   labels={{
                     first: "Go to first articles page",
                     previous: "Go to previous articles page",
@@ -158,7 +156,7 @@ export default function BlogBlock({
           <div className="flex flex-col gap-3 sm:flex-row">
             <MagneticButton
               as="a"
-              href="/services/seo/#audit"
+              href="/services/seo#audit"
               variant="solid"
               className="bg-ink text-bone hover:bg-bone hover:text-ink"
             >

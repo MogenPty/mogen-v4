@@ -113,7 +113,11 @@ export default function Process() {
             See it work for your business.
           </h2>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <MagneticButton as="a" href="/services/seo/#audit" variant="catalyst">
+            <MagneticButton
+              as="a"
+              href="/services/seo#audit"
+              variant="catalyst"
+            >
               Start with a Free Audit <ArrowRight className="h-4 w-4" />
             </MagneticButton>
             <MagneticButton

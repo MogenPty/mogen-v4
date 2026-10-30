@@ -1,9 +1,9 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { SERVICES } from "@/data/services";
 import { getAllArticles } from "@/lib/articles/loader";
 import { getTagArchives, slugifyTag } from "@/lib/articles/tags";
-import { SERVICES } from "@/data/services";
 
 /**
  * Guards the `pnpm articles:link` contract: every `/articles/tag/*` link in
@@ -54,7 +54,7 @@ describe("entity links — tag bidirectionality", () => {
       .sort()) {
       const body = readFileSync(join(dir, f), "utf8").replace(/\r\n/g, "\n");
       for (const m of body.matchAll(/\(["']?\/services\/([^)"']+)["']?\)/g)) {
-        // Strip a trailing fragment/anchor (e.g. /services/seo/#audit) so
+        // Strip a trailing fragment/anchor (e.g. /services/seo#audit) so
         // anchor links to a valid service page don't get flagged as dead.
         const slug = m[1].split("#")[0].replace(/\/+$/, "");
         if (!valid.has(slug)) dead.push(`${f}: /services/${m[1]}`);

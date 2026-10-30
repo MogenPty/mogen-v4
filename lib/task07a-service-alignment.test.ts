@@ -94,7 +94,8 @@ describe("task 7A — web development packages", () => {
     for (const item of getPromotionBySlug("mogen-seed-r99")!.included!) {
       expect(byName["Seed"].features).toContain(item);
     }
-    for (const item of getPromotionBySlug("mogen-sprout-first-100")!.included!) {
+    for (const item of getPromotionBySlug("mogen-sprout-first-100")!
+      .included!) {
       expect(byName["Sprout"].features).toContain(item);
     }
   });
@@ -117,9 +118,9 @@ describe("task 7A — web development packages", () => {
 
 describe("task 7A — obsolete generic pricing removed", () => {
   it("deletes the dead Ignite/Grow/Dominate generic pricing source", () => {
-    expect(existsSync(join(process.cwd(), "components/mogen/pricing.tsx"))).toBe(
-      false,
-    );
+    expect(
+      existsSync(join(process.cwd(), "components/mogen/pricing.tsx")),
+    ).toBe(false);
   });
 
   it("keeps no Ignite/Grow/Dominate bundle references in app or components", () => {
@@ -151,10 +152,13 @@ describe("task 7A — service consumers stay consistent", () => {
   });
 
   it("lists nav and footer services in canonical order", () => {
-    for (const file of ["components/mogen/nav.tsx", "components/mogen/footer.tsx"]) {
+    for (const file of [
+      "components/mogen/nav.tsx",
+      "components/mogen/footer.tsx",
+    ]) {
       const source = readSource(file);
       // Exact hrefs (closing quote): the Growth Audit link targets
-      // `/services/seo/#audit` and must not count as the SEO service link.
+      // `/services/seo#audit` and must not count as the SEO service link.
       const order = [
         source.indexOf('"/services/web-development"'),
         source.indexOf('"/services/seo"'),

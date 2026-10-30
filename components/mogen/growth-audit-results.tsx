@@ -15,12 +15,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
-import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
-import { formatNumber } from "@/lib/utils";
-import type { QuadrantId } from "@/lib/audit/types";
-import { QUADRANT_LABELS } from "@/lib/audit/types";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
+import type { QuadrantId } from "@/lib/audit/types";
+import { QUADRANT_LABELS } from "@/lib/audit/types";
+import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
+import { formatNumber } from "@/lib/utils";
 
 interface StoredAudit {
   url: string;
@@ -45,7 +45,8 @@ const QUADRANT_NOTES: Record<QuadrantId, string> = {
   technical: "HTTPS, redirects, crawlability, metadata foundations",
   content: "Titles, descriptions, headings, images, duplication",
   search: "Social tags, structured data — lab/field data only if connected",
-  authority: "Backlinks, rankings, GBP need connected sources; NAP observed on-site",
+  authority:
+    "Backlinks, rankings, GBP need connected sources; NAP observed on-site",
 };
 
 function useStoredAudit(): StoredAudit | null {
@@ -78,7 +79,11 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
       >
         <BlueprintGrid className="bg-bone pb-24">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-            <MagneticButton as="a" href="/services/seo/#audit" variant="catalyst">
+            <MagneticButton
+              as="a"
+              href="/services/seo#audit"
+              variant="catalyst"
+            >
               Run Free Growth Audit <ArrowRight className="h-4 w-4" />
             </MagneticButton>
           </div>
@@ -98,7 +103,9 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
   };
   const score = typeof data.score === "number" ? data.score : null;
   const coverage =
-    typeof data.coverage === "number" ? Math.round((data.coverage as number) * 100) : 0;
+    typeof data.coverage === "number"
+      ? Math.round((data.coverage as number) * 100)
+      : 0;
   const provisional = data.provisional === true;
   const passed = Number(data.passed ?? 0);
   const warnings = Number(data.warnings ?? 0);
@@ -114,7 +121,12 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
           ? "Falling behind"
           : "Emerging";
 
-  const quadrantOrder: QuadrantId[] = ["technical", "content", "search", "authority"];
+  const quadrantOrder: QuadrantId[] = [
+    "technical",
+    "content",
+    "search",
+    "authority",
+  ];
 
   return (
     <PageShell
@@ -149,25 +161,29 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
               </div>
               <p className="mt-4 small-caps text-ink/60">{band}</p>
               <p className="mt-2 text-sm text-ink/60">
-                Assessment coverage {coverage}% — {Number(data.assessed ?? 0)} of{" "}
-                {Number(data.applicable ?? 0)} applicable checks assessed.
-                {provisional && " Coverage is low, so this score is provisional."}
+                Assessment coverage {coverage}% — {Number(data.assessed ?? 0)}{" "}
+                of {Number(data.applicable ?? 0)} applicable checks assessed.
+                {provisional &&
+                  " Coverage is low, so this score is provisional."}
               </p>
             </div>
             <div className="bg-bone p-8 lg:p-10">
               <span className="small-caps text-ink/50">Measured</span>
               <div className="mt-4 space-y-2 text-ink/80">
                 <p className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {passed} passed
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {passed}{" "}
+                  passed
                 </p>
                 <p className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" /> {warnings} warnings
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />{" "}
+                  {warnings} warnings
                 </p>
                 <p className="flex items-center gap-2">
                   <XCircle className="h-4 w-4 text-catalyst" /> {failed} failed
                 </p>
                 <p className="flex items-center gap-2">
-                  <MinusCircle className="h-4 w-4 text-ink/40" /> {notAssessed} not assessed
+                  <MinusCircle className="h-4 w-4 text-ink/40" /> {notAssessed}{" "}
+                  not assessed
                 </p>
               </div>
             </div>
@@ -175,8 +191,9 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
               <span className="small-caps text-ink/50">Crawl</span>
               <p className="mt-4 text-lg text-ink/80">
                 Hi{name ? `, ${name.split(" ")[0]}` : ""} —{" "}
-                {crawl.pagesAnalysed ?? "?"} page{(crawl.pagesAnalysed ?? 0) === 1 ? "" : "s"} analysed
-                (max 10), plus robots.txt and sitemap where reachable.
+                {crawl.pagesAnalysed ?? "?"} page
+                {(crawl.pagesAnalysed ?? 0) === 1 ? "" : "s"} analysed (max 10),
+                plus robots.txt and sitemap where reachable.
               </p>
               {(crawl.redirects ?? []).length > 0 && (
                 <div className="mt-3 text-sm text-ink/60">
@@ -205,9 +222,9 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
           <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
             {quadrantOrder.map((id) => {
               const Icon = QUADRANT_ICONS[id] ?? MapPin;
-              const q = (quadrants as { id: QuadrantId; score: number | null }[]).find(
-                (x) => x.id === id,
-              );
+              const q = (
+                quadrants as { id: QuadrantId; score: number | null }[]
+              ).find((x) => x.id === id);
               return (
                 <div key={id} className="bg-bone p-6">
                   <Icon
@@ -223,7 +240,9 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
                       {q?.score ?? "—"}
                     </span>
                     <span className="mb-1 text-sm text-ink/50">
-                      {q?.score === null || q?.score === undefined ? "not assessed" : "/ 100"}
+                      {q?.score === null || q?.score === undefined
+                        ? "not assessed"
+                        : "/ 100"}
                     </span>
                   </div>
                   {q?.score !== null && q?.score !== undefined && (
@@ -234,15 +253,18 @@ export default function GrowthAuditResults({ numbering = 1 }: Readonly<Props>) {
                       />
                     </div>
                   )}
-                  <p className="mt-3 text-xs text-ink/60">{QUADRANT_NOTES[id]}</p>
+                  <p className="mt-3 text-xs text-ink/60">
+                    {QUADRANT_NOTES[id]}
+                  </p>
                 </div>
               );
             })}
           </div>
           <p className="mt-6 text-xs text-ink/50">
-            Rankings, traffic, backlinks, Domain Authority, Search Console, Analytics, Business Profile
-            and Core Web Vitals field data are never invented — the full evidence behind every finding
-            is in your PDF report.
+            Rankings, traffic, backlinks, Domain Authority, Search Console,
+            Analytics, Business Profile and Core Web Vitals field data are never
+            invented — the full evidence behind every finding is in your PDF
+            report.
           </p>
         </div>
       </BlueprintGrid>

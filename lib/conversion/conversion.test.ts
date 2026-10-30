@@ -54,12 +54,8 @@ describe("conversion settings (data-driven)", () => {
       expect(["audit", "enquiry"]).toContain(settings?.journey);
       expect(settings?.href).toBeTruthy();
     }
-    expect(getConversionBarSettings("seo")?.href).toBe(
-      "/services/seo/#audit",
-    );
-    expect(getConversionBarSettings("web-development")?.href).toBe(
-      "/contact",
-    );
+    expect(getConversionBarSettings("seo")?.href).toBe("/services/seo#audit");
+    expect(getConversionBarSettings("web-development")?.href).toBe("/contact");
     expect(getConversionBarSettings("unknown")).toBeUndefined();
     expect(getConversionBarSettings(null)).toBeUndefined();
   });
@@ -203,7 +199,7 @@ describe("conversion selection (service pages win)", () => {
       pathname: "/",
       today: TODAY,
     });
-    expect(home.href).toBe("/services/seo/#audit");
+    expect(home.href).toBe("/services/seo#audit");
 
     const elsewhere = resolveConversion({
       serviceSlug: "seo",
@@ -211,7 +207,7 @@ describe("conversion selection (service pages win)", () => {
       pathname: "/about",
       today: TODAY,
     });
-    expect(elsewhere.href).toBe("/services/seo/#audit");
+    expect(elsewhere.href).toBe("/services/seo#audit");
   });
 });
 
@@ -250,7 +246,7 @@ describe("homepage and promotions routes (promotion applies)", () => {
     expect(cta.overridden).toBe(true);
     expect(cta.kind).toBe("seo-audit");
     // The audit lives on the SEO service page — no same-page collapse.
-    expect(cta.href).toBe("/services/seo/#audit");
+    expect(cta.href).toBe("/services/seo#audit");
   });
 
   it("a featured Web promotion on the homepage stays on the questionnaire", () => {
@@ -271,15 +267,16 @@ describe("homepage and promotions routes (promotion applies)", () => {
 
 describe("promotion validity", () => {
   it("expired, inactive, or non-featured promotions do not apply", () => {
-    const home = { defaultServiceSlug: "web-development", today: TODAY } as const;
+    const home = {
+      defaultServiceSlug: "web-development",
+      today: TODAY,
+    } as const;
     const staysWebDev = (promotion: Promotion, allowFallback?: boolean) =>
       selectConversion({ ...home, featuredPromotion: promotion, allowFallback })
         .effectiveServiceSlug;
     // Explicitly expired sticks even with featuring.
     expect(
-      staysWebDev(
-        makePromotion({ status: "expired", relatedService: "seo" }),
-      ),
+      staysWebDev(makePromotion({ status: "expired", relatedService: "seo" })),
     ).toBe("web-development");
     // Past endDate reads as expired.
     expect(

@@ -45,7 +45,7 @@ interface Props {
 
 export default function Services({
   numbering = 1,
-  auditHref = "/services/seo/#audit",
+  auditHref = "/services/seo#audit",
   ctaTitle = "Not sure where to start?",
   ctaBody = "Start with a free Growth Audit — a practical review of your current visibility and a clear next step.",
   ctaLabel = "Get Free Audit",
