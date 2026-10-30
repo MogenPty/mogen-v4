@@ -71,7 +71,7 @@ export default function TermsOfService() {
       intro="The agreements that govern clients using Mogen's agency growth services."
     >
       <BlueprintGrid className="bg-bone pb-24">
-        <div className="mx-auto max-w-[760px] px-6 lg:px-10">
+        <div className="mx-auto max-w-190 px-6 lg:px-10">
           <p className="small-caps text-ink/50">
             Last updated: 1 September 2026
           </p>

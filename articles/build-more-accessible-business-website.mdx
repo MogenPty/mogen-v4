@@ -1,0 +1,355 @@
+---
+title: "Build a More Accessible Business Website"
+slug: "build-more-accessible-business-website"
+description: "Practical WCAG 2.2 steps for South African small businesses, covering keyboard access, readable content, images, forms and mobile usability."
+publishedAt: "2026-10-30"
+updatedAt: "2026-10-30"
+author: "Mogen"
+category: "Web Development"
+type: "evergreen"
+primaryKeyword: "website accessibility"
+secondaryKeywords:
+  - "accessible website design"
+  - "WCAG 2.2"
+  - "web accessibility for small businesses"
+  - "accessible website forms"
+  - "mobile website usability"
+  - "inclusive web development"
+tags:
+  - "web development"
+  - "website accessibility"
+  - "WCAG"
+  - "user experience"
+  - "small business"
+  - "accessibility"
+  - "websites"
+  - "contact forms"
+featured: false
+heroImage: "/images/articles/modern-web-development-workspace-3.png"
+heroImageAlt: "Modern Web Development Workspace"
+---
+A business website should not only look professional. People should also be able to read its content, navigate its pages and complete important actions regardless of the device or method they use to access it.
+
+Consider a potential customer trying to enquire about a service using a phone with a small screen. Another visitor may use a keyboard instead of a mouse, increase their text size or rely on a screen reader to understand the page. If the website's navigation, buttons or forms are difficult to use, those visitors may struggle to become customers.
+
+[Website accessibility](/articles/tag/website-accessibility) is often treated as a specialist concern reserved for large organisations. In practice, it is relevant to businesses of every size. A small company serving customers around [Maboloka](/locations/maboloka), [Soshanguve](/locations/soshanguve), [Centurion](/locations/centurion) or elsewhere can benefit from making its website clearer, easier to navigate and more predictable.
+
+The World Wide Web Consortium's Web Content [Accessibility](/articles/tag/accessibility) Guidelines ([WCAG](/articles/tag/wcag)) provide an established framework for making web content more accessible. WCAG 2.2 is the current recommendation discussed in this article. Its criteria address a wide range of needs, including visual, auditory, physical and cognitive accessibility.
+
+Accessibility is not a decorative feature that can simply be added at the end of a project. It affects the way a website is planned, designed, developed and maintained.
+
+## What does website accessibility mean?
+
+Website accessibility means designing and developing [websites](/articles/tag/websites) so that people with different abilities can perceive, understand, navigate and interact with the content.
+
+It includes more than adding alternative text to images or choosing readable colours.
+
+An accessible website should consider:
+
+- People who navigate with a keyboard rather than a mouse.
+- People who use screen readers or other assistive technologies.
+- People with low vision who need sufficient contrast or larger text.
+- People who have difficulty distinguishing certain colours.
+- People with limited dexterity who may struggle with small controls.
+- People who need clear instructions when completing forms.
+- People who benefit from captions, transcripts or alternative media.
+
+Accessibility improvements often help visitors who do not identify as having a disability. Clear headings, readable text, predictable navigation and understandable error messages make websites easier for many people to use.
+
+WCAG 2.2 groups its requirements around four principles: content should be perceivable, operable, understandable and robust. These principles provide a useful starting point when reviewing a website.
+
+Read the [W3C Web Content Accessibility Guidelines 2.2](https://www.w3.org/TR/WCAG22/) for the complete standard.
+
+## 1. Make navigation work without a mouse
+
+A website should not require visitors to use a mouse for every interaction.
+
+Some people navigate using a keyboard, switch device or another input method. Others may simply prefer keyboard navigation.
+
+A basic keyboard test is straightforward:
+
+1. Open a page.
+2. Press the Tab key.
+3. Observe which interactive element receives focus.
+4. Continue through the links, buttons and form controls.
+5. Use Shift + Tab to move backwards.
+6. Use Enter or Space where appropriate to activate controls.
+
+The visitor should be able to identify which element is currently selected. This is known as the keyboard focus indicator.
+
+A common design mistake is removing the browser's default focus outline without providing a sufficiently visible alternative. The result may look cleaner to a designer using a mouse, but a keyboard user can lose track of where they are on the page.
+
+Use a visible focus style that contrasts with surrounding content. Also check that sticky navigation bars, cookie notices or floating elements do not completely hide the element receiving focus.
+
+WCAG 2.2 includes a Level AA criterion requiring a focused component not to be entirely hidden by author-created content.
+
+## 2. Use headings to create a logical structure
+
+Headings help visitors understand how a page is organised.
+
+They also help assistive technologies communicate the structure of a page and allow some users to move between sections without reading every paragraph.
+
+A sensible heading hierarchy might look like this:
+
+- H1: The main subject of the page.
+- H2: The major sections.
+- H3: Supporting topics within a section.
+
+Do not choose heading levels simply because a particular font size looks attractive. Heading levels should describe the document structure, while CSS controls the visual presentation.
+
+For example, a service page might use:
+
+- H1: Website Development
+- H2: What the Service Includes
+- H2: How the Process Works
+- H3: Planning and Requirements
+- H3: Design and Development
+- H2: Frequently Asked Questions
+
+A page with several visually large headings but no meaningful hierarchy can be difficult to understand, particularly when navigating with assistive technology.
+
+WCAG includes requirements for meaningful page titles, logical focus order, descriptive link purpose and headings that identify their content.
+
+## 3. Make text readable
+
+Text should be easy to distinguish from its background.
+
+A pale grey paragraph on a white background may look subtle in a design mock-up, but it can become difficult to read on a mobile phone in bright sunlight or for someone with reduced contrast sensitivity.
+
+Review:
+
+- Body text colour.
+- Heading contrast.
+- Navigation labels.
+- Button text.
+- Form labels and instructions.
+- Placeholder text.
+- Disabled and error states.
+
+WCAG 2.2 specifies contrast requirements for normal text and large text. As a general Level AA target, normal text needs a contrast ratio of at least 4.5:1, while large text needs at least 3:1, subject to the standard's exceptions.
+
+Do not communicate important information through colour alone. A red border around an invalid form field, for example, should be accompanied by a clear error message.
+
+Text should also remain usable when visitors increase its size. Avoid fixed-height containers that cut off content or layouts that require unnecessary horizontal scrolling when text is enlarged.
+
+## 4. Give meaningful images appropriate alternatives
+
+Images can communicate important information, demonstrate products and help visitors understand services.
+
+However, not everyone experiences images visually.
+
+Alternative text, commonly called alt text, provides a text equivalent for informative images. It should describe the image's purpose in the context of the page rather than simply list everything visible in the photograph.
+
+Consider a business website showing a completed installation.
+
+A useful alternative might describe the actual installation and the relevant context. A generic description such as "image 1" provides little assistance.
+
+Different images need different treatment:
+
+| Image type | Recommended approach |
+| --- | --- |
+| Informative photograph | Describe the relevant information or purpose |
+| Product image | Identify the product and useful distinguishing detail |
+| Linked image | Describe the destination or action |
+| Decorative image | Allow assistive technology to ignore it |
+| Complex diagram | Provide an appropriate text explanation |
+
+Do not use alt text as an opportunity to repeat keywords. Its primary purpose is to make meaningful image information available to people who cannot see it.
+
+Videos also need consideration. Prerecorded video with audio should generally have appropriate captions, and important visual information may require additional alternatives.
+
+## 5. Design forms that explain what visitors must do
+
+[Contact forms](/articles/tag/contact-forms), quotation requests, booking forms and newsletter registrations are important parts of many business websites.
+
+A form that looks simple can still create accessibility problems.
+
+One common mistake is relying on placeholder text instead of proper labels.
+
+For example, a field that displays "Enter your email address" only inside the input box may lose that instruction once the visitor starts typing. It may also fail to provide the accessible name expected by assistive technology.
+
+Use a properly associated label for each form control.
+
+The W3C's [form labelling tutorial](https://www.w3.org/WAI/tutorials/forms/labels/) explains how labels should be connected to their controls.
+
+Good form design should also include:
+
+- Clear identification of required fields.
+- Instructions for unusual formats.
+- Appropriate input types for email addresses, telephone numbers and dates.
+- Helpful validation messages.
+- Clear confirmation when a submission succeeds.
+- An explanation of what happens after submission.
+
+Avoid asking for information that is not necessary to process the enquiry.
+
+### Make error messages useful
+
+A message such as "Invalid input" does not explain what the visitor should correct.
+
+A better message identifies the problem and gives an understandable next step.
+
+For example:
+
+- "Enter a valid email address."
+- "The telephone number is incomplete."
+- "Select a service before submitting the form."
+
+The W3C recommends providing instructions and feedback that help people complete forms successfully. Its [form instructions guidance](https://www.w3.org/WAI/tutorials/forms/instructions/) and [input validation guidance](https://www.w3.org/WAI/tutorials/forms/validation/) provide practical implementation advice.
+
+A successful submission should also produce clear feedback. Visitors should not have to guess whether their enquiry was received.
+
+See the W3C's [user notification guidance](https://www.w3.org/WAI/tutorials/forms/notifications/) for examples of accessible success and error feedback.
+
+## 6. Make buttons and touch controls easier to use
+
+A small icon may be visually attractive but difficult to activate accurately.
+
+This is especially relevant on touchscreens, where visitors use their fingers rather than a precise mouse pointer.
+
+Important controls should have enough space around them and should not be crowded together.
+
+WCAG 2.2 includes a Level AA minimum target-size criterion of 24 by 24 CSS pixels, subject to specified exceptions. Its Level AAA enhanced criterion uses 44 by 44 CSS pixels.
+
+These are not instructions to make every button exactly the same size. They provide measurable requirements and guidance for different circumstances.
+
+For important actions such as submitting a form, opening navigation or calling a business, a larger and more comfortable target may be preferable.
+
+Consider the following:
+
+- Make primary buttons easy to identify.
+- Leave sufficient space between adjacent controls.
+- Avoid relying on tiny icon-only buttons.
+- Provide accessible names for icon buttons.
+- Keep important controls visible at mobile widths.
+- Ensure menus can be opened and closed using supported input methods.
+
+The [W3C explanation of target size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum) explains why small, closely spaced controls can be difficult for some visitors to use.
+
+## 7. Avoid unnecessary visual and interaction complexity
+
+Animations, pop-ups, carousels and sticky elements can be useful, but they should not make the website harder to operate.
+
+A promotional pop-up that covers the main content, a carousel that moves too quickly or a menu that opens only when a pointer hovers over it can create unnecessary barriers.
+
+Ask whether each interactive feature serves a genuine purpose.
+
+If a carousel is necessary, provide controls that are accessible to keyboard users and make its movement predictable. If a dialog opens, ensure focus is managed correctly and the visitor can close it without difficulty.
+
+Do not make essential information dependent on animation or hover effects.
+
+A straightforward interface is often easier to maintain and less likely to introduce unexpected accessibility problems.
+
+## 8. Consider mobile accessibility and low-data conditions
+
+Accessibility and mobile usability overlap.
+
+A website may technically fit a mobile screen but still be difficult to use because its text is too small, controls are crowded or important content is hidden behind an awkward navigation menu.
+
+Test the website at different viewport sizes and with enlarged text.
+
+Also consider visitors using constrained mobile connections. Large background videos, unnecessary animations and excessive third-party scripts can delay the appearance of useful content.
+
+The South African Government Communication and Information System includes mobile-first design and low-data optimisation among the practices recommended for government websites. Those guidelines are directed at government departments, not a universal legal requirement for every private business, but the usability considerations are relevant more broadly.
+
+The [GCIS website accessibility guidance](https://www.gcis.gov.za/guidelines/website/website-accessibility) provides a useful South African reference.
+
+## 9. Test accessibility as part of website maintenance
+
+Accessibility should be reviewed during development and whenever significant content or functionality changes.
+
+Automated accessibility tools can identify many issues, including missing labels, certain contrast problems and some structural errors. However, automated testing cannot reliably determine whether every page is understandable or whether a complete customer journey works for every user.
+
+Combine automated checks with manual testing.
+
+A practical review might include:
+
+| Test | What to check |
+| --- | --- |
+| Keyboard | Can all important controls be reached and operated? |
+| Focus | Is the current focus visible? |
+| Headings | Do headings describe a logical content structure? |
+| Images | Do informative images have meaningful alternatives? |
+| Contrast | Is text distinguishable from its background? |
+| Forms | Are labels, instructions and error messages clear? |
+| Mobile | Can visitors use the page without awkward scrolling or tiny controls? |
+| Zoom | Does content remain usable when text is enlarged? |
+| Feedback | Are successful and unsuccessful actions communicated? |
+
+Test the pages that matter most to the business first. A contact form, booking journey or quotation request deserves particular attention because an inaccessible control can prevent someone from completing an important task.
+
+## 10. Is WCAG compliance legally required for every business?
+
+WCAG is an internationally recognised technical standard, but its publication does not automatically make every criterion a legal requirement for every private website in every country.
+
+The legal obligations applicable to a business depend on the relevant legislation, sector, contracts and circumstances.
+
+South African government departments have specific published website guidance, including recommendations concerning WCAG. Private businesses should not assume that the GCIS guidance is a blanket legal rule for all commercial websites.
+
+Nevertheless, accessibility is a worthwhile development objective. It can reduce avoidable usability barriers and make important services easier to access.
+
+Businesses that have contractual, sector-specific or other accessibility obligations should obtain appropriate advice and assess the applicable requirements rather than relying on a general checklist.
+
+<aside>
+  <p><strong>Website assessment:</strong> If you want to identify usability and development improvements on your existing website, start with Mogen's <a href="/#assessment">website assessment</a>.</p>
+</aside>
+
+## A practical accessibility improvement plan
+
+A [small business](/articles/tag/small-business) does not need to rebuild its website immediately to begin improving accessibility.
+
+Start with the most important customer journeys.
+
+**First, review the content.** Check headings, links, images, instructions and readability.
+
+**Second, test the interface.** Navigate the website using only a keyboard and check the focus indicator.
+
+**Third, inspect the forms.** Confirm that every field has a label and that errors and success messages are understandable.
+
+**Fourth, review mobile layouts.** Check text size, touch targets, spacing and navigation.
+
+**Fifth, use automated tools.** Run an accessibility scan and investigate the issues it identifies.
+
+**Finally, test again.** Repeat the same checks after changes and include accessibility in future development work.
+
+<aside>
+  <p><strong>[Web development](/services/web-development):</strong> Visit the <a href="/">Mogen website</a> to explore website development options and discuss the requirements of your business website.</p>
+</aside>
+
+## Frequently asked questions
+
+### Does accessibility only help people with disabilities?
+
+No. Clear navigation, readable text, understandable forms and predictable interactions can improve usability for many visitors, including people using older devices or smaller screens.
+
+### Is adding alt text enough to make a website accessible?
+
+No. Alt text is one part of accessibility. Keyboard navigation, contrast, headings, forms, captions and other requirements also need attention.
+
+### Can an automated accessibility checker guarantee WCAG compliance?
+
+No. Automated tools can identify useful issues, but manual testing and appropriate evaluation are also necessary.
+
+### Should a small business aim for WCAG 2.2 Level AA?
+
+WCAG 2.2 Level AA is a useful target for many website projects. The appropriate conformance objective should be considered in light of the business's obligations, audience and technical requirements.
+
+## Conclusion
+
+An accessible website is easier for more people to use.
+
+Start with the fundamentals: clear structure, keyboard access, readable content, meaningful image alternatives, properly labelled forms and controls that are comfortable to operate.
+
+These improvements do not need to happen all at once. By including accessibility in normal website development and maintenance, a business can avoid accumulating unnecessary barriers as its website grows.
+
+The goal is simple: make it easier for every potential customer to understand the business and complete the actions the website was designed to support.
+
+## Sources
+
+- [W3C: Web Content Accessibility Guidelines (WCAG) 2.2](https://www.w3.org/TR/WCAG22/)
+- [W3C WAI: Labeling Controls](https://www.w3.org/WAI/tutorials/forms/labels/)
+- [W3C WAI: Form Instructions](https://www.w3.org/WAI/tutorials/forms/instructions/)
+- [W3C WAI: Validating Input](https://www.w3.org/WAI/tutorials/forms/validation/)
+- [W3C WAI: User Notifications](https://www.w3.org/WAI/tutorials/forms/notifications/)
+- [W3C WAI: Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum)
+- [GCIS: Website Accessibility](https://www.gcis.gov.za/guidelines/website/website-accessibility)
