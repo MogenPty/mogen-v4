@@ -1,6 +1,5 @@
+/** biome-ignore-all lint/a11y/useSemanticElements: No explanation */
 "use client";
-
-import { trackConversion } from "@/lib/rampify-tracker";
 
 import {
   ArrowRight,
@@ -16,6 +15,7 @@ import { getService } from "@/data/services";
 import { prevalidateUrl } from "@/lib/audit/prevalidate";
 import type { AuditResult } from "@/lib/audit/types";
 import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
+import { trackConversion } from "@/lib/rampify-tracker";
 import { formatNumber } from "@/lib/utils";
 import BlueprintGrid from "./blueprint-grid";
 import MagneticButton from "./magnet-button";
@@ -24,7 +24,6 @@ const STEPS = ["URL", "Scan", "Report", "Unlock"];
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
-type TurnstileWidgetId = string;
 interface TurnstileApi {
   render: (
     container: HTMLElement,
@@ -36,8 +35,8 @@ interface TurnstileApi {
       "expired-callback"?: () => void;
       "error-callback"?: () => void;
     },
-  ) => TurnstileWidgetId;
-  reset: (widgetId: TurnstileWidgetId) => void;
+  ) => string;
+  reset: (widgetId: string) => void;
 }
 
 declare global {
@@ -47,7 +46,7 @@ declare global {
 }
 
 interface WidgetSlot {
-  id: TurnstileWidgetId | null;
+  id: string | null;
   /** Container element the widget was rendered into (remounts need a fresh render). */
   el: HTMLElement | null;
 }

@@ -4,10 +4,7 @@ import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import FinalCTA from "@/components/mogen/final-cta";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
-import {
-  getLocationDetail,
-  LOCATION_SLUGS,
-} from "@/data/locations";
+import { getLocationDetail, LOCATION_SLUGS } from "@/data/locations";
 import { siteConfig } from "@/data/site";
 import { formatNumber } from "@/lib/utils";
 
@@ -28,9 +25,7 @@ export default function LocationDetail({
         <h1 className="font-display text-4xl font-black text-ink">
           Location not found
         </h1>
-        <p className="mt-4 text-ink/60">
-          We couldn&apos;t find that location.
-        </p>
+        <p className="mt-4 text-ink/60">We couldn&apos;t find that location.</p>
         <MagneticButton as="a" href="/" variant="catalyst" className="mt-8">
           Back home
         </MagneticButton>
@@ -73,10 +68,7 @@ export default function LocationDetail({
           <div className="grid grid-cols-1 gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
             {location.activities.map((a) => (
               <div key={a.title} className="bg-bone p-8">
-                <MapPin
-                  className="h-6 w-6 text-catalyst"
-                  aria-hidden="true"
-                />
+                <MapPin className="h-6 w-6 text-catalyst" aria-hidden="true" />
                 <h3 className="mt-4 font-display text-xl font-black text-ink">
                   {a.title}
                 </h3>
@@ -266,7 +258,7 @@ export default function LocationDetail({
       </BlueprintGrid>
 
       {/* Next step */}
-      <FinalCTA numbering={numbering + 4} auditHref="/services/seo/#audit" />
+      <FinalCTA numbering={numbering + 4} auditHref="/services/seo#audit" />
     </PageShell>
   );
 }

@@ -77,7 +77,7 @@ Google Analytics · Google Search Console · Google Business Profile · Shopify 
 - Prices (page section): https://www.mogen.co.za/#prices
 - Recent work (page section): https://www.mogen.co.za/#work
 - FAQ (page section): https://www.mogen.co.za/#faq
-- Free growth audit tool: https://www.mogen.co.za/services/seo/#audit
+- Free growth audit tool: https://www.mogen.co.za/services/seo#audit
 - WhatsApp: https://wa.me/27718631884
 - Phone: +27 71 863 1884 · Alt +27 76 520 7876
 - Email: info@mogen.co.za (also maboloka@, soshanguve@, centurion@mogen.co.za)

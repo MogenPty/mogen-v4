@@ -17,15 +17,12 @@ export const metadata: Metadata = pageMetadata({
 
 export default function PricingDirectoryPage() {
   return (
-    <div id="top" className="bg-bone">
+    <div id={"top"} className="bg-bone">
       <Nav defaultServiceSlug="web-development" />
       <main>
         <BlueprintGrid className="bg-bone pt-32 pb-16 lg:pt-40 lg:pb-20">
           <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
-            <SectionLabel
-              index="// — Pricing"
-              title="Mogen Services & Pricing"
-            />
+            <SectionLabel index="// Pricing" title="Mogen Services & Pricing" />
             <div className="max-w-3xl">
               <h1 className="font-display text-5xl font-black leading-[1.02] text-ink lg:text-7xl text-balance">
                 Services &<br />

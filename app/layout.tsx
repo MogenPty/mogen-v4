@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { SupermetryProvider } from "@supermetry/react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
@@ -89,6 +88,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
         {process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID && <RampifyAnalytics />}
         <JSAnalytics />
+        <script
+          defer
+          src="https://app.supermetry.com/js/vymccwn7ggad.js"
+        ></script>
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider
@@ -97,14 +100,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>
-            <SupermetryProvider
-              site="vymccwn7ggad"
-              host="https://app.supermetry.com"
-            >
-              {children}
-            </SupermetryProvider>
-          </TooltipProvider>
+          <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
         <SpeedInsights />
         <Analytics />

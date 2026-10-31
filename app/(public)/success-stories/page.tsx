@@ -56,7 +56,8 @@ export default function SuccessStories() {
       barVariant="journey"
       title={
         <>
-          Selected work, <span className="text-catalyst">practical approach.</span>
+          Selected work,{" "}
+          <span className="text-catalyst">practical approach.</span>
         </>
       }
       intro="Examples of how we approach different business types — focused on structure, local relevance and clear enquiry paths."
@@ -102,7 +103,7 @@ export default function SuccessStories() {
           </h2>
           <MagneticButton
             as="a"
-            href="/services/seo/#audit"
+            href="/services/seo#audit"
             variant="solid"
             className="bg-ink text-bone hover:bg-bone hover:text-ink"
           >
