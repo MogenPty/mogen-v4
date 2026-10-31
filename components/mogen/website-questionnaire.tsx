@@ -67,7 +67,15 @@ interface TurnstileApi {
 declare global {
   interface Window {
     turnstile?: TurnstileApi;
+    supermetry?: SupermetryTracker;
   }
+}
+
+interface SupermetryTracker {
+  track: (
+    name: string,
+    props?: Record<string, string | number | boolean>,
+  ) => void;
 }
 
 interface WidgetSlot {
@@ -204,7 +212,7 @@ export default function WebsiteQuestionnaire({
     }
     setGateError("");
     setStep(next);
-    window.supermetry.track(
+    window.supermetry?.track?.(
       `Website Assessment: ${QUESTIONNAIRE_STEPS[next].id}`,
       {
         page: next,
