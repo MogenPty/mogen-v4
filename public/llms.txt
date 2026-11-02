@@ -1,6 +1,11 @@
 # Mogen
 
-> Mogen (Motsoane Global Enterprise (Pty) Ltd) is a South African digital services business for small and growing companies: custom web development engineered to convert, SEO built on a proprietary 37-step framework, digital marketing management, and business documentation. Offices in Maboloka (North West), Soshanguve (Gauteng) and Centurion (Pretoria); serves greater Pretoria, Brits and the North West. Reply-within-one-business-day promise; prices published plainly, no bundled jargon, no inflated claims.
+> Mogen is a South African digital services business for small and growing companies: custom web development engineered to convert, SEO built on a proprietary 37-step framework, digital marketing management, and business documentation. Offices in Maboloka (North West), Soshanguve (Gauteng) and Centurion (Pretoria); serves greater Pretoria, Brits and the North West. Reply-within-one-business-day promise; prices published plainly, no bundled jargon, no inflated claims.
+
+## Former names
+
+- Motsoane Global Enterprise Pty Ltd - Mogen used to trade as Motsoane Global Enterprise since its inception until 2025.
+- MogenPTY - Mogen's nickname or trading name that it uses casually and/or on social media.
 
 ## What it does
 
@@ -77,14 +82,14 @@ Google Analytics · Google Search Console · Google Business Profile · Shopify 
 
 ## Links
 
-- Homepage: https://www.mogen.co.za/
+- Homepage: https://www.mogen.co.za
 - Prices (page section): https://www.mogen.co.za/prices
 - Recent work (page section): https://www.mogen.co.za/#work
 - FAQ (page section): https://www.mogen.co.za/#faq
 - Free growth audit tool: https://www.mogen.co.za/services/seo#audit
 - WhatsApp: https://wa.me/27718631884
 - Phone: +27 71 863 1884 · Alt +27 76 520 7876
-- Email: info@mogen.co.za (also maboloka@, soshanguve@, centurion@mogen.co.za)
+- Email: info@mogen.co.za (also maboloka@mogen.co.za, soshanguve@mogen.co.za, centurion@mogen.co.za)
 - Facebook: https://www.facebook.com/MogenPTY
 - TikTok: https://www.tiktok.com/@MogenPTY
 - X/Twitter: https://x.com/MogenPTY

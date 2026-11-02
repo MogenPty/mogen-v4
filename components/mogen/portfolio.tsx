@@ -38,6 +38,7 @@ export default function Portfolio({ numbering = 1 }: Readonly<Props>) {
                   alt={`${p.name} — ${p.desc}`}
                   width={800}
                   height={400}
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   priority
                 />
