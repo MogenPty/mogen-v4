@@ -76,11 +76,15 @@ Consider these examples:
 
 **Generic filename**
 
+```text
     IMG_20261102_0045.jpg
+```
 
 **Descriptive filename**
 
+```text
     wooden-office-desk-custom-cabinet.jpg
+```
 
 The second filename gives a clearer indication of what the image contains.
 
@@ -99,13 +103,17 @@ Do not turn the filename into a list of search phrases.
 
 For example:
 
-    cheap-web-design-[websites](/articles/tag/websites)-web-design-south-africa-websites.jpg
+```text
+    cheap-web-design-websites-web-design-south-africa-websites.jpg
+```
 
 is not a useful description.
 
 A more natural filename would be:
 
+```text
     small-business-website-homepage-design.jpg
+```
 
 The purpose is to identify the image, not to force additional keywords into its address.
 
@@ -119,13 +127,17 @@ Consider a photograph showing a carpenter fitting a wooden kitchen cabinet.
 
 A useful alt description could be:
 
+```text
     Carpenter fitting a wooden kitchen cabinet in a residential kitchen.
+```
 
 This describes the actual image in a natural way.
 
 Compare it with:
 
+```text
     Kitchen cupboards carpenter cabinets kitchen renovations kitchen design cheap carpenter near me.
+```
 
 The second example is keyword stuffing rather than useful image description.
 
@@ -143,7 +155,9 @@ If an image is used as a link, the alternative text should help communicate the 
 
 If an image is purely decorative, an empty alt attribute may be appropriate:
 
+```text
     alt=""
+```
 
 This prevents assistive technology from announcing decorative content that adds no meaningful information.
 
@@ -234,6 +248,7 @@ Instead of forcing every visitor to download the largest file, developers can pr
 
 A simplified example is:
 
+```text
     <img
       src="project-800.jpg"
       srcset="project-400.jpg 400w, project-800.jpg 800w, project-1200.jpg 1200w"
@@ -242,6 +257,7 @@ A simplified example is:
       height="800"
       alt="Completed wooden kitchen installation"
     />
+```
 
 The browser uses the available information to choose an appropriate file.
 
@@ -261,12 +277,14 @@ For important content images, use an appropriate HTML image element.
 
 For example:
 
+```text
     <img
       src="/images/completed-office-installation.jpg"
       alt="Completed office furniture installation"
       width="1200"
       height="800"
     />
+```
 
 CSS background images are still useful for decorative elements, visual treatments and backgrounds.
 
@@ -286,6 +304,7 @@ This can create an unstable experience, especially when several images load as s
 
 For example:
 
+```text
     <img
       src="/images/business-team.jpg"
       alt="Small business team meeting around a desk"
@@ -293,6 +312,7 @@ For example:
       height="800"
       loading="lazy"
     />
+```
 
 The dimensions should reflect the actual image's aspect ratio.
 
@@ -308,7 +328,9 @@ For example, an article with ten photographs does not necessarily need to downlo
 
 An image further down the page can use:
 
+```text
     loading="lazy"
+```
 
 However, avoid applying lazy loading indiscriminately.
 
