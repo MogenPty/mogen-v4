@@ -83,8 +83,7 @@ Google Analytics · Google Search Console · Google Business Profile · Shopify 
 - Email: info@mogen.co.za (also maboloka@, soshanguve@, centurion@mogen.co.za)
 - Facebook: https://www.facebook.com/MogenPTY
 - TikTok: https://www.tiktok.com/@MogenPTY
-- X/Twitter: https://www.mogen.co.za/MogenPTY
-- Instagram: https://www.mogen.co.za/MogenPTY
+- X/Twitter: https://x.com/MogenPTY
+- Instagram: https://www.instagram.com/MogenPTY
 - GitHub: https://github.com/MogenPTY
 - LinkedIn: https://www.linkedin.com/company/MogenPTY
-- Readable homepage copy for AI crawlers: https://www.mogen.co.za/index.md

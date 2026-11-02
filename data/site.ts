@@ -76,11 +76,15 @@ export const siteConfig = {
   ogImageWidth: 1200,
   ogImageHeight: 630,
   ogImageAlt: "MOGEN — Digital services for South African businesses",
-  // Social profiles — ONLY verified via repo or official Mogen-owned profile.
-  // Known evidence: https://za.linkedin.com/company/mogenpty exists but NOT confirmed in repo.
-  // Therefore sameAs is deliberately empty to avoid fabricated structured data.
-  // Add only when repository/project confirms official ownership.
-  sameAs: [] as string[],
+  // Social profiles — verified via repo/llms.txt and official Mogen-owned profiles.
+  sameAs: [
+    "https://www.facebook.com/MogenPTY",
+    "https://www.tiktok.com/@MogenPTY",
+    "https://x.com/MogenPTY",
+    "https://www.instagram.com/MogenPTY",
+    "https://github.com/MogenPTY",
+    "https://www.linkedin.com/company/MogenPTY",
+  ] as string[],
   // Ecosystem
   links: {
     store: "https://store.mogen.co.za",

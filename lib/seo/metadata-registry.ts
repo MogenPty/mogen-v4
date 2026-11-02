@@ -47,32 +47,32 @@ export const STATIC_META: Record<string, StaticMeta> = {
     path: "/",
     title: "Mogen | Web Development for South African Businesses",
     description:
-      "Mogen builds fast websites for South African businesses — with SEO, marketing and documentation to help you grow.",
+      "Mogen builds fast websites for South African businesses — SEO, digital marketing and business docs to grow local presence in Pretoria, Soshanguve & North West.",
     absoluteTitle: true,
   },
   "/about": {
     path: "/about",
     title: "Web Development Agency for South African Business",
     description:
-      "Mogen is a South African web development business in Maboloka — websites, SEO, marketing and documentation for local businesses.",
+      "Mogen is a South African web development business in Maboloka — websites, SEO, marketing and docs for local businesses in Gauteng and North West.",
   },
   "/contact": {
     path: "/contact",
     title: "Request a Website Quote or Ask About Our Services",
     description:
-      "Contact Mogen — explain what you need. Mogen reviews every enquiry and replies within one business day with a practical next step.",
+      "Contact Mogen for websites, SEO, marketing or business docs — we review every enquiry and reply within one business day with a practical next step.",
   },
   "/articles": {
     path: "/articles",
     title: "Articles & Practical Growth Advice for SA Business",
     description:
-      "Industry articles and practical growth advice for South African businesses — local SEO, websites, Google Business Profile and conversion.",
+      "Industry articles and growth advice for South African businesses — local SEO, websites, Google Business Profile, conversion and marketing strategy.",
   },
   "/faq": {
     path: "/faq",
     title: "Website, SEO & Business Document FAQs Answered",
     description:
-      "Answers on Mogen websites, SEO, marketing and documentation — timelines, pricing pointers, process and next steps.",
+      "Answers on Mogen websites, SEO, marketing and docs — timelines, pricing, process and next steps for SA businesses in Pretoria, Gauteng and North West.",
   },
   "/services": {
     path: "/services",
@@ -84,7 +84,7 @@ export const STATIC_META: Record<string, StaticMeta> = {
     path: "/pricing",
     title: "Website, SEO & Marketing Pricing for SA Business",
     description:
-      "Mogen pricing for websites, SEO, marketing and documentation — three tiers per service. See each service page for details.",
+      "Mogen pricing for websites, SEO, marketing and docs — three tiers per service. See each service page for details and add-on options.",
   },
   "/process": {
     path: "/process",
@@ -136,7 +136,7 @@ export const STATIC_META: Record<string, StaticMeta> = {
     path: "/locations",
     title: "Our Offices & Service Areas in South Africa",
     description:
-      "Mogen offices in Maboloka, Soshanguve and Centurion — websites, SEO, marketing and documentation for Gauteng and North West.",
+      "Mogen offices in Maboloka, Soshanguve and Centurion — websites, SEO, marketing and docs for Gauteng, North West and beyond.",
   },
   "/growth-audit-results": {
     path: "/growth-audit-results",
