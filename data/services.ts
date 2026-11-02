@@ -79,7 +79,7 @@ export const SERVICES: Service[] = [
     name: "Web Development",
     metaTitle: "Custom Web Development & Design for SA Business",
     metaDescription:
-      "Custom websites engineered to convert — fast, mobile-first builds with on-page SEO, WhatsApp integration and analytics.",
+      "Custom websites engineered to convert — fast, mobile-first builds with on-page SEO, WhatsApp integration, analytics & Search Console setup for SA businesses.",
     action: "build",
     icon: Code2,
     tagline: "Custom websites engineered to convert visitors into customers.",
@@ -227,7 +227,7 @@ export const SERVICES: Service[] = [
     name: "SEO",
     metaTitle: "Local SEO & Google Business Profile Services",
     metaDescription:
-      "Local SEO that gets you found on Google — audits, Google Business Profile optimisation and content that brings nearby enquiries.",
+      "Local SEO that gets you found on Google — audits, Google Business Profile optimisation & content bringing nearby enquiries for businesses in Pretoria & Gauteng.",
     action: "rank",
     icon: Search,
     tagline:
@@ -375,7 +375,7 @@ export const SERVICES: Service[] = [
     name: "Digital Marketing",
     metaTitle: "Digital Marketing Services for SA Businesses",
     metaDescription:
-      "Content, social and paid campaigns that put your business in front of the right people — with clear monthly reporting.",
+      "Content, social and paid campaigns that put your business in front of the right people — with clear monthly reporting, lead nurture and strategy for SA growth.",
     action: "manage",
     icon: Megaphone,
     tagline:
@@ -518,7 +518,7 @@ export const SERVICES: Service[] = [
     name: "Business Documentation",
     metaTitle: "Professional Business Documentation Services",
     metaDescription:
-      "Professional business documents — policies, procedures, forms and templates that keep your operations clear and consistent.",
+      "Professional business documents — policies, procedures, forms & templates keeping operations clear, consistent & compliant for Gauteng & North West businesses.",
     action: "prepare",
     icon: FileText,
     tagline:

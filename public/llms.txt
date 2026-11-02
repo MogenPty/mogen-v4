@@ -1,13 +1,18 @@
 # Mogen
 
-> Mogen (Motsoane Global Enterprise (Pty) Ltd) is a South African digital services business for small and growing companies: custom web development engineered to convert, SEO built on a proprietary 37-step framework, digital marketing management, and business documentation. Offices in Maboloka (North West), Soshanguve (Gauteng) and Centurion (Pretoria); serves greater Pretoria, Brits and the North West. Reply-within-one-business-day promise; prices published plainly, no bundled jargon, no inflated claims.
+> Mogen is a South African digital services business for small and growing companies: custom web development engineered to convert, SEO built on a proprietary 37-step framework, digital marketing management, and business documentation. Offices in Maboloka (North West), Soshanguve (Gauteng) and Centurion (Pretoria); serves greater Pretoria, Brits and the North West. Reply-within-one-business-day promise; prices published plainly, no bundled jargon, no inflated claims.
+
+## Former names
+
+- Motsoane Global Enterprise Pty Ltd - Mogen used to trade as Motsoane Global Enterprise since its inception until 2025.
+- MogenPTY - Mogen's nickname or trading name that it uses casually and/or on social media.
 
 ## What it does
 
-- **Web development** — custom websites engineered to convert visitors into customers; fast, mobile-first, with clear enquiry paths.
-- **SEO** — Google Business Profile, local grid mapping, technical + on-page work via a 37-step, 4-band framework (Critical / Reactive / Strategic / Deferred bands).
-- **Digital marketing** — content strategy, social media management, paid ads, email.
-- **Business documentation** — policies, procedures, forms, templates and related documents, delivered print-ready and editable.
+- [**Web development**](https://www.mogen.co.za/services/web-development) — custom websites engineered to convert visitors into customers; fast, mobile-first, with clear enquiry paths.
+- [**SEO**](https://www.mogen.co.za/services/seo) — Google Business Profile, local grid mapping, technical + on-page work via a 37-step, 4-band framework (Critical / Reactive / Strategic / Deferred bands).
+- [**Digital marketing**](https://www.mogen.co.za/services/digital-marketing) — content strategy, social media management, paid ads, email.
+- [**Business documentation**](https://www.mogen.co.za/services/business-documentation) — policies, procedures, forms, templates and related documents, delivered print-ready and editable.
 
 ## Who it is for
 
@@ -18,22 +23,26 @@ Owners of small and growing South African businesses — the practice, the shop,
 All prices as published on the site (October 2026), in South African rand (R):
 
 Web development:
-- **Seed** — R99 once-off (promo; was R199): starter website structure, mobile-first, contact/enquiry path.
-- **Sprout** — R299/month + R900 setup for the first 12 months (promo; was R399/mo + R1,200): designed starter website, hosting, maintenance, support, up to 5 email accounts, launch-ready SEO structure.
-- **Vegetative** — R1,500/month + R2,000 setup: unlimited pages, e-commerce/booking, schema & A/B-test ready, priority support, dedicated project lead.
+
+- [**Seed**](https://www.mogen.co.za/promotions/mogen-seed-r99) — R99 once-off (promo; was R199): starter website structure, mobile-first, contact/enquiry path.
+- [**Sprout**](https://www.mogen.co.za/promotions/mogen-sprout-first-100) — R299/month + R900 setup for the first 12 months (promo; was R399/mo + R1,200): designed starter website, hosting, maintenance, support, up to 5 email accounts, launch-ready SEO structure.
+- [**Vegetative**](https://www.mogen.co.za/services/web-development) — R1,500/month + R2,000 setup: unlimited pages, e-commerce/booking, schema & A/B-test ready, priority support, dedicated project lead.
 - Web add-ons: extra page R650 · blog R1,500 · e-commerce R6,500 (up to 50 products) · copywriting R450/page.
 
 SEO:
+
 - **Ignition** — R8,500/mo: core 17 of 37 steps, local grid mapping (Pretoria), Core Web Vitals remediation.
 - **Scale** — R16,500/mo: all 37 steps, schema, competitor backlink work (recommended).
 - **Dominance** — R32,000/mo: aggressive remedy, multi-location, executive briefs.
 - SEO add-ons: extra location R2,500/mo · landing page R2,900 · content R650/article · backlink audit R3,500.
 
 Digital marketing:
+
 - **Starter** R3,500/mo · **Growth** R7,500/mo · **Dominate** R15,000/mo.
 - Add-ons: extra platform R1,500/mo · influencer outreach R3,500 · landing page R2,900 · extra ad-spend management 15% of spend.
 
 Business documentation:
+
 - **Essential** R1,900 · **Standard** R4,500 · **Complete** from R4,900.
 - Add-ons: extra document R750 · template conversion R650 · procedure manual R2,500 · form design R550.
 
@@ -44,8 +53,8 @@ Google Analytics · Google Search Console · Google Business Profile · Shopify 
 ## Results (named projects, as published)
 
 - **Mogen** (own site) — mogen.co.za — services, SEO and local discovery pages.
-- **Masoko Psychology** — masokopsychology.co.za — practice website with service pages and enquiry paths.
-- **Down2Earth Health & Beauty Spa** — d2espa.co.za — spa website with bookings and local SEO.
+- [**Masoko Psychology**](https://www.masokopsychology.co.za) — masokopsychology.co.za — practice website with service pages and enquiry paths.
+- [**Down2Earth Health & Beauty Spa**](https://www.d2espa.co.za) — d2espa.co.za — spa website with bookings and local SEO.
 - No client result numbers are published: "Result numbers stay out until our clients say so — we don't invent them."
 
 ## FAQ (verbatim)
@@ -73,18 +82,17 @@ Google Analytics · Google Search Console · Google Business Profile · Shopify 
 
 ## Links
 
-- Homepage: https://www.mogen.co.za/
-- Prices (page section): https://www.mogen.co.za/#prices
+- Homepage: https://www.mogen.co.za
+- Prices (page section): https://www.mogen.co.za/prices
 - Recent work (page section): https://www.mogen.co.za/#work
 - FAQ (page section): https://www.mogen.co.za/#faq
 - Free growth audit tool: https://www.mogen.co.za/services/seo#audit
 - WhatsApp: https://wa.me/27718631884
 - Phone: +27 71 863 1884 · Alt +27 76 520 7876
-- Email: info@mogen.co.za (also maboloka@, soshanguve@, centurion@mogen.co.za)
+- Email: info@mogen.co.za (also maboloka@mogen.co.za, soshanguve@mogen.co.za, centurion@mogen.co.za)
 - Facebook: https://www.facebook.com/MogenPTY
 - TikTok: https://www.tiktok.com/@MogenPTY
-- X/Twitter: https://www.mogen.co.za/MogenPTY
-- Instagram: https://www.mogen.co.za/MogenPTY
+- X/Twitter: https://x.com/MogenPTY
+- Instagram: https://www.instagram.com/MogenPTY
 - GitHub: https://github.com/MogenPTY
 - LinkedIn: https://www.linkedin.com/company/MogenPTY
-- Readable homepage copy for AI crawlers: https://www.mogen.co.za/index.md

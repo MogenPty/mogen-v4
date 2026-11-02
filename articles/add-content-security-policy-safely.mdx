@@ -1,0 +1,385 @@
+---
+title: "Add a Content Security Policy Safely"
+slug: "add-content-security-policy-safely"
+description: "Learn how a Content Security Policy can strengthen a business website, how to test it safely and how to avoid breaking forms, analytics and embeds."
+publishedAt: "2026-10-31"
+updatedAt: "2026-10-31"
+author: "Mogen"
+category: "Web Development"
+type: "evergreen"
+primaryKeyword: "Content Security Policy"
+secondaryKeywords:
+  - "CSP header"
+  - "website security headers"
+  - "Content Security Policy implementation"
+  - "cross-site scripting protection"
+  - "web application security"
+  - "secure website development"
+tags:
+  - "web development"
+  - "website security"
+  - "content security policy"
+  - "website maintenance"
+  - "small business"
+  - "analytics"
+  - "websites"
+featured: false
+heroImage: "/images/articles/modern-web-development-workspace-1.png"
+heroImageAlt: "Modern Web Development Workspace"
+---
+A business website may look simple to its visitors, but the browser could be loading resources from several different places behind the scenes.
+
+A typical website might use its own JavaScript and stylesheets alongside externally hosted fonts, [analytics](/articles/tag/analytics) scripts, maps, payment integrations, embedded videos and customer-support widgets.
+
+Each additional dependency creates another relationship that the website owner needs to understand and manage.
+
+One useful browser security control is a [Content Security Policy](/articles/tag/content-security-policy), commonly abbreviated to CSP. It allows a website to specify which sources the browser is permitted to load for different types of resources.
+
+CSP is particularly useful as an additional defence against certain cross-site scripting (XSS) attacks. It can also help control how a website is embedded by other sites.
+
+However, an incorrectly configured policy can prevent legitimate website features from working. A contact form might stop submitting, a map might disappear or an analytics script might no longer load.
+
+The correct approach is to understand the website's dependencies, introduce a policy in a monitoring mode, test the important customer journeys and only then enforce the policy.
+
+## What is a Content Security Policy?
+
+A Content Security Policy is a set of browser instructions normally delivered through an HTTP response header.
+
+It tells the browser which sources are allowed to provide different types of content to a page.
+
+For example, a policy can control:
+
+- JavaScript files.
+- CSS stylesheets.
+- Images.
+- Fonts.
+- Embedded frames.
+- Media files.
+- Connections initiated by JavaScript.
+- Destinations to which forms can submit information.
+
+The browser checks these instructions when the page attempts to load or use a resource.
+
+If a resource is not permitted by the policy, the browser can block it and report a violation.
+
+The [MDN Content Security Policy implementation guide](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSP) explains how CSP can reduce the impact of cross-site scripting vulnerabilities by controlling which scripts and other resources are trusted.
+
+It is important to understand what CSP does not do.
+
+It does not automatically fix insecure application code, validate form input, patch outdated software or replace output encoding and sanitisation. It is an additional layer of defence rather than a complete security solution.
+
+OWASP makes the same distinction in its [Content Security Policy Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html).
+
+## Why should a small business care?
+
+A [small business](/articles/tag/small-business) website may not have customer accounts, a complex database or an online checkout. It can still depend on several external services.
+
+Consider a service business with a website that uses:
+
+- A contact form.
+- An analytics platform.
+- An embedded map.
+- A third-party font provider.
+- A customer-support chat widget.
+- An externally hosted video.
+
+If one of these services changes its implementation, is compromised or is loaded from an unexpected source, the website owner may not immediately notice.
+
+CSP gives developers a way to restrict resource loading to sources that the website actually needs.
+
+This is relevant whether a business operates from [Maboloka](/locations/maboloka), [Soshanguve](/locations/soshanguve), [Centurion](/locations/centurion) or elsewhere. The website's security requirements are influenced more by its technology and functionality than by its physical location.
+
+## 1. Understand the main CSP directives
+
+A CSP contains directives. Each directive controls a particular resource type or browser behaviour.
+
+Some of the most useful directives include:
+
+| Directive | Purpose |
+| --- | --- |
+| `default-src` | Provides a fallback for resource types without a more specific directive |
+| `script-src` | Controls where JavaScript can be loaded from |
+| `style-src` | Controls stylesheets and permitted style sources |
+| `img-src` | Controls image sources |
+| `font-src` | Controls font sources |
+| `connect-src` | Controls connections made through script-based interfaces |
+| `frame-src` | Controls which frames the page may load |
+| `frame-ancestors` | Controls which other sites may embed the page |
+| `form-action` | Restricts where forms can submit |
+| `object-src` | Controls embedded objects such as legacy plug-ins |
+| `base-uri` | Restricts the URLs that may be used in the document's base element |
+
+These directives should reflect the website's actual requirements.
+
+For example, `frame-src` and `frame-ancestors` are not interchangeable.
+
+- `frame-src` controls which framed resources your page can load.
+- `frame-ancestors` controls which [websites](/articles/tag/websites) may place your page inside a frame.
+
+This distinction matters when a website uses an embedded booking service or needs to prevent another website from displaying its pages inside an iframe.
+
+## 2. Inventory the resources your website uses
+
+Before creating a policy, identify what the website loads.
+
+Do not start by copying a CSP example from another website. Two websites that look similar may have very different technical dependencies.
+
+Review the following areas:
+
+**First-party resources**
+
+Identify JavaScript, CSS, images, fonts and other files hosted by the website itself.
+
+**Analytics and tracking**
+
+Check whether the website loads analytics scripts, tag managers, advertising pixels or other measurement tools.
+
+**Embedded services**
+
+Identify maps, videos, booking tools, payment interfaces and third-party forms.
+
+**Fonts and images**
+
+Determine whether these resources are hosted locally or loaded from external providers.
+
+**API connections**
+
+Check whether the website sends data to an external service using `fetch`, XMLHttpRequest, WebSockets or another browser interface.
+
+**Form destinations**
+
+Confirm whether forms submit to the same website or to an external form-processing service.
+
+This inventory should be based on the production website, not only the developer's local environment.
+
+A useful way to approach the work is to open the browser's developer tools, inspect the Network panel and record the external origins used during normal website activity.
+
+Test more than the homepage. A service page, contact page and payment or booking journey may load different resources.
+
+## 3. Start with Report-Only mode
+
+This is one of the most important implementation decisions.
+
+Do not immediately introduce a restrictive CSP as an enforced production header.
+
+Instead, begin with `Content-Security-Policy-Report-Only`.
+
+Report-Only mode allows a developer to test the effect of a policy without blocking resources that violate it. It helps identify what would break before the policy is enforced.
+
+For example, a simple initial policy for testing might look like this:
+
+    Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'
+
+This is an illustrative starting point, not a complete policy for every website.
+
+It assumes that the website's resources and form submissions are served from the same origin. A site using external fonts, maps, payment services or analytics will produce violations that need to be investigated.
+
+Because this example uses Report-Only mode, those violations should not block the resources.
+
+The [MDN guidance on CSP implementation](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSP) recommends testing a policy with the Report-Only header before enforcing it.
+
+OWASP also recommends Report-Only as a way to identify policy violations before moving to blocking mode.
+
+### How are violations reported?
+
+A browser can display CSP violations in its developer console.
+
+For more systematic monitoring, a website can configure reporting directives and an appropriate reporting endpoint. Browsers can then send structured reports about policy violations.
+
+A reporting endpoint needs to be implemented and monitored. Merely adding a reporting directive without an endpoint does not create a useful monitoring process.
+
+For a small website, a developer can initially review browser console reports while testing representative pages. A larger website may benefit from a dedicated reporting service and alerting process.
+
+## 4. Avoid the common shortcut of allowing everything
+
+It can be tempting to solve CSP problems by allowing all HTTPS resources or adding broad permissions.
+
+That may make a policy easier to deploy, but it can reduce the protection it provides.
+
+Be cautious about:
+
+- Wildcard source permissions.
+- Allowing scripts from every HTTPS domain.
+- Adding `unsafe-inline` without understanding the consequences.
+- Allowing `unsafe-eval` simply to silence a browser warning.
+- Permitting form submissions to unrestricted destinations.
+- Adding external domains that the website does not actually use.
+
+A policy should be as restrictive as the website can reasonably support.
+
+This does not mean that every external service must be removed. It means that each required service should be understood and permitted deliberately.
+
+For example, if the website needs to load a map from an external provider, identify the exact origins required for the map's scripts, images, frames and connections.
+
+Do not assume that allowing one domain in `script-src` automatically permits all the other resource types needed by that service.
+
+## 5. Understand nonces and hashes
+
+Inline JavaScript can create a challenge when introducing a strict CSP.
+
+A policy that blocks all inline scripts may break legitimate functionality if the website relies on script blocks embedded directly in its HTML.
+
+There are two important approaches for allowing specific inline scripts without permitting every inline script.
+
+### Nonce-based policies
+
+A nonce is a unique, unpredictable value generated for an individual response.
+
+The server includes the nonce in the CSP header and in the script elements that are permitted to execute.
+
+The browser checks that the values match.
+
+Nonces are generally suited to applications that can generate HTML dynamically for each response.
+
+They must be implemented carefully. A nonce that is reused across responses or added indiscriminately to every script element can undermine the intended protection.
+
+### Hash-based policies
+
+A hash can be used to allow a specific inline script.
+
+The browser calculates the hash of the script content and compares it with the value included in the policy.
+
+This can be useful for static pages where the permitted inline script content does not change frequently.
+
+A change to the script, including seemingly minor formatting changes, can change the hash and cause the browser to block it.
+
+The [MDN CSP implementation guide](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSP) discusses both nonce-based and hash-based approaches.
+
+## 6. Test the entire customer journey
+
+A policy that appears to work on the homepage may still break important functionality elsewhere.
+
+Test the pages and actions that matter to the business.
+
+| Website feature | What to test |
+| --- | --- |
+| Navigation | Menus open, close and respond correctly |
+| Contact form | Validation and submission still work |
+| Confirmation page | Success messages and redirects display |
+| Analytics | Required measurement scripts load |
+| Maps | Embedded maps and map controls work |
+| Videos | Approved video embeds play |
+| Fonts | Local and external fonts load as intended |
+| Payment | Payment provider integrations complete their expected flow |
+| Chat | Support widgets connect and remain usable |
+| Mobile layout | Menus, forms and interactive controls work on smaller screens |
+
+Also test pages that require authentication or display personalised content if the website has those features.
+
+Keep an eye on the browser console and any configured CSP reports.
+
+A violation does not automatically mean that a resource is malicious. It may simply indicate that the policy has not yet been configured to permit a legitimate dependency.
+
+Investigate the source before deciding whether it should be allowed.
+
+## 7. Enforce the policy gradually
+
+Once the Report-Only policy has been tested and the legitimate dependencies are understood, prepare the enforced policy.
+
+The transition should be controlled.
+
+1. Save the existing server and deployment configuration.
+2. Finalise the policy using the actual resource inventory.
+3. Test the policy in a staging environment where possible.
+4. Verify the contact form and other important business functions.
+5. Deploy the enforced header.
+6. Monitor errors and CSP reports.
+7. Adjust only when a legitimate requirement has been identified.
+
+OWASP recommends delivering CSP through an HTTP response header. Its guidance also explains that the header should be applied consistently to HTTP responses rather than only to the homepage.
+
+A meta element can be used in some situations where server headers cannot be configured, but it does not support every CSP feature. For example, important framing protections and reporting capabilities are not fully available through the meta approach.
+
+## 8. Review third-party services regularly
+
+A website's resource requirements can change as the business grows.
+
+A business may add a booking service, replace its analytics platform, introduce a payment provider or embed new content.
+
+Each change should trigger a review of the CSP.
+
+Do not keep adding domains simply because a browser reports a blocked request. Determine whether the resource is necessary and whether it belongs to the expected provider.
+
+This is especially important for third-party JavaScript. A script loaded from another provider may have significant access to the page in which it runs.
+
+Review third-party dependencies periodically and remove services that are no longer needed.
+
+## 9. CSP is one part of website security
+
+A strong Content Security Policy is useful, but it should not become a substitute for secure development.
+
+A website still needs:
+
+- Proper input validation.
+- Context-appropriate output encoding.
+- Safe handling of user-submitted content.
+- Secure authentication where accounts exist.
+- Timely software and dependency updates.
+- Appropriate access controls.
+- HTTPS.
+- Backups and recovery procedures.
+- Monitoring for unusual activity.
+
+CSP can make certain attacks harder to execute, but it cannot guarantee that a website is secure.
+
+For a small business, the best approach is to combine sensible application development with proportionate security controls that can be maintained over time.
+
+> **Website assessment:**
+>
+> If you are unsure whether your website's technical setup is appropriate for its current requirements, begin with Mogen's [website assessment](/#assessment).
+
+## A practical CSP checklist
+
+Before considering the implementation complete, confirm that:
+
+- The website's resource origins have been inventoried.
+- The policy has been tested in Report-Only mode.
+- Legitimate external services have been identified.
+- Unnecessary wildcard permissions have been avoided.
+- Inline scripts have been reviewed.
+- Forms and embedded services have been tested.
+- The enforced policy is delivered through the appropriate HTTP response header.
+- CSP violations can be investigated.
+- Changes to third-party services trigger a policy review.
+- The website's other security controls remain in place.
+
+## Frequently asked questions
+
+### Does every business website need a Content Security Policy?
+
+CSP is a useful security control for many websites, but the appropriate policy depends on the site's architecture, functionality and risk. A simple static website and a complex application with user accounts have different requirements.
+
+### Will CSP improve my Google rankings?
+
+CSP is a browser security mechanism, not a direct search ranking optimisation technique. Its purpose is to control resource loading and provide an additional security layer.
+
+### Can CSP break my website?
+
+Yes. An enforced policy can block legitimate scripts, styles, images, fonts, forms or embedded services if the required sources are not permitted. This is why Report-Only testing is important.
+
+### Is CSP enough to prevent cross-site scripting?
+
+No. CSP can reduce the impact of certain XSS attacks, but secure input handling, output encoding, sanitisation and other development practices remain necessary.
+
+### Can I configure CSP through my hosting provider?
+
+It depends on the hosting environment. Some platforms allow response headers to be configured through a control panel or application configuration, while others require server or deployment changes.
+
+> **Website development:**
+>
+> Visit the [Mogen promotions page](/promotions) to review currently published offers before planning your next website project.
+
+## Conclusion
+
+A Content Security Policy gives a website owner more control over the resources a browser is allowed to load.
+
+For small businesses, the main benefit is not simply adding another security header. It is creating a more deliberate approach to external scripts, embedded services and browser behaviour.
+
+Start by understanding the website's dependencies. Test a policy without enforcing it, investigate violations, and only move to a restrictive policy when legitimate functionality has been accounted for.
+
+That gradual approach is safer than copying a restrictive configuration and discovering afterwards that the contact form, analytics or booking process no longer works.
+
+## Sources
+
+- [MDN: Content Security Policy Implementation](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSP)
+- [OWASP: Content Security Policy Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html)

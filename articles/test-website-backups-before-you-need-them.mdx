@@ -1,0 +1,451 @@
+---
+title: "Test Your Website Backups Before You Need Them"
+slug: "test-website-backups-before-you-need-them"
+description: "A backup is only useful if it can be restored. Learn what to protect, how often to back up and how to test website recovery before an incident."
+publishedAt: "2026-11-01"
+updatedAt: "2026-11-01"
+author: "Mogen"
+category: "Web Development"
+type: "hybrid"
+primaryKeyword: "website backup testing"
+secondaryKeywords:
+  - "website backup and recovery"
+  - "website disaster recovery"
+  - "website database backup"
+  - "website hosting backups"
+  - "website recovery plan"
+  - "small business website security"
+tags:
+  - "web development"
+  - "website security"
+  - "website backups"
+  - "disaster recovery"
+  - "small business technology"
+  - "south africa"
+  - "websites"
+  - "analytics"
+featured: false
+heroImage: "/images/articles/modern-web-development-workspace-2.png"
+heroImageAlt: "Modern Web Development Workspace"
+---
+A website backup can create a false sense of security.
+
+A hosting provider might advertise automatic daily backups. A developer might keep a copy of the website's source code. A business owner might download important files every few months.
+
+All of these activities can be useful, but they do not necessarily mean that the business can restore its website when something goes wrong.
+
+A backup is only valuable when it contains the information required to recover the website, can be accessed when the original system is unavailable and can be restored successfully.
+
+This distinction matters because a website can become unavailable for several reasons. A failed software update, accidental deletion, compromised administrator account, damaged database, hosting failure or cyberattack can all interrupt normal operation.
+
+[South Africa](/articles/tag/south-africa)'s Department of Communications and Digital Technologies reinforced the importance of everyday cybersecurity practices in its 30 October 2026 statement marking the end of Cybersecurity Awareness Month. Its message was that digital security must remain a daily responsibility rather than a once-a-year activity.
+
+For small businesses, one practical way to turn that message into action is to establish and test a website recovery plan.
+
+## Why a website backup is not enough
+
+A backup is a copy of information or system components that can be used for recovery.
+
+A recovery process is the set of steps required to put the website back into a working state.
+
+These are related, but they are not the same thing.
+
+Imagine a business website that stores its pages in a database and its images in a separate storage directory. The hosting provider creates a daily database backup, but the uploaded images are not included.
+
+If the website needs to be restored, the business may recover its page content but discover that many images are missing.
+
+Another business might have a complete backup but no access to the hosting account because the administrator who originally configured it has left.
+
+In both cases, a backup exists, but recovery is incomplete.
+
+The [UK National Cyber Security Centre's guidance for small organisations](https://www.ncsc.gov.uk/collection/small-organisations-guide-to-cyber-security/backing-up-your-data) explains that organisations should back up the information they need to operate, including [websites](/articles/tag/websites), email, documents, contacts and customer information. It also stresses the importance of knowing how to restore a backup and checking that it contains the necessary data.
+
+The practical lesson is simple: do not measure backup readiness by the number of backup files. Measure it by whether the business can recover the services it depends on.
+
+## 1. Identify everything your website depends on
+
+Before deciding how often to back up a website, identify what needs to be recovered.
+
+A modern website may contain more than its visible pages and images.
+
+**Website source code**
+
+This includes the application code, templates, stylesheets, scripts and other files required to build or operate the website.
+
+A version-control repository can help preserve source code and track changes. However, a repository is not necessarily a complete backup of the live website.
+
+It may not contain uploaded files, database records, production configuration or external service settings.
+
+**Database content**
+
+A database-backed website may store:
+
+- Page content.
+- Blog articles.
+- Product information.
+- Customer accounts.
+- Enquiries and submissions.
+- Application settings.
+- Transaction information.
+
+If the database is not included in the backup, restoring the application files alone may not bring the website back to its previous state.
+
+**Uploaded files and media**
+
+Websites often store documents, images, videos and other files separately from the database.
+
+Confirm that these files are included in the recovery process and that the backup method can restore the correct folder structure.
+
+**Deployment configuration**
+
+A website may depend on configuration that is not stored in its source repository.
+
+Examples include:
+
+- Environment variables.
+- Build and deployment settings.
+- Redirect rules.
+- Runtime configuration.
+- Scheduled jobs.
+- Server configuration.
+- Access-control settings.
+
+Sensitive credentials should be stored securely rather than copied into ordinary backup folders or exposed in source code.
+
+**Domain and DNS information**
+
+The domain name and DNS configuration are also important parts of website continuity.
+
+A website can be perfectly restored on its hosting platform and still be unavailable if the domain has expired, DNS records have been changed or the business cannot access its registrar account.
+
+Keep an accurate record of the registrar, renewal arrangements and important DNS settings.
+
+**Third-party integrations**
+
+A website may rely on external services for forms, payments, maps, [analytics](/articles/tag/analytics), booking or customer communication.
+
+These services may not be recoverable from a website backup. Instead, the business needs to know which accounts are involved, who controls them and how their configuration can be restored.
+
+## 2. Understand the different types of website backups
+
+There is no single backup method that covers every website.
+
+The appropriate arrangement depends on how the website is built and where its information is stored.
+
+| Backup type | What it protects | Important consideration |
+| --- | --- | --- |
+| Source-code backup | Application code and development files | May exclude production data and uploaded content |
+| Database backup | Structured website information | Must be consistent and restorable |
+| File backup | Images, documents and uploaded media | Confirm that all required directories are included |
+| Full hosting backup | A broader copy of the hosting environment | Confirm exactly what the provider includes |
+| Configuration backup | Deployment, server and application settings | Protect secrets and access credentials separately |
+| External account records | Domain, DNS and third-party service configuration | Keep secure account ownership and recovery information |
+
+A static website may have no traditional database, but it still needs protection for its source code, content files, media and deployment configuration.
+
+A dynamic website may need coordinated backups of its database, uploaded files and application code.
+
+An ecommerce website may require additional attention because orders, customer records, stock information and payment-related integrations can change frequently.
+
+## 3. Ask what your hosting provider actually backs up
+
+Many business owners assume that a hosting package includes everything required to recover their website.
+
+That assumption should be checked.
+
+Hosting providers differ in the frequency, scope and retention of their backups. Some provide account-level backups, while others provide selected files or database snapshots.
+
+Ask your provider:
+
+- Are website files included?
+- Are databases included?
+- Are uploaded images and documents included?
+- How frequently are backups created?
+- How long are backups retained?
+- Are backups stored separately from the live hosting environment?
+- Can the business request a specific restore point?
+- Can individual files or databases be restored?
+- Is restoration included or separately charged?
+- Can the business download a copy?
+- What happens to backups when the hosting account is cancelled?
+
+Also establish whether the backup covers email.
+
+Domain email, website files and application databases are often managed by different services. A hosting backup should not be assumed to include mailboxes hosted by a separate provider.
+
+Record the answers in a simple document and review them when the hosting arrangement changes.
+
+## 4. Decide how much data the business can afford to lose
+
+Backup frequency should reflect how frequently the website changes and how much information the business can afford to lose.
+
+Two useful concepts are Recovery Point Objective (RPO) and Recovery Time Objective (RTO).
+
+**Recovery Point Objective**
+
+RPO describes the maximum acceptable amount of data loss, measured in time.
+
+For example, if a business creates new customer enquiries throughout the day, a backup that is several days old may be inadequate.
+
+The business needs to decide how much of that recent activity it could reasonably afford to lose.
+
+**Recovery Time Objective**
+
+RTO describes the target time within which a service should be restored after an interruption.
+
+A simple informational website might tolerate a longer recovery period than an online store that processes orders continuously.
+
+These are planning targets, not guarantees. Actual recovery time depends on the hosting environment, backup quality, access to technical support and complexity of the website.
+
+Consider the following examples:
+
+| Website type | Possible backup approach |
+| --- | --- |
+| Static brochure website | Back up source code, content, media and deployment configuration after significant changes |
+| Business website with a CMS | Back up the database and uploaded files regularly, alongside application code |
+| Website with frequent enquiries | Protect enquiry records frequently enough to meet the business's acceptable data-loss target |
+| Online store | Use a recovery strategy that accounts for frequent transactions and consistent database recovery |
+
+The correct schedule depends on actual activity rather than a generic rule.
+
+## 5. Keep backups separate from the live website
+
+A backup stored only on the same server as the live website is vulnerable to the same failure.
+
+If the server is compromised, damaged or accidentally deleted, both the website and its backup may be lost.
+
+The National Cyber Security Centre recommends protecting backups from unauthorised modification or deletion and storing them separately from primary systems. It also recommends making backups immutable where possible.
+
+An immutable backup is protected against changes or deletion during a defined retention period.
+
+This can make recovery more difficult for attackers who attempt to destroy backup copies during an incident.
+
+A practical small-business arrangement may include:
+
+- An automated backup maintained by the hosting provider.
+- A separate backup stored outside the production hosting account.
+- An additional offline or otherwise isolated copy for particularly important information.
+
+The NCSC's [small-organisation backup guidance](https://www.ncsc.gov.uk/collection/small-organisations-guide-to-cyber-security/backing-up-your-data) also suggests using online storage together with a separate storage device, rather than relying on only one copy.
+
+The right arrangement should be affordable, manageable and appropriate to the business's risk.
+
+## 6. Protect backup access
+
+Backups contain information that may be just as sensitive as the live website.
+
+A backup of a customer database, for example, may contain names, contact details, account information or enquiry records.
+
+Protecting backup files is therefore part of protecting the business's information.
+
+Consider the following controls:
+
+- Use unique passwords for hosting and backup accounts.
+- Enable multi-factor authentication where available.
+- Restrict access to people who need it.
+- Avoid sharing administrator accounts.
+- Keep backup storage separate from ordinary website administration where practical.
+- Protect exported databases and archives.
+- Encrypt sensitive backup copies where appropriate.
+- Review access when employees or contractors leave.
+- Keep recovery credentials in a secure, documented location.
+
+Do not place passwords, private keys or API credentials in a publicly accessible repository or an ordinary document shared with every employee.
+
+A recovery plan should explain how authorised people can obtain the credentials they need without exposing them unnecessarily.
+
+## 7. Test a website restoration
+
+This is the step many businesses overlook.
+
+A backup process may run successfully for months while silently producing incomplete or unusable copies.
+
+A restore test checks whether the business can actually recover from one of those copies.
+
+It is best to perform the first test in a separate staging or test environment rather than overwriting the live website.
+
+A practical restoration test can follow these steps:
+
+**Step 1: Select a backup**
+
+Choose a recent backup and record its date, time and contents.
+
+**Step 2: Prepare a safe test environment**
+
+Use a separate hosting space or staging environment. Do not experiment with the production website.
+
+**Step 3: Restore the application**
+
+Restore the source code, website files and required configuration.
+
+**Step 4: Restore the database**
+
+If the website uses a database, restore it and confirm that the application can connect to it.
+
+**Step 5: Restore uploaded content**
+
+Check that images, documents and other media are available.
+
+**Step 6: Test important functions**
+
+Open the restored website and test the features that matter to the business.
+
+**Step 7: Record the outcome**
+
+Document the backup used, time taken, missing information, errors and any corrective action.
+
+The [NCSC's technical recovery guidance](https://www.ncsc.gov.uk/collection/disruptive-cyber-attacks/preparing/3-prepare-technical-recovery) specifically recommends maintaining tested backups and regularly testing restoration processes. It also advises prioritising business-critical services because restoring systems can take significant time.
+
+## 8. Test the customer journey, not just the homepage
+
+A restored website may display its homepage correctly while important functions remain broken.
+
+Test the complete customer journey.
+
+| Feature | What to check |
+| --- | --- |
+| Homepage | Layout, images and navigation |
+| Service pages | Content, links and calls to action |
+| Contact forms | Validation, submission and confirmation |
+| Enquiry storage | New submissions are stored correctly |
+| Email notifications | Required notifications reach the correct recipients |
+| Images and documents | Files load without missing references |
+| Authentication | Administrator and customer access work where applicable |
+| Payments | Test integrations in an appropriate sandbox environment |
+| Redirects | Old and current URLs resolve correctly |
+| Analytics | Tracking configuration remains available |
+| Mobile experience | Navigation and forms work on smaller screens |
+
+Also check the website's security settings.
+
+A restore should not accidentally reintroduce outdated software, insecure configuration or administrator accounts that should no longer exist.
+
+If the backup was created before a compromise, restoring it may also restore the vulnerability that allowed the incident to happen. The recovery process should include investigation and appropriate updates before returning the website to normal operation.
+
+## 9. Create a simple recovery document
+
+A recovery process should not exist only in the memory of the developer or hosting administrator.
+
+Create a document that explains how the business can get help and what needs to happen if the website becomes unavailable.
+
+Include:
+
+- Website domain and hosting provider.
+- Domain registrar and renewal responsibility.
+- Names of authorised administrators.
+- Backup locations.
+- Backup frequency and retention.
+- Database and file storage details.
+- Third-party services and their account owners.
+- Technical support contacts.
+- Recovery priorities.
+- Last successful restore-test date.
+- Known limitations and dependencies.
+
+Do not place passwords directly in this document. Refer to the approved password manager or secure credential store.
+
+A business should also identify who is authorised to approve a restore, who communicates with customers and who checks that the website is functioning after recovery.
+
+This is useful even for a small organisation with only one or two people involved in managing the website.
+
+## 10. Establish a realistic testing schedule
+
+Testing should be regular enough to identify problems before an emergency.
+
+A small business could begin with the following schedule and adjust it to its risk and website activity:
+
+| Activity | Suggested review |
+| --- | --- |
+| Confirm automated backups are running | Weekly |
+| Review backup failures and alerts | Weekly |
+| Check that backup storage is accessible | Monthly |
+| Restore a backup in a test environment | Quarterly |
+| Review recovery contacts and account access | Every six months |
+| Test after major website changes | After significant releases or migrations |
+
+These are practical starting points, not statutory timeframes.
+
+A website that processes orders or stores important customer information may require more frequent checks and more detailed recovery testing.
+
+A static website that changes only occasionally may need a simpler arrangement.
+
+The important point is to assign responsibility and keep evidence that the checks have been completed.
+
+## 11. Consider connectivity and recovery logistics
+
+Recovery planning should reflect the way the business actually operates.
+
+A business serving customers in [Maboloka](/locations/maboloka), [Soshanguve](/locations/soshanguve), [Centurion](/locations/centurion) or surrounding areas may depend on different hosting providers, internet connections and support arrangements.
+
+If the business has unreliable internet access, relying exclusively on downloading a large backup during an emergency may create additional delays.
+
+A secure offline copy or a recovery arrangement managed by a hosting provider may be more practical, depending on the website and the available resources.
+
+The business should also know how it will contact its hosting provider if the website is unavailable and normal email communication is affected.
+
+A recovery plan that depends on accessing an email account hosted on the same failed system is not a complete plan.
+
+> **Website assessment:**
+>
+> If you are unsure what your current website depends on or whether its recovery arrangements are adequate, start with a [Mogen website assessment](/#assessment).
+
+## A website backup readiness checklist
+
+Before considering your recovery process complete, confirm that:
+
+- [ ] The website's files and source code are protected.
+- [ ] Databases are included where applicable.
+- [ ] Uploaded images and documents are included.
+- [ ] Deployment and server configuration can be recreated.
+- [ ] Domain and DNS access is documented.
+- [ ] Third-party integrations are identified.
+- [ ] Backups are stored separately from production.
+- [ ] Backup access is protected.
+- [ ] Retention periods are understood.
+- [ ] A recent backup has been restored in a test environment.
+- [ ] Forms, notifications and important customer journeys have been tested.
+- [ ] Recovery responsibilities are documented.
+- [ ] The last successful restore test is recorded.
+
+## Frequently asked questions
+
+### Are automatic hosting backups enough?
+
+Not necessarily. You need to establish what is included, how long backups are retained, where they are stored and whether they can be restored. Hosting backups may not cover every external service or business system.
+
+### How often should I back up my website?
+
+The frequency depends on how often the website changes and how much data the business can afford to lose. A site that receives enquiries or processes orders needs a different backup schedule from a static site that rarely changes.
+
+### Does a source-code repository count as a complete backup?
+
+Not usually. It may preserve application code but exclude databases, uploaded files, production configuration and external service settings.
+
+### Should I test a backup on my live website?
+
+No. Use a separate test or staging environment wherever possible. Testing a restore directly on a production website could overwrite current information or cause an outage.
+
+### Can a backup protect my website against ransomware?
+
+A separate, protected backup can help the business recover from certain ransomware incidents. However, it does not prevent an attack. The business should also maintain secure accounts, software updates, access controls and an incident response process.
+
+> **Website development:**
+>
+> Visit the [Mogen promotions page](/promotions) to review currently published offers before planning a new website or a technical improvement project.
+
+## Conclusion
+
+A website backup should be treated as part of a recovery process, not as a box that is ticked when an automated job completes.
+
+Small businesses should understand what their website depends on, confirm which components are protected, store backups separately and test restoration before an emergency occurs.
+
+The best recovery plan is one that is documented, affordable and practical enough to maintain.
+
+Whether your website is a simple business presence or an important source of customer enquiries, knowing how to restore it can make a significant difference when something goes wrong.
+
+## Sources
+
+- [South African Government: Cybersecurity Awareness Month Concludes](https://www.gov.za/news/media-statements/communications-and-digital-technologies-reaffirms-commitment-safer-digital)
+- [National Cyber Security Centre: Backing Up Your Data](https://www.ncsc.gov.uk/collection/small-organisations-guide-to-cyber-security/backing-up-your-data)
+- [National Cyber Security Centre: Prepare Your Technical Recovery Capability](https://www.ncsc.gov.uk/collection/disruptive-cyber-attacks/preparing/3-prepare-technical-recovery)
+- [NIST: Cybersecurity Framework 2.0 Small Business Quick-Start Guide](https://www.nist.gov/publications/nist-cybersecurity-framework-20-small-business-quick-start-guide)
