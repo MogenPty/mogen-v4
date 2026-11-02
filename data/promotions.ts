@@ -166,7 +166,7 @@ export const PROMOTIONS: Promotion[] = [
     description:
       "A focused starter website for businesses that need a professional online presence without unnecessary complexity. Clean structure, mobile-first build, and the essentials to get found and contacted.",
     status: "active",
-    endDate: "2026-10-30",
+    endDate: "2026-12-31",
     isFeatured: false,
     sortOrder: 1,
     pricing: [
@@ -205,7 +205,7 @@ export const PROMOTIONS: Promotion[] = [
       "Mogen's managed website subscription — design, hosting, maintenance and email for one monthly price. First 100 customers save.",
     description:
       "Mogen Sprout is the managed way to get online: Mogen designs and builds your website, then keeps it hosted, maintained and supported for one monthly subscription. This launch promotion discounts the setup fee and the monthly subscription for the first 12 months for the first 100 eligible customers.",
-    status: "scheduled",
+    status: "active",
     startDate: "2026-10-01",
     isFeatured: true,
     sortOrder: 2,
