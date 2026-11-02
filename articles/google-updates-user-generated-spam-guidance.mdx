@@ -143,7 +143,9 @@ It can be implemented through a robots meta element in the page or an `X-Robots-
 
 For example:
 
-    <meta name="robots" content="noindex">
+    ```html
+    <meta name="robots" content="noindex" />
+    ```
 
 This is useful for pages that need to remain accessible to people with a link but should not appear in Google Search.
 
@@ -169,7 +171,9 @@ Google recommends using the `ugc` value in the `rel` attribute for links that ap
 
 For example:
 
+    ```xml
     <a href="https://example.com" rel="ugc">User-submitted link</a>
+    ```
 
 The `ugc` value identifies the link as user-generated content.
 
@@ -177,7 +181,9 @@ Where the website owner does not want to associate the site with an untrusted de
 
 For example:
 
+    ```react
     <a href="https://example.com" rel="ugc nofollow">User-submitted link</a>
+    ```
 
 Google explains the available link qualification values in its [outbound link guidance](https://developers.google.com/search/docs/crawling-indexing/qualify-outbound-links).
 
@@ -326,9 +332,9 @@ The website should not create hundreds of near-identical pages simply because a 
 
 Each public page should have a clear reason to exist and should provide value to the intended audience.
 
-<aside>
-  <p><strong>SEO assessment:</strong> If you want to review your website's indexation, technical SEO and content quality, explore the <a href="/services/seo/#audit">Mogen SEO audit</a>.</p>
-</aside>
+> **SEO assessment:**
+> 
+> If you want to review your website's indexation, technical SEO and content quality, explore the [Mogen SEO audit](/services/seo#audit).
 
 ## Frequently asked questions
 
@@ -352,9 +358,9 @@ No. It qualifies links in user-generated content. It does not replace moderation
 
 Not when Google needs to read a page-level `noindex` instruction. If a URL is blocked from crawling, Google may not be able to see that instruction. Use the appropriate control for the intended outcome.
 
-<aside>
-  <p><strong>Published promotions:</strong> Review <a href="/promotions">Mogen's promotions</a> for currently published offers that may be relevant to your website and search visibility requirements.</p>
-</aside>
+> **Published promotions:**
+> 
+> Review [Mogen's promotions](/promotions) for currently published offers that may be relevant to your website and search visibility requirements.
 
 ## Conclusion
 
