@@ -16,7 +16,6 @@ import WhatMogenDoes from "@/components/mogen/what-mogen-does";
 import WhyMogen from "@/components/mogen/why-mogen";
 import { getActivePromotions, getFeaturedPromotion } from "@/data/promotions";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
-import { resolveHeroServiceSlug } from "@/lib/hero";
 import { pageMetadata } from "@/lib/seo";
 import { STATIC_META } from "@/lib/seo/metadata-registry";
 
@@ -53,10 +52,8 @@ export default async function Home({
   // Carry allowlisted attribution (utm_*) from the homepage URL into
   // the featured promotion's enquiry CTA.
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});
-  // The hero follows the featured promotion's service (Web Development
-  // by default) — headline, sub-copy and primary CTA stay in sync with
-  // the offer below and the header/bar/footer CTAs.
-  const heroServiceSlug = resolveHeroServiceSlug(promotion);
+  // Homepage identity stays Web Development-first regardless of promotional offers.
+  const heroServiceSlug = "web-development";
   let numbering = 1;
 
   return (
@@ -78,7 +75,7 @@ export default async function Home({
           numbering={numbering++}
           auditHref="#assessment"
           ctaTitle="Not sure which website fits?"
-          ctaBody="Answer five quick questions about your business and website needs — get a clear Seed, Sprout or Vegetative recommendation."
+          ctaBody="Answer a few questions about your business and website needs — we will help you find a suitable option."
           ctaLabel="Find Your Package"
         />
         <WhyMogen numbering={numbering++} />
