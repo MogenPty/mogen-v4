@@ -1,6 +1,8 @@
 import "server-only";
 
 import { NextResponse } from "next/server";
+import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
+import { getPublishedWebPackage } from "@/db/catalogue";
 import {
   getContactMailConfig,
   submitContact,
@@ -102,6 +104,22 @@ export async function POST(req: Request) {
       },
       { status: 403 },
     );
+  }
+
+  // In catalogue mode, package IDs must resolve to a published Neon record.
+  // Do not trust a package ID supplied by the browser or a stale promotion.
+  if (databaseCatalogueEnabled() && typeof body === "object" && body !== null) {
+    const submitted = body as Record<string, unknown>;
+    const packageId = typeof submitted.package === "string" ? submitted.package.trim() : "";
+    if (submitted.service === "Web Development" && packageId) {
+      const approved = await getPublishedWebPackage(packageId);
+      if (!approved) {
+        return NextResponse.json(
+          { ok: false, error: "This package is not currently available. Please choose another option." },
+          { status: 400 },
+        );
+      }
+    }
   }
 
   let provider: MailProvider;
