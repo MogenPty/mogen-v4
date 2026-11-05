@@ -33,7 +33,7 @@ export default function LocationWebOffers({ offer }: Readonly<{ offer: PublicLoc
                 <ul className={`mt-5 flex-1 space-y-2 text-sm ${slot.featured ? "text-white/95" : "text-ink/80"}`}>
                   {slot.package.features.slice(0, 4).map(feature => <li key={feature}>✓ {feature}</li>)}
                 </ul>
-                <Link className={`mt-7 inline-flex justify-center rounded px-4 py-3 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${slot.featured ? "bg-white text-ink hover:bg-bone focus-visible:outline-white" : "bg-catalyst text-white hover:bg-ink focus-visible:outline-catalyst"}`} href={`/contact?service=web-development&package=${encodeURIComponent(slot.package.id)}`}>
+                <Link className={`mt-7 inline-flex justify-center rounded px-4 py-3 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${slot.featured ? "bg-white !text-[#171717] hover:bg-[#f3f3f3] hover:!text-[#171717] focus-visible:outline-white" : "bg-catalyst !text-white hover:bg-catalyst-hover hover:!text-white focus-visible:outline-catalyst"}`} href={`/contact?service=web-development&package=${encodeURIComponent(slot.package.id)}`}>
                   Enquire about {slot.package.name}
                 </Link>
               </article>
