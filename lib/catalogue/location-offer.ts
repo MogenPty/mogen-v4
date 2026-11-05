@@ -13,9 +13,11 @@ export interface CatalogueWebPackage {
   status: string;
   pricingLabel: string;
 }
-export type CatalogueOfferSlot =
-  | { kind: "package"; packageId: string }
-  | { kind: "explore"; direction: "smaller" | "larger" };
+export type CatalogueOfferSlot = {
+  kind: "package" | "explore";
+  packageId?: string;
+  direction?: "smaller" | "larger";
+};
 export interface CatalogueLocationOffer {
   locationSlug: string;
   featuredPackageId: string;
