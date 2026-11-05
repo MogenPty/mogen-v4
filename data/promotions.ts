@@ -330,6 +330,13 @@ export function getEffectiveStatus(
   promotion: Promotion,
   today: string = todayISO(),
 ): PromotionStatus {
+  // The old web-development promotions refer to retired three-tier scopes.
+  // Preserve historical details, but never permit a stale offer to be claimed
+  // once the database-backed catalogue is explicitly activated.
+  if (
+    process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
+    promotion.relatedService === "web-development"
+  ) return "expired";
   if (
     promotion.status === "draft" ||
     promotion.status === "archived" ||
