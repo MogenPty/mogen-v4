@@ -6,6 +6,7 @@ import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import Nav from "@/components/mogen/nav";
 import { SERVICES } from "@/data/services";
+import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
 import { pageMetadata } from "@/lib/seo";
 import { STATIC_META } from "@/lib/seo/metadata-registry";
 
@@ -16,6 +17,7 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function PricingDirectoryPage() {
+  const catalogueEnabled = databaseCatalogueEnabled();
   return (
     <div id={"top"} className="bg-bone">
       <Nav defaultServiceSlug="web-development" />
@@ -29,10 +31,9 @@ export default function PricingDirectoryPage() {
                 <span className="text-catalyst">pricing.</span>
               </h1>
               <p className="mt-6 max-w-2xl text-lg text-ink/70">
-                Each service has its own three-tier pricing, detailed on its
-                authoritative service page. Select a service below to view its
-                current packages, add-ons and FAQs. No generic bundles — you pay
-                only for the service you need.
+                {catalogueEnabled
+                  ? "Our Web Development range includes six website stages and a separate Seed online-presence service. Explore published packages on the Web Development page, or browse the other services below."
+                  : "Each service has its own three-tier pricing, detailed on its authoritative service page. Select a service below to view its current packages, add-ons and FAQs. No generic bundles — you pay only for the service you need."}
               </p>
             </div>
           </div>
