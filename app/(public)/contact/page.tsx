@@ -92,6 +92,8 @@ export default async function ContactPage({
     ? (dbPackage?.id ?? (details.package?.serviceSlug === "web-development" ? undefined : details.package?.id))
     : details.package?.id;
   const selectedService = dbPackage ? "Web Development" : details.serviceName;
+  const supersededPromotion = catalogueEnabled &&
+    details.promotion?.relatedService === "web-development";
   return (
     <>
       <ContactJsonLd />
@@ -100,9 +102,9 @@ export default async function ContactPage({
         initialService={selectedService}
         initialPackage={selectedPackage}
         initialMessage={
-          details.message ?? buildAuditEnquiryMessage(details.website)
+          (supersededPromotion ? undefined : details.message) ?? buildAuditEnquiryMessage(details.website)
         }
-        initialPromotionName={details.promotion?.name}
+        initialPromotionName={supersededPromotion ? undefined : details.promotion?.name}
         initialServiceNotice={details.serviceNotice}
         initialPackageNotice={details.packageNotice}
         initialAttribution={details.attribution}
