@@ -7,15 +7,14 @@ export default function WebCataloguePricing({ packages }: Readonly<{ packages: C
   return (
     <section aria-label="Web Development packages">
       <p className="mb-8 max-w-3xl text-ink/70">
-        Six website stages, from a first professional presence to a tailored business platform.
-        Every stage is available across South Africa. Pricing is confirmed against your requirements.
+        Six website packages, from a first professional presence to a tailored business platform.
+        Every package is available across South Africa. Pricing is confirmed against your requirements.
       </p>
       {websites.length ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {websites.map((item) => (
             <article key={item.id} className="flex flex-col rounded-lg border border-ink/15 bg-bone p-7">
-              <p className="small-caps text-catalyst">Stage {item.stage}</p>
-              <h3 className="mt-2 font-display text-2xl font-black text-ink">{item.name}</h3>
+              <h3 className="font-display text-2xl font-black text-ink">{item.name}</h3>
               <p className="mt-3 text-ink/70">{item.summary}</p>
               <p className="mt-5 text-xl font-bold text-ink">{item.pricingLabel}</p>
               <ul className="mt-5 flex-1 space-y-2 text-sm text-ink/80">
