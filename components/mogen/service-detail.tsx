@@ -12,6 +12,9 @@ import MagneticButton from "@/components/mogen/magnet-button";
 import Nav from "@/components/mogen/nav";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
+import WebCataloguePricing from "@/components/mogen/web-catalogue-pricing";
+import WebCatalogueFinder from "@/components/mogen/web-catalogue-finder";
+import type { CatalogueWebPackage } from "@/lib/catalogue/location-offer";
 import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
 import { getService, SERVICES } from "@/data/services";
 import type { Promotion } from "@/data/promotions";
@@ -54,6 +57,7 @@ interface Props {
    * enquiry.
    */
   activePromotions?: Promotion[];
+  webPackages?: CatalogueWebPackage[] | null;
 }
 
 export default function ServiceDetail({
@@ -63,6 +67,7 @@ export default function ServiceDetail({
   relatedArticles = [],
   featuredPromotion,
   activePromotions,
+  webPackages,
 }: Readonly<Props>) {
   const service = getService(serviceSlug);
 
@@ -187,7 +192,7 @@ export default function ServiceDetail({
         )}
 
         {/* PRICING */}
-        {service.pricing && (
+        {(webPackages !== null && webPackages !== undefined || service.pricing) && (
           <BlueprintGrid id={"pricing"} className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
@@ -203,10 +208,11 @@ export default function ServiceDetail({
                   matches your stage — add-ons let you scale on demand.
                 </p>
               </div>
-              <ServicePricing
-                pricing={service.pricing}
-                attribution={attribution}
-              />
+              {webPackages !== null && webPackages !== undefined ? (
+                <WebCataloguePricing packages={webPackages} />
+              ) : service.pricing ? (
+                <ServicePricing pricing={service.pricing} attribution={attribution} />
+              ) : null}
             </div>
           </BlueprintGrid>
         )}
@@ -249,7 +255,10 @@ export default function ServiceDetail({
             questionnaire lives here as well as on the homepage, so Web
             Development discovery CTAs always have an `#assessment`
             target no matter which service is currently promoted. */}
-        {serviceSlug === "web-development" && (
+        {serviceSlug === "web-development" && webPackages !== null && webPackages !== undefined && (
+          <WebCatalogueFinder packages={webPackages} />
+        )}
+        {serviceSlug === "web-development" && webPackages === null && (
           <WebsiteQuestionnaire
             numbering={numbering++}
             initialAttribution={attribution}
