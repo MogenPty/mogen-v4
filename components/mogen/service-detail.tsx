@@ -204,8 +204,9 @@ export default function ServiceDetail({
                   {service.name} packages
                 </h2>
                 <p className="mt-4 text-lg text-ink/70">
-                  Transparent rates, no lock-in surprises. Pick the tier that
-                  matches your stage — add-ons let you scale on demand.
+                  {webPackages !== null && webPackages !== undefined
+                    ? "Choose a stage that suits your needs. Pricing and delivery are confirmed after reviewing your requirements."
+                    : "Transparent rates, no lock-in surprises. Pick the tier that matches your stage — add-ons let you scale on demand."}
                 </p>
               </div>
               {webPackages !== null && webPackages !== undefined ? (
@@ -218,7 +219,7 @@ export default function ServiceDetail({
         )}
 
         {/* ADD-ONS */}
-        {service.addons && service.addons.length > 0 && (
+        {service.addons && service.addons.length > 0 && (serviceSlug !== "web-development" || webPackages === null) && (
           <BlueprintGrid className="bg-secondary py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
@@ -293,7 +294,7 @@ export default function ServiceDetail({
         )}
 
         {/* FAQ */}
-        {service.faq && (
+        {service.faq && (serviceSlug !== "web-development" || webPackages === null) && (
           <BlueprintGrid id={"faq"} className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-225 px-6 lg:px-10">
               <SectionLabel
