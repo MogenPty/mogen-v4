@@ -105,8 +105,8 @@ export default async function ContactPage({
           (supersededPromotion ? undefined : details.message) ?? buildAuditEnquiryMessage(details.website)
         }
         initialPromotionName={supersededPromotion ? undefined : details.promotion?.name}
-        initialServiceNotice={details.serviceNotice}
-        initialPackageNotice={details.packageNotice}
+        initialServiceNotice={supersededPromotion ? undefined : details.serviceNotice}
+        initialPackageNotice={supersededPromotion ? undefined : details.packageNotice}
         initialAttribution={details.attribution}
       />
     </>
