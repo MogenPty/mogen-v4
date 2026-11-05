@@ -373,7 +373,12 @@ export function getPromotions(): Promotion[] {
 }
 
 export function getPromotionBySlug(slug: string): Promotion | undefined {
-  return PROMOTIONS.find((p) => p.slug === slug);
+  const promotion = PROMOTIONS.find((p) => p.slug === slug);
+  if (promotion && process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
+      promotion.relatedService === "web-development") {
+    return { ...promotion, status: "expired" };
+  }
+  return promotion;
 }
 
 /**
@@ -450,7 +455,12 @@ export function orderPublicPromotions(
 
 /** Public promotions for /promotions, in display order. */
 export function getPublicPromotions(today: string = todayISO()): Promotion[] {
-  return orderPublicPromotions(PROMOTIONS, today);
+  return orderPublicPromotions(PROMOTIONS, today).map(p =>
+    process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
+    p.relatedService === "web-development"
+      ? { ...p, status: "expired" as const }
+      : p
+  );
 }
 
 export function isPromotionExpired(
