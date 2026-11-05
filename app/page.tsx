@@ -15,6 +15,8 @@ import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
 import WhatMogenDoes from "@/components/mogen/what-mogen-does";
 import WhyMogen from "@/components/mogen/why-mogen";
 import { getActivePromotions, getFeaturedPromotion } from "@/data/promotions";
+import { loadPublishedWebCatalogue } from "@/lib/catalogue/server";
+import WebCatalogueFinder from "@/components/mogen/web-catalogue-finder";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { pageMetadata } from "@/lib/seo";
 import { STATIC_META } from "@/lib/seo/metadata-registry";
@@ -49,6 +51,7 @@ export default async function Home({
   // Active promotions for the questionnaire: when one targets the
   // recommended package, its price points replace the standard display.
   const activePromotions = getActivePromotions();
+  const webPackages = await loadPublishedWebCatalogue();
   // Carry allowlisted attribution (utm_*) from the homepage URL into
   // the featured promotion's enquiry CTA.
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});
@@ -79,11 +82,11 @@ export default async function Home({
           ctaLabel="Find Your Package"
         />
         <WhyMogen numbering={numbering++} />
-        <WebsiteQuestionnaire
-          numbering={numbering++}
-          initialAttribution={attribution}
-          promotions={activePromotions}
-        />
+        {webPackages !== null ? (
+          <WebCatalogueFinder packages={webPackages} />
+        ) : (
+          <WebsiteQuestionnaire numbering={numbering++} initialAttribution={attribution} promotions={activePromotions} />
+        )}
         {promotion && (
           <Promotion
             numbering={numbering++}
