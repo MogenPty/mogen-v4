@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Contact from "@/components/mogen/contact";
+import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
+import { getPublishedWebPackage } from "@/db/catalogue";
 import { siteConfig } from "@/data/site";
 import {
   buildAuditEnquiryMessage,
@@ -79,16 +81,24 @@ export default async function ContactPage({
   // Client form below receives plain initial values (no useSearchParams,
   // so no extra Suspense boundary is required).
   const resolvedSearchParams = (await searchParams) ?? {};
-  const details = resolveEnquiryDetails(
-    parseEnquiryContext(resolvedSearchParams),
-  );
+  const context = parseEnquiryContext(resolvedSearchParams);
+  const details = resolveEnquiryDetails(context);
+  const catalogueEnabled = databaseCatalogueEnabled();
+  const dbPackage = catalogueEnabled && context.package
+    ? await getPublishedWebPackage(context.package)
+    : undefined;
+  // Do not preselect a draft/retired web package or a superseded web promotion.
+  const selectedPackage = catalogueEnabled
+    ? (dbPackage?.id ?? (details.package?.serviceSlug === "web-development" ? undefined : details.package?.id))
+    : details.package?.id;
+  const selectedService = dbPackage ? "Web Development" : details.serviceName;
   return (
     <>
       <ContactJsonLd />
       <Contact
         numbering={8}
-        initialService={details.serviceName}
-        initialPackage={details.package?.id}
+        initialService={selectedService}
+        initialPackage={selectedPackage}
         initialMessage={
           details.message ?? buildAuditEnquiryMessage(details.website)
         }
