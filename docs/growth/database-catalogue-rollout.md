@@ -20,3 +20,12 @@ Status: Database schema and seed migration prepared. Seven packages are DRAFT un
 
 ## Cutover rule
 Do not remove `data/packages.ts` or switch public package serving until all consumer paths have been updated and the old promotions retired/redefined. Keep a rollback branch and a database snapshot.
+
+## Latest integration: location display behind feature gate
+The three location detail pages now request `loadLocationWebOffer(slug)`. The database-backed package cards appear only when `MOGEN_WEB_CATALOGUE_SOURCE=database`, with a fully valid set of published offers; otherwise the existing location content remains as before.
+- Keep this variable UNSET on production until the complete seven-stage catalogue, package pricing, forms and promotions agree.
+- Because all seeded records begin as `draft`, setting the flag alone displays **nothing** new. Publishing must be deliberate.
+- Do not expose draft records or old prices as if they were approved.
+- New tests: `pnpm exec vitest run lib/catalogue/location-offer.test.ts`.
+- REQUIRED: commit `package.json` and `pnpm-lock.yaml` from your local installation; current remote branch is missing dependencies.
+- This is only the location-page integration, not the whole cutover. The Web Development service page, pricing and questionnaire still need database-backed integration and verified end-to-end lead submission.

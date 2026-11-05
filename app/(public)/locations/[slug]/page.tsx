@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import LocationDetail from "@/components/mogen/location-detail";
+import { loadLocationWebOffer } from "@/lib/catalogue/server";
 import { getLocationDetail, LOCATION_SLUGS } from "@/data/locations";
 import { siteConfig } from "@/data/site";
 import { pageMetadata } from "@/lib/seo";
@@ -99,11 +100,12 @@ export default async function LocationPage({ params }: Readonly<Props>) {
   // offices) — any other slug returns the project 404 (with 404 status)
   // rather than a 200 panel.
   if (!getLocationDetail(slug)) notFound();
+  const webOffer = await loadLocationWebOffer(slug);
 
   return (
     <>
       <LocationJsonLd slug={slug} />
-      <LocationDetail locationSlug={slug} numbering={1} />
+      <LocationDetail locationSlug={slug} numbering={1} webOffer={webOffer} />
     </>
   );
 }
