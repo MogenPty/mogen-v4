@@ -33,4 +33,17 @@ describe("database catalogue enquiry mail", () => {
   it("clears an incompatible package when switching services", () => {
     expect(resolveSubmissionPackage({ service: "SEO", package: "budding" })).toBe("");
   });
+  it("includes a server-approved billing label in both email renderers", () => {
+    const plain = buildContactText(input, "2026-11-06T00:00:00.000Z", "Budding", "Managed Monthly");
+    const html = buildContactHtml(input, "2026-11-06T00:00:00.000Z", "Budding", "Managed Monthly");
+    expect(plain).toContain("Payment option: Managed Monthly");
+    expect(html).toContain("Payment option");
+    expect(html).toContain("Managed Monthly");
+  });
+  it("escapes approved option label in HTML", () => {
+    const html = buildContactHtml(input, "2026-11-06T00:00:00.000Z", "Budding", "<Once-Off> & More");
+    expect(html).toContain("&lt;Once-Off&gt; &amp; More");
+    expect(html).not.toContain("<Once-Off>");
+  });
+
 });
