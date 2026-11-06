@@ -52,6 +52,7 @@ interface ContactFormProps {
   initialPackage?: string;
   /** Server-validated published billing-option identifier. */
   initialPriceOption?: string;
+  initialPriceOptionLabel?: string;
   /**
    * Editable starter message generated from `?promotion=` data.
    * Used only as the initial value — visitor edits are never
@@ -84,6 +85,7 @@ export default function ContactForm({
   initialService,
   initialPackage,
   initialPriceOption,
+  initialPriceOptionLabel,
   initialMessage,
   initialPromotionName,
   initialServiceNotice,
@@ -337,6 +339,12 @@ export default function ContactForm({
                 <span className="font-semibold text-ink">
                   {getPackage(form.package)?.name ?? form.package}
                 </span>
+              </p>
+            )}
+            {form.priceOption && initialPriceOptionLabel && (
+              <p className="mt-1">
+                Payment option:{" "}
+                <span className="font-semibold text-ink">{initialPriceOptionLabel}</span>
               </p>
             )}
             {initialPromotionName && (
