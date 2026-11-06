@@ -149,6 +149,18 @@ export async function POST(req: Request) {
     }
   }
 
+  if (databaseCatalogueEnabled() && typeof body === "object" && body !== null) {
+    const candidate = body as Record<string, unknown>;
+    // Reject option claims for unrelated services rather than silently
+    // dropping submitted commercial context.
+    if (candidate.priceOption && candidate.service !== "Web Development") {
+      return NextResponse.json(
+        { ok: false, error: "Payment options are only available with Web Development packages." },
+        { status: 400 },
+      );
+    }
+  }
+
   let provider: MailProvider;
   try {
     provider = getMailProvider();
