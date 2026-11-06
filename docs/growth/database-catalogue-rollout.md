@@ -147,3 +147,27 @@ pnpm build
 ```
 
 Browser smoke test: open `/contact?service=web-development&package=sprout`, switch Web Development → SEO → Web Development, and verify Sprout returns. Change package to Seedling; switch SEO and back; verify Seedling is retained (not reset to the original URL's Sprout). Choose SEO Scale, then return to Web Development, then SEO and verify each service retains its own package. Try selecting no package, and verify the cleared value stays cleared. Confirm an unpublished Web Development package never appears when Neon catalogue mode is enabled. Submit a normal test enquiry and verify the newly selected package appears correctly.
+
+## Unpriced commercial-option templates (November 2026)
+
+The development-only `drizzle/0003_seed_not_applicable_responsibilities.sql` migration corrects a modelling flaw: Seed does not include a website, so its hosting and maintenance responsibilities must be `not_applicable` rather than `mogen`. It replaces the relevant database CHECK constraints. **Existing conflicting Seed rows cause the migration to fail** instead of silently changing them; inspect and resolve those records before retrying.
+
+After applying 0003, `drizzle/0004_draft_web_payment_options.sql` adds **16 draft, unpriced option templates** using stable identifiers and `ON CONFLICT DO NOTHING` (safe to rerun without overwriting edited records):
+- Seed: Once-Off only, no website hosting or monthly subscription; later changes are individually quoted.
+- Sprout, Seedling, Vegetative, Budding, Flowering: Managed Monthly, Once-Off and Self-Hosted (three alternatives per package).
+- Ripening: custom quotation only; no fixed-price templates until project scoping is agreed.
+
+Every inserted option has status `draft`, NULL monetary amounts, NULL minimum term and NULL initial hosting duration. The description and handover text are provisional, not approved customer terms. No promotion rows or public pricing are introduced, and no existing rows are updated. These templates should be reviewed in Neon development before any commercial approval.
+
+**Migration order, only in a verified Neon development branch:** 0001 -> 0002 -> 0003 -> 0004 (apply only unapplied steps, inspect SQL first). Do not use `drizzle-kit migrate` without a journal/snapshot baseline.
+
+Read-only verification:
+```powershell
+node scripts/verify-web-pricing-drafts.mjs
+node scripts/verify-web-commercial.mjs
+pnpm exec vitest run lib/catalogue/commercial.test.ts
+pnpm typecheck
+pnpm build
+```
+
+Next decisions for each option: approved base/project/monthly amount in ZAR, applicable setup fee, VAT presentation, deposits, minimum commitment, Once-Off hosting inclusion/renewal, domain/email support, maintenance SLA, source-code ownership and exit/transfer terms. Once the commercial approvals are settled, add controlled validation and publish workflow; do not simply change a draft row's status in production.
