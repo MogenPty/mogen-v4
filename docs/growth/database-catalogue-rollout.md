@@ -111,3 +111,22 @@ The initial catalogue SQL was manually applied; there is still **no Drizzle Kit 
 
 ### Commercial approval gate
 Before entering publishable rows, decide every package's eligible billing modes, prices in ZAR, setup fees, deposit rules, minimum terms, defined Once-Off hosting duration and renewals, VAT treatment, included hosting/email/domain/support, source-code handover and additional services. Ripening can remain quotation-only. Do not rely on a percentage discount alone for activation: enforce promotion dates, location, status, eligibility, maximum customers and future promotion stacking rules at offer and checkout time. No paid price should be shown until those controls exist.
+
+## Public payment selector — feature-gated integration (2026-11-06)
+
+The Web Development catalogue now accepts *published, effective and approved* `web_package_prices` rows (see `lib/catalogue/server.ts`). The package card only shows a payment selector when at least one eligible option has a valid integer-cent amount. Otherwise it remains a quotation-only card. No unapproved prices are seeded, and `MOGEN_WEB_CATALOGUE_SOURCE` remains opt-in.
+
+The selector shows Managed Monthly, Once-Off and/or Self-Hosted only when those billing modes have eligible published price rows for that specific package. Price display includes setup fee, minimum term, deposit, initial hosting term and handover policy when relevant. Amounts are shown in ZAR. Seed is still a separate no-website offering; the finder and location offers remain package-based until a later commercial design review.
+
+The selector generates a `/contact?service=web-development&package=<id>&priceOption=<id>` link. The contact route resolves and confirms the selected package and the price option are published, related, effective and priced, then includes the server-generated billing mode label in the enquiry email. A client-provided mode name is never trusted. Changing the service clears the stored price selection.
+
+Commercial promotions remain independent of billing options; no promotion prices are applied in the public selector yet, because redemption limits, eligibility and stacking still need enforcement. No payment or purchase takes place.
+
+### Tests / smoke checks
+```powershell
+pnpm exec vitest run lib/catalogue/commercial.test.ts lib/contact/catalogue-mail.test.ts lib/catalogue/location-offer.test.ts lib/catalogue/recommendation.test.ts
+pnpm typecheck
+pnpm lint
+pnpm build
+```
+Confirm that an unpriced catalogue renders the quote button, an approved test payment option renders a selector on the development branch only, its contact link preselects the package and payment mode, and successful test mail contains the selected billing mode. Verify direct submission of an expired, draft or cross-package `priceOption` is rejected with HTTP 400. Do not publish a fixed Rand amount until commercial approval.
