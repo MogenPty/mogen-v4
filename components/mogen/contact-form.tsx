@@ -350,6 +350,11 @@ export default function ContactForm({
                 </span>
               </p>
             )}
+            {form.service === "Web Development" && form.package === "seed" && (
+              <p className="mt-1">
+                Seed is a Once-Off setup. Future changes or fixes are quoted individually.
+              </p>
+            )}
             {form.priceOption && initialPriceOptionLabel && (
               <p className="mt-1">
                 Payment option:{" "}
