@@ -221,6 +221,7 @@ describe("package in enquiry submission", () => {
     email: "visitor@example.com",
     phone: "",
     businessName: "",
+    priceOption: "",
     otherServiceDetail: "",
     message: "We need a new website for our business.",
     companyWebsite: "",
