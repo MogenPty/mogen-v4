@@ -50,6 +50,8 @@ interface ContactFormProps {
    * the visitor never types it.
    */
   initialPackage?: string;
+  /** Server-validated published billing-option identifier. */
+  initialPriceOption?: string;
   /**
    * Editable starter message generated from `?promotion=` data.
    * Used only as the initial value — visitor edits are never
@@ -81,6 +83,7 @@ interface ContactFormProps {
 export default function ContactForm({
   initialService,
   initialPackage,
+  initialPriceOption,
   initialMessage,
   initialPromotionName,
   initialServiceNotice,
@@ -102,6 +105,7 @@ export default function ContactForm({
     // Resolved enquiry context (package identifier) — submitted as-is,
     // never edited by the visitor.
     package: resolvedPackage,
+    priceOption: resolvedPackage ? (initialPriceOption ?? "") : "",
     message: initialMessage ?? "",
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
@@ -308,6 +312,7 @@ export default function ContactForm({
                 otherServiceDetail:
                   nextService === "Other" ? prev.otherServiceDetail : "",
                 package: keepPackage ? prev.package : "",
+                priceOption: keepPackage ? prev.priceOption : "",
               };
             });
           }}
