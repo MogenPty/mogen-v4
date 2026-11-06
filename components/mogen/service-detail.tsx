@@ -13,6 +13,7 @@ import Nav from "@/components/mogen/nav";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
 import WebCataloguePricing from "@/components/mogen/web-catalogue-pricing";
+import type { PublicWebPriceChoice } from "@/components/mogen/web-price-options";
 import WebCatalogueFinder from "@/components/mogen/web-catalogue-finder";
 import type { CatalogueWebPackage } from "@/lib/catalogue/location-offer";
 import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
@@ -58,6 +59,7 @@ interface Props {
    */
   activePromotions?: Promotion[];
   webPackages?: CatalogueWebPackage[] | null;
+  webPrices?: PublicWebPriceChoice[];
 }
 
 export default function ServiceDetail({
@@ -68,6 +70,7 @@ export default function ServiceDetail({
   featuredPromotion,
   activePromotions,
   webPackages,
+  webPrices,
 }: Readonly<Props>) {
   const service = getService(serviceSlug);
 
@@ -210,7 +213,7 @@ export default function ServiceDetail({
                 </p>
               </div>
               {webPackages !== null && webPackages !== undefined ? (
-                <WebCataloguePricing packages={webPackages} />
+                <WebCataloguePricing packages={webPackages} prices={webPrices} />
               ) : service.pricing ? (
                 <ServicePricing pricing={service.pricing} attribution={attribution} />
               ) : null}
