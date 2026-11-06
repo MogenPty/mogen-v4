@@ -62,3 +62,19 @@ No DB write was executed from the GitHub connector; no remote test/build has bee
 
 ### Pricing/schema limitation
 `pricing_label` is a quote display string, not a normalized price/billing record. Before selling fixed prices or implementing the admin panel, add a versioned `package_prices` table (currency, decimal amount, cadence, setup fee, billing mode, effective dates, eligibility, published state) and a `location_campaigns` price override relation. Do not store monetary values as JavaScript floats.
+
+## Enquiry hardening (November 2026)
+When database mode is enabled, a submitted Web Development package ID must match a published `web_packages` row. After successful lookup, the server passes the *published database name* into the contact email formatter; the browser cannot supply a package name. In legacy mode the existing registry lookup remains unchanged. Run:
+```powershell
+pnpm exec vitest run lib/contact/catalogue-mail.test.ts lib/catalogue/location-offer.test.ts lib/catalogue/recommendation.test.ts
+```
+The test suite includes HTML escaping and service mismatch checks. These are source-level tests and still require local execution/confirmation.
+
+### Pricing decisions needed before introducing paid offers
+All currently published catalogue price *labels* are quotation placeholders, not approved commercial prices. Confirm for each of Seed, Sprout, Seedling, Vegetative, Budding, Flowering and Ripening:
+- Whether the offering allows managed monthly, once-off (Mogen-managed), and/or self-hosted delivery;
+- Initial setup and recurring fee per option (in ZAR), and whether VAT applies;
+- Contract duration, deposit/payment schedule, hosting/domain/email inclusions, and handover rights;
+- Add-on pricing, scoped exclusions and location-specific promotions.
+
+Recommended next schema: `web_package_prices` as a one-to-many relationship with immutable package IDs, `billing_mode` enum, `currency` (ZAR), `amount_cents` integer, optional `setup_fee_cents`, `deposit_percent`, `minimum_months`, `status`, `effective_from` and `effective_until`, plus a separate campaign mapping table for location-specific discounts. Avoid numeric commercial prices until they are approved. Plan a tracked Drizzle migration rather than manually editing production tables.
