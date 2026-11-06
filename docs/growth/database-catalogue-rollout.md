@@ -78,3 +78,36 @@ All currently published catalogue price *labels* are quotation placeholders, not
 - Add-on pricing, scoped exclusions and location-specific promotions.
 
 Recommended next schema: `web_package_prices` as a one-to-many relationship with immutable package IDs, `billing_mode` enum, `currency` (ZAR), `amount_cents` integer, optional `setup_fee_cents`, `deposit_percent`, `minimum_months`, `status`, `effective_from` and `effective_until`, plus a separate campaign mapping table for location-specific discounts. Avoid numeric commercial prices until they are approved. Plan a tracked Drizzle migration rather than manually editing production tables.
+
+## Commercial pricing and promotion schema — additive milestone (2026-11-06)
+
+Approved commercial distinctions:
+- **Managed Monthly**: ongoing Mogen hosting/maintenance/support subscription. Intended as the recurring revenue model. Its total revenue and margin depend on fees, operating costs, retention and churn.
+- **Once-Off**: fixed-price Mogen-built and Mogen-deployed project; any initial hosting period is explicitly defined (`initial_hosting_months`) and hosting renewals are billed separately. No perpetual free hosting. Milestone/deposit terms are recorded per price option.
+- **Self-Hosted**: build, source code and project files handed over after payment; client handles deployment, hosting and maintenance unless separately contracted.
+- **Promotions**: independent campaigns targeting any number of individual price option IDs, potentially across different billing modes, each with its own fixed-cent or basis-point discount. Setup, project and recurring discounts have separate applicability.
+
+Schema additions: `web_package_prices`, `web_promotions`, and `web_promotion_prices` in `db/schema.ts`. Commercial amounts use *integer ZAR cents*, never floating-point Rand. A null amount is intentionally unapproved, not zero. Promotions can have an optional location filter and campaign customer limit; enforcement of redemption limits and eligibility remains future work.
+
+**Important**: These are database infrastructure changes only. No customer-facing fixed-price display, discount, checkout or subscription billing is enabled by this milestone. The old `pricing_label` remains a quotation placeholder until commercial options are approved and a controlled cutover is implemented. Admin/auth/payment provider design remains separate.
+
+### Manual development-only migration
+
+1. Confirm that `DATABASE_URL` points to the dedicated Neon development branch; back up/snapshot that branch first.
+2. Open `drizzle/0001_web_commercial_options.sql` and inspect it.
+3. Execute that file **once** using the Neon SQL Editor against the confirmed development branch. It creates tables/indexes/constraints but inserts no rows.
+4. Verify read-only:
+
+```powershell
+node scripts/verify-web-catalogue.mjs
+node scripts/verify-web-commercial.mjs
+pnpm exec vitest run lib/catalogue/commercial.test.ts lib/catalogue/location-offer.test.ts lib/catalogue/recommendation.test.ts lib/contact/catalogue-mail.test.ts
+pnpm typecheck
+pnpm lint
+pnpm build
+```
+
+The initial catalogue SQL was manually applied; there is still **no Drizzle Kit migration journal/snapshot**. Do not run `drizzle-kit migrate` on an existing Neon branch until baseline reconciliation is designed and tested. Also do not copy dev credentials or activate `MOGEN_WEB_CATALOGUE_SOURCE=database` on production during this step.
+
+### Commercial approval gate
+Before entering publishable rows, decide every package's eligible billing modes, prices in ZAR, setup fees, deposit rules, minimum terms, defined Once-Off hosting duration and renewals, VAT treatment, included hosting/email/domain/support, source-code handover and additional services. Ripening can remain quotation-only. Do not rely on a percentage discount alone for activation: enforce promotion dates, location, status, eligibility, maximum customers and future promotion stacking rules at offer and checkout time. No paid price should be shown until those controls exist.
