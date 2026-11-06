@@ -7,6 +7,7 @@ import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import { formatNumber } from "@/lib/utils";
 import { siteConfig } from "@/data/site";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
+import type { ServicePackage } from "@/data/packages";
 import ContactForm from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -30,6 +31,7 @@ interface Props {
   initialPackageNotice?: string;
   /** Attribution carried through the enquiry journey (never shown in copy). */
   initialAttribution?: EnquiryAttribution;
+  availablePackages?: ServicePackage[];
 }
 
 export default function Contact({
@@ -43,6 +45,7 @@ export default function Contact({
   initialServiceNotice,
   initialPackageNotice,
   initialAttribution,
+  availablePackages,
 }: Readonly<Props>) {
   return (
     <div className="bg-bone">
@@ -152,6 +155,7 @@ export default function Contact({
                   initialServiceNotice={initialServiceNotice}
                   initialPackageNotice={initialPackageNotice}
                   initialAttribution={initialAttribution}
+                  availablePackages={availablePackages}
                 />
               </div>
             </div>
