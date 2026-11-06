@@ -3,7 +3,7 @@
  * The DB remains authoritative; this does not publish or mutate rows.
  */
 export type BillingMode = "managed_monthly" | "once_off" | "self_hosted";
-export type Responsibility = "mogen" | "customer";
+export type Responsibility = "mogen" | "customer" | "not_applicable";
 
 export interface WebPriceOption {
   id: string;
@@ -48,7 +48,9 @@ export function isPublicWebPrice(
     case "self_hosted":
       return option.hostingResponsibility === "customer" && option.maintenanceResponsibility === "customer";
     case "once_off":
-      return option.hostingResponsibility === "mogen";
+      return option.packageId === "seed"
+        ? option.hostingResponsibility === "not_applicable" && option.maintenanceResponsibility === "not_applicable"
+        : option.hostingResponsibility === "mogen";
     default:
       return false;
   }
