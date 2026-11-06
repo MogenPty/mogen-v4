@@ -106,6 +106,7 @@ export async function POST(req: Request) {
     );
   }
 
+  let approvedPackageName: string | undefined;
   // In catalogue mode, package IDs must resolve to a published Neon record.
   // Do not trust a package ID supplied by the browser or a stale promotion.
   if (databaseCatalogueEnabled() && typeof body === "object" && body !== null) {
@@ -119,6 +120,7 @@ export async function POST(req: Request) {
           { status: 400 },
         );
       }
+      approvedPackageName = approved.name;
     }
   }
 
@@ -137,7 +139,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = await submitContact(body, provider, getContactMailConfig());
+  const result = await submitContact(body, provider, getContactMailConfig(), {
+    approvedPackageName,
+  });
   if (!result.ok) {
     const status = result.fieldErrors ? 400 : 502;
     return NextResponse.json(result, { status });
