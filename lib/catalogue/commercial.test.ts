@@ -50,6 +50,16 @@ describe("web pricing publication rules", () => {
     expect(isPublicWebPrice({...option, billingMode: "once_off", maintenanceResponsibility: "customer", initialHostingMonths: 12}, published)).toBe(true);
     expect(isPublicWebPrice({...option, billingMode: "once_off", hostingResponsibility: "customer"}, published)).toBe(false);
   });
+  it("only offers Once-Off for Seed; future fixes are separately quoted", () => {
+    const seed = { ...option, packageId: "seed" };
+    const allowed = new Set(["seed"]);
+    expect(isPublicWebPrice({ ...seed, billingMode: "managed_monthly" }, allowed)).toBe(false);
+    expect(isPublicWebPrice({
+      ...seed, billingMode: "self_hosted",
+      hostingResponsibility: "customer", maintenanceResponsibility: "customer",
+    }, allowed)).toBe(false);
+    expect(isPublicWebPrice({ ...seed, billingMode: "once_off" }, allowed)).toBe(true);
+  });
   it("rejects options outside their effective date range", () => {
     const now = new Date("2026-11-06T12:00:00Z");
     expect(isPublicWebPrice({...option, effectiveFrom: new Date("2026-11-07T00:00:00Z")}, published, now)).toBe(false);
