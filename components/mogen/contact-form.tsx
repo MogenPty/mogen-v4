@@ -333,10 +333,10 @@ export default function ContactForm({
                 packageMemory.current = next.memory;
                 setForm(next.form);
               }}
-              className="mt-2 w-full border border-[#777] bg-white px-4 py-3 !text-[#171717] scheme-light focus:border-catalyst focus:outline-none"
+              className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark"
             >
-              <option value="" className="bg-white text-[#171717]">Not sure yet / request advice</option>
-              {servicePackages.map(pkg => <option key={pkg.id} value={pkg.id} className="bg-white text-[#171717]">{pkg.name}</option>)}
+              <option value="" className="bg-bone text-ink">Not sure yet / request advice</option>
+              {servicePackages.map(pkg => <option key={pkg.id} value={pkg.id} className="bg-bone text-ink">{pkg.name}</option>)}
             </select>
           </div>
         )}
