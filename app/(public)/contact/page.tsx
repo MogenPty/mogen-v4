@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Contact from "@/components/mogen/contact";
 import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
-import { getPublishedWebPackage } from "@/db/catalogue";
+import { getPublishedWebPackage, getPublishedWebPriceOption } from "@/db/catalogue";
+import { isPublicWebPrice, type WebPriceOption } from "@/lib/catalogue/commercial";
 import { siteConfig } from "@/data/site";
 import {
   buildAuditEnquiryMessage,
@@ -92,6 +93,14 @@ export default async function ContactPage({
     ? (dbPackage?.id ?? (details.package?.serviceSlug === "web-development" ? undefined : details.package?.id))
     : details.package?.id;
   const selectedService = dbPackage ? "Web Development" : details.serviceName;
+  const requestedPriceOption = typeof resolvedSearchParams.priceOption === "string"
+    ? resolvedSearchParams.priceOption : undefined;
+  const priceOption = catalogueEnabled && dbPackage && requestedPriceOption
+    ? await getPublishedWebPriceOption(requestedPriceOption) : undefined;
+  const selectedPriceOption = priceOption && dbPackage &&
+    priceOption.packageId === dbPackage.id &&
+    isPublicWebPrice(priceOption as WebPriceOption, new Set([dbPackage.id]))
+      ? priceOption.id : undefined;
   const supersededPromotion = catalogueEnabled &&
     details.promotion?.relatedService === "web-development";
   return (
@@ -101,6 +110,7 @@ export default async function ContactPage({
         numbering={8}
         initialService={selectedService}
         initialPackage={selectedPackage}
+        initialPriceOption={selectedPriceOption}
         initialMessage={
           (supersededPromotion ? undefined : details.message) ?? buildAuditEnquiryMessage(details.website)
         }
