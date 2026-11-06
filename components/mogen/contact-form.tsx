@@ -3,7 +3,8 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Script from "next/script";
 import { type FormEvent, useRef, useState } from "react";
-import { getPackage } from "@/data/packages";
+import { PACKAGES, type ServicePackage } from "@/data/packages";
+import { switchEnquiryPackage, switchEnquiryService, type PackageMemory } from "@/lib/contact/package-selection";
 import { SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
@@ -79,6 +80,8 @@ interface ContactFormProps {
    * injected into the visitor-facing message.
    */
   initialAttribution?: EnquiryAttribution;
+  /** Server-approved public package choices (Neon published rows in catalogue mode). */
+  availablePackages?: ServicePackage[];
 }
 
 export default function ContactForm({
@@ -91,12 +94,13 @@ export default function ContactForm({
   initialServiceNotice,
   initialPackageNotice,
   initialAttribution,
+  availablePackages = PACKAGES,
 }: Readonly<ContactFormProps> = {}) {
   const resolvedService =
     initialService && CONTACT_SERVICES.includes(initialService)
       ? initialService
       : "";
-  const resolvedPackage = getPackage(initialPackage)?.id ?? "";
+  const resolvedPackage = availablePackages.find(pkg => pkg.id === initialPackage)?.id ?? "";
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -112,6 +116,12 @@ export default function ContactForm({
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
   });
+  const packageMemory = useRef<PackageMemory>(resolvedPackage ? {
+    [resolvedService]: { packageId: resolvedPackage, priceOption: initialPriceOption ?? "" },
+  } : {});
+  const servicePackages = availablePackages.filter(pkg =>
+    pkg.serviceSlug === SERVICES.find(service => service.name === form.service)?.slug
+  );
   const [attribution] = useState<EnquiryAttribution>(initialAttribution ?? {});
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
@@ -294,29 +304,9 @@ export default function ContactForm({
           name="service"
           value={form.service}
           onChange={(e) => {
-            const nextService = e.target.value;
-            setForm((prev) => {
-              // Keep the resolved package only when the newly selected
-              // service owns it; otherwise clear it so the panel and the
-              // submitted context never disagree.
-              const pkg = getPackage(prev.package);
-              const serviceSlug = SERVICES.find(
-                (s) => s.name === nextService,
-              )?.slug;
-              const keepPackage =
-                pkg !== undefined &&
-                serviceSlug !== undefined &&
-                pkg.serviceSlug === serviceSlug;
-              return {
-                ...prev,
-                service: nextService,
-                // Drop stale hidden data when leaving "Other".
-                otherServiceDetail:
-                  nextService === "Other" ? prev.otherServiceDetail : "",
-                package: keepPackage ? prev.package : "",
-                priceOption: keepPackage ? prev.priceOption : "",
-              };
-            });
+            const next = switchEnquiryService(form, e.target.value, packageMemory.current, availablePackages);
+            packageMemory.current = next.memory;
+            setForm(next.form);
           }}
           required
           aria-required="true"
@@ -331,13 +321,32 @@ export default function ContactForm({
             </option>
           ))}
         </select>
+        {servicePackages.length > 0 && (
+          <div className="mt-3">
+            <label htmlFor="contact-package" className="small-caps text-ink/60">Package of interest</label>
+            <select
+              id="contact-package"
+              name="package"
+              value={form.package}
+              onChange={(e) => {
+                const next = switchEnquiryPackage(form, e.target.value, packageMemory.current, availablePackages);
+                packageMemory.current = next.memory;
+                setForm(next.form);
+              }}
+              className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark"
+            >
+              <option value="">Not sure yet / request advice</option>
+              {servicePackages.map(pkg => <option key={pkg.id} value={pkg.id}>{pkg.name}</option>)}
+            </select>
+          </div>
+        )}
         {(initialPromotionName || form.package) && (
           <div className="mt-3 border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/70">
             {form.package && (
               <p>
                 Package:{" "}
                 <span className="font-semibold text-ink">
-                  {getPackage(form.package)?.name ?? form.package}
+                  {availablePackages.find(pkg => pkg.id === form.package)?.name ?? form.package}
                 </span>
               </p>
             )}
@@ -424,9 +433,6 @@ export default function ContactForm({
       </div>
       {/* Attribution carried through the enquiry (tracking metadata only) */}
       <div className="hidden" aria-hidden="true">
-        {form.package && (
-          <input name="package" type="hidden" value={form.package} readOnly />
-        )}
         {Object.entries(attribution).map(([key, value]) => (
           <input
             key={key}
