@@ -46,6 +46,10 @@ describe("web pricing publication rules", () => {
     expect(isPublicWebPrice({...option, hostingResponsibility: "customer"}, published)).toBe(false);
     expect(isPublicWebPrice({...option, billingMode: "self_hosted", hostingResponsibility: "customer", maintenanceResponsibility: "customer"}, published)).toBe(true);
   });
+  it("keeps Once-Off as a Mogen-deployed project with explicit handover policy", () => {
+    expect(isPublicWebPrice({...option, billingMode: "once_off", maintenanceResponsibility: "customer", initialHostingMonths: 12}, published)).toBe(true);
+    expect(isPublicWebPrice({...option, billingMode: "once_off", hostingResponsibility: "customer"}, published)).toBe(false);
+  });
   it("rejects options outside their effective date range", () => {
     const now = new Date("2026-11-06T12:00:00Z");
     expect(isPublicWebPrice({...option, effectiveFrom: new Date("2026-11-07T00:00:00Z")}, published, now)).toBe(false);
