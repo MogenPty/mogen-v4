@@ -46,7 +46,7 @@ export function isPublicWebPrice(
     case "self_hosted":
       return option.hostingResponsibility === "customer" && option.maintenanceResponsibility === "customer";
     case "once_off":
-      return option.hostingResponsibility === "mogen" || option.hostingResponsibility === "customer";
+      return option.hostingResponsibility === "mogen";
     default:
       return false;
   }
