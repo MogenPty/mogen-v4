@@ -9,7 +9,7 @@ export default function WebCataloguePricing({ packages, prices = [] }: Readonly<
     <section aria-label="Web Development packages">
       <p className="mb-8 max-w-3xl text-ink/70">
         Six website packages, from a first professional presence to a tailored business platform.
-        Every package is available across South Africa. Pricing is confirmed against your requirements.
+        Every package is available across South Africa. Published payment options are shown where approved; otherwise request a tailored quotation.
       </p>
       {websites.length ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -17,7 +17,9 @@ export default function WebCataloguePricing({ packages, prices = [] }: Readonly<
             <article key={item.id} className="flex flex-col rounded-lg border border-ink/15 bg-bone p-7">
               <h3 className="font-display text-2xl font-black text-ink">{item.name}</h3>
               <p className="mt-3 text-ink/70">{item.summary}</p>
-              <p className="mt-5 text-xl font-bold text-ink">{item.pricingLabel}</p>
+              {prices.every(price => price.packageId !== item.id) && (
+                <p className="mt-5 text-xl font-bold text-ink">{item.pricingLabel}</p>
+              )}
               <ul className="mt-5 flex-1 space-y-2 text-sm text-ink/80">
                 {item.features.map((feature) => <li key={feature}>✓ {feature}</li>)}
               </ul>
