@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS "web_promotion_prices" (
       AND "discount_percent_bps" IS NULL)
     OR
     ("discount_kind" = 'percent'
-      AND "discount_percent_bps" BETWEEN 0 AND 10000
+      AND "discount_percent_bps" IS NOT NULL AND "discount_percent_bps" BETWEEN 0 AND 10000
       AND "discount_amount_cents" IS NULL)
   ),
   CONSTRAINT "web_promotion_prices_months_check"
