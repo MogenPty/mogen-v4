@@ -2,7 +2,8 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
-import { getPublishedWebPackage } from "@/db/catalogue";
+import { getPublishedWebPackage, getPublishedWebPriceOption } from "@/db/catalogue";
+import { isPublicWebPrice, type WebPriceOption } from "@/lib/catalogue/commercial";
 import {
   getContactMailConfig,
   submitContact,
@@ -107,6 +108,7 @@ export async function POST(req: Request) {
   }
 
   let approvedPackageName: string | undefined;
+  let approvedPriceOptionLabel: string | undefined;
   // In catalogue mode, package IDs must resolve to a published Neon record.
   // Do not trust a package ID supplied by the browser or a stale promotion.
   if (databaseCatalogueEnabled() && typeof body === "object" && body !== null) {
@@ -121,6 +123,29 @@ export async function POST(req: Request) {
         );
       }
       approvedPackageName = approved.name;
+      const optionId = typeof submitted.priceOption === "string" ? submitted.priceOption.trim() : "";
+      if (optionId) {
+        const priceOption = await getPublishedWebPriceOption(optionId);
+        if (!priceOption || priceOption.packageId !== approved.id ||
+            !isPublicWebPrice(priceOption as WebPriceOption, new Set([approved.id]))) {
+          return NextResponse.json(
+            { ok: false, error: "That payment option is no longer available. Please select an available option." },
+            { status: 400 },
+          );
+        }
+        const modes: Record<string, string> = {
+          managed_monthly: "Managed Monthly",
+          once_off: "Once-Off",
+          self_hosted: "Self-Hosted",
+        };
+        approvedPriceOptionLabel = modes[priceOption.billingMode];
+      }
+    } else if (submitted.priceOption) {
+      // A billing option must never be accepted without its parent package.
+      return NextResponse.json(
+        { ok: false, error: "Please select a website package for this payment option." },
+        { status: 400 },
+      );
     }
   }
 
@@ -141,6 +166,7 @@ export async function POST(req: Request) {
 
   const result = await submitContact(body, provider, getContactMailConfig(), {
     approvedPackageName,
+    approvedPriceOptionLabel,
   });
   if (!result.ok) {
     const status = result.fieldErrors ? 400 : 502;
