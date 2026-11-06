@@ -101,6 +101,13 @@ export default async function ContactPage({
     priceOption.packageId === dbPackage.id &&
     isPublicWebPrice(priceOption as WebPriceOption, new Set([dbPackage.id]))
       ? priceOption.id : undefined;
+  const priceModeLabels: Record<string, string> = {
+    managed_monthly: "Managed Monthly",
+    once_off: "Once-Off",
+    self_hosted: "Self-Hosted",
+  };
+  const selectedPriceOptionLabel = selectedPriceOption && priceOption
+    ? priceModeLabels[priceOption.billingMode] : undefined;
   const supersededPromotion = catalogueEnabled &&
     details.promotion?.relatedService === "web-development";
   return (
@@ -111,6 +118,7 @@ export default async function ContactPage({
         initialService={selectedService}
         initialPackage={selectedPackage}
         initialPriceOption={selectedPriceOption}
+        initialPriceOptionLabel={selectedPriceOptionLabel}
         initialMessage={
           (supersededPromotion ? undefined : details.message) ?? buildAuditEnquiryMessage(details.website)
         }
