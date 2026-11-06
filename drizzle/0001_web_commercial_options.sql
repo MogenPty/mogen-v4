@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS "web_package_prices" (
     CHECK (
       ("billing_mode" <> 'managed_monthly' OR ("hosting_responsibility" = 'mogen' AND "maintenance_responsibility" = 'mogen'))
       AND ("billing_mode" <> 'self_hosted' OR ("hosting_responsibility" = 'customer' AND "maintenance_responsibility" = 'customer'))
+      AND ("billing_mode" <> 'once_off' OR "hosting_responsibility" = 'mogen')
     )
 );
 CREATE INDEX IF NOT EXISTS "web_package_prices_package_idx" ON "web_package_prices" ("package_id");
