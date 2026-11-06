@@ -193,7 +193,7 @@ export function buildContactHtml(
   const row = (label: string, value: string) =>
     `<tr><td style="padding:4px 12px 4px 0;color:#666">${escapeHtml(label)}</td><td style="padding:4px 0">${escapeHtml(value)}</td></tr>`;
   const packageId = resolveSubmissionPackage(input);
-  const packageName = packageId ? (getPackage(packageId)?.name ?? packageId) : "";
+  const packageName = packageId ? (approvedPackageName ?? getPackage(packageId)?.name ?? packageId) : "";
   const optional = [
     input.phone ? row("Phone", input.phone) : "",
     input.businessName ? row("Business", input.businessName) : "",
