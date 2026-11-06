@@ -28,6 +28,8 @@ export function isPublicWebPrice(
   publishedPackageIds: ReadonlySet<string>,
   now: Date = new Date(),
 ): boolean {
+  // Seed is a one-time business-presence setup, not a recurring website service.
+  if (option.packageId === "seed" && option.billingMode !== "once_off") return false;
   if (!publishedPackageIds.has(option.packageId) ||
       option.status !== "published" || option.currency !== "ZAR" ||
       option.amountCents === null || !Number.isSafeInteger(option.amountCents) ||
