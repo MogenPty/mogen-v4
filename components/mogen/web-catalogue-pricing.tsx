@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { CatalogueWebPackage } from "@/lib/catalogue/location-offer";
+import WebPriceOptions, { type PublicWebPriceChoice } from "@/components/mogen/web-price-options";
 
-export default function WebCataloguePricing({ packages }: Readonly<{ packages: CatalogueWebPackage[] }>) {
+export default function WebCataloguePricing({ packages, prices = [] }: Readonly<{ packages: CatalogueWebPackage[]; prices?: PublicWebPriceChoice[] }>) {
   const websites = packages.filter((item) => item.websiteIncluded);
   const seed = packages.find((item) => item.id === "seed" && !item.websiteIncluded);
   return (
@@ -23,10 +24,7 @@ export default function WebCataloguePricing({ packages }: Readonly<{ packages: C
               {item.seoScope.length > 0 && (
                 <p className="mt-5 text-sm text-ink/70">SEO: {item.seoScope.join(" · ")}</p>
               )}
-              <Link className="mt-7 rounded bg-catalyst px-5 py-3 text-center font-semibold text-white"
-                href={`/contact?service=web-development&package=${encodeURIComponent(item.id)}`}>
-                Request {item.name} quote
-              </Link>
+              <WebPriceOptions packageId={item.id} options={prices.filter(price => price.packageId === item.id)} />
             </article>
           ))}
         </div>
