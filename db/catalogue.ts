@@ -46,3 +46,17 @@ export async function getWebPromotion(id: string) {
     .where(eq(webPromotions.id, id)).limit(1);
   return promotion;
 }
+
+/** Opt-in public catalogue mode only. Includes no draft payment options. */
+export async function getPublishedWebPriceOptions() {
+  return getCatalogueDb().select().from(webPackagePrices)
+    .where(eq(webPackagePrices.status, "published"))
+    .orderBy(asc(webPackagePrices.packageId), asc(webPackagePrices.billingMode));
+}
+
+export async function getPublishedWebPriceOption(id: string) {
+  const [option] = await getCatalogueDb().select().from(webPackagePrices)
+    .where(and(eq(webPackagePrices.id, id), eq(webPackagePrices.status, "published")))
+    .limit(1);
+  return option;
+}
