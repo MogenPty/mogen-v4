@@ -157,12 +157,13 @@ export function resolveSubmissionPackage(
 export function buildContactText(
   input: ContactInput,
   submittedAt: string,
+  approvedPackageName?: string,
 ): string {
   const attribution = attributionEntries(input).map(
     ({ label, value }) => `${label}: ${value}`,
   );
   const packageId = resolveSubmissionPackage(input);
-  const packageName = packageId ? (getPackage(packageId)?.name ?? packageId) : "";
+  const packageName = packageId ? (approvedPackageName ?? getPackage(packageId)?.name ?? packageId) : "";
   const lines = [
     "New enquiry from mogen.co.za/contact",
     "",
@@ -187,6 +188,7 @@ export function buildContactText(
 export function buildContactHtml(
   input: ContactInput,
   submittedAt: string,
+  approvedPackageName?: string,
 ): string {
   const row = (label: string, value: string) =>
     `<tr><td style="padding:4px 12px 4px 0;color:#666">${escapeHtml(label)}</td><td style="padding:4px 0">${escapeHtml(value)}</td></tr>`;
@@ -210,13 +212,14 @@ export function buildContactMessage(
   input: ContactInput,
   config: ContactMailConfig,
   submittedAt = new Date().toISOString(),
+  approvedPackageName?: string,
 ): Message {
   return {
     from: config.from,
     to: config.to,
     subject: buildContactSubject(input),
-    text: buildContactText(input, submittedAt),
-    html: buildContactHtml(input, submittedAt),
+    text: buildContactText(input, submittedAt, approvedPackageName),
+    html: buildContactHtml(input, submittedAt, approvedPackageName),
     replyTo: sanitizeHeader(input.email),
   };
 }
@@ -236,7 +239,7 @@ export async function submitContact(
   rawInput: unknown,
   provider: MailProvider,
   config: ContactMailConfig,
-  opts: { submittedAt?: string } = {},
+  opts: { submittedAt?: string; approvedPackageName?: string } = {},
 ): Promise<ContactSubmissionResult> {
   const parsed = contactInputSchema.safeParse(rawInput);
   if (!parsed.success) {
@@ -270,6 +273,7 @@ export async function submitContact(
     input,
     config,
     opts.submittedAt ?? new Date().toISOString(),
+    opts.approvedPackageName,
   );
 
   const result: MailResult = await provider.send(message);
