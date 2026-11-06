@@ -18,6 +18,7 @@ interface Props {
   initialService?: string;
   /** Resolved package identifier (`package=` or inferred from `promotion=`). */
   initialPackage?: string;
+  initialPriceOption?: string;
   /** Editable starter message from `?promotion=` (absent without promotion). */
   initialMessage?: string;
   /** Display name of the recognised promotion, if any. */
@@ -34,6 +35,7 @@ export default function Contact({
   numbering = 1,
   initialService,
   initialPackage,
+  initialPriceOption,
   initialMessage,
   initialPromotionName,
   initialServiceNotice,
@@ -141,6 +143,7 @@ export default function Contact({
                 <ContactForm
                   initialService={initialService}
                   initialPackage={initialPackage}
+                  initialPriceOption={initialPriceOption}
                   initialMessage={initialMessage}
                   initialPromotionName={initialPromotionName}
                   initialServiceNotice={initialServiceNotice}
