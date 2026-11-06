@@ -130,3 +130,20 @@ pnpm lint
 pnpm build
 ```
 Confirm that an unpriced catalogue renders the quote button, an approved test payment option renders a selector on the development branch only, its contact link preselects the package and payment mode, and successful test mail contains the selected billing mode. Verify direct submission of an expired, draft or cross-package `priceOption` is rejected with HTTP 400. Do not publish a fixed Rand amount until commercial approval.
+
+## Contact package recovery and Seed billing (November 2026)
+
+The contact form now has an editable **Package of interest** selector that lists only packages belonging to the selected service. When database catalogue mode is enabled, Web Development choices are loaded from published Neon `web_packages` rows; other services use their existing registry. The form remembers each service's last valid package selection and restores it when the visitor switches back. The initial query-string selection is remembered too. Changing package clears any old payment-option ID to avoid mismatches; changing service temporarily clears the active package and billing option, while retaining each service's last selection in client-side form memory. No package is submitted under the wrong service.
+
+Business decision: **Seed is Once-Off only.** No Managed Monthly and no Self-Hosted Seed offer; later support, corrections or fixes are separately quoted. Enforced by `isPublicWebPrice` and the additive development-only SQL constraint `drizzle/0002_seed_once_off_only.sql`.
+
+Development setup: apply `drizzle/0002_seed_once_off_only.sql` **only** on the confirmed Neon development branch after checking for any old incompatible Seed options. This migration adds a DB constraint; it does not change a price, seed an offer or alter production data. Continue to avoid `drizzle-kit migrate` until a baseline journal exists.
+
+Regression commands:
+```powershell
+pnpm exec vitest run lib/contact/package-selection.test.ts lib/catalogue/commercial.test.ts lib/contact/catalogue-mail.test.ts
+pnpm typecheck
+pnpm build
+```
+
+Browser smoke test: open `/contact?service=web-development&package=sprout`, switch Web Development → SEO → Web Development, and verify Sprout returns. Change package to Seedling; switch SEO and back; verify Seedling is retained (not reset to the original URL's Sprout). Choose SEO Scale, then return to Web Development, then SEO and verify each service retains its own package. Try selecting no package, and verify the cleared value stays cleared. Confirm an unpublished Web Development package never appears when Neon catalogue mode is enabled. Submit a normal test enquiry and verify the newly selected package appears correctly.
