@@ -58,7 +58,12 @@ describe("web pricing publication rules", () => {
       ...seed, billingMode: "self_hosted",
       hostingResponsibility: "customer", maintenanceResponsibility: "customer",
     }, allowed)).toBe(false);
-    expect(isPublicWebPrice({ ...seed, billingMode: "once_off" }, allowed)).toBe(true);
+    expect(isPublicWebPrice({ ...seed, billingMode: "once_off" }, allowed)).toBe(false);
+    expect(isPublicWebPrice({
+      ...seed, billingMode: "once_off",
+      hostingResponsibility: "not_applicable",
+      maintenanceResponsibility: "not_applicable",
+    }, allowed)).toBe(true);
   });
   it("rejects options outside their effective date range", () => {
     const now = new Date("2026-11-06T12:00:00Z");
