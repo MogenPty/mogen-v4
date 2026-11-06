@@ -120,9 +120,8 @@ export default async function ServiceDetailPage({
   // the recommended package, its price points replace the standard
   // display (mirrors the homepage wiring).
   const activePromotions = getActivePromotions();
-  const [webPackages, webPrices] = slug === "web-development"
-    ? await Promise.all([loadPublishedWebCatalogue(), loadPublicWebPriceOptions()])
-    : [null, null];
+  const webPackages = slug === "web-development" ? await loadPublishedWebCatalogue() : null;
+  const webPrices = slug === "web-development" ? await loadPublicWebPriceOptions() : null;
   const publicWebPrices = (webPrices ?? []).filter(p => p.amountCents !== null).map(p => ({
     id: p.id, packageId: p.packageId, billingMode: p.billingMode,
     amountCents: p.amountCents as number, setupFeeCents: p.setupFeeCents,
