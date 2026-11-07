@@ -56,6 +56,7 @@ export const contactInputSchema = z
      * the package's service, always dropped for `Other`).
      */
     package: z.string().trim().max(80).optional().default(""),
+    priceOption: z.string().trim().max(120).optional().default(""),
     /**
      * Free-text specification required only when service is "Other".
      * Never part of enquiry URLs — user-entered form data only.
@@ -157,12 +158,14 @@ export function resolveSubmissionPackage(
 export function buildContactText(
   input: ContactInput,
   submittedAt: string,
+  approvedPackageName?: string,
+  approvedPriceOptionLabel?: string,
 ): string {
   const attribution = attributionEntries(input).map(
     ({ label, value }) => `${label}: ${value}`,
   );
   const packageId = resolveSubmissionPackage(input);
-  const packageName = packageId ? (getPackage(packageId)?.name ?? packageId) : "";
+  const packageName = packageId ? (approvedPackageName ?? getPackage(packageId)?.name ?? packageId) : "";
   const lines = [
     "New enquiry from mogen.co.za/contact",
     "",
@@ -172,6 +175,7 @@ export function buildContactText(
     ...(input.businessName ? [`Business: ${input.businessName}`] : []),
     `Service: ${input.service}`,
     ...(packageName ? [`Package: ${packageName}`] : []),
+    ...(approvedPriceOptionLabel ? [`Payment option: ${approvedPriceOptionLabel}`] : []),
     ...(input.service === "Other" && input.otherServiceDetail
       ? [`Service detail: ${input.otherServiceDetail}`]
       : []),
@@ -187,11 +191,13 @@ export function buildContactText(
 export function buildContactHtml(
   input: ContactInput,
   submittedAt: string,
+  approvedPackageName?: string,
+  approvedPriceOptionLabel?: string,
 ): string {
   const row = (label: string, value: string) =>
     `<tr><td style="padding:4px 12px 4px 0;color:#666">${escapeHtml(label)}</td><td style="padding:4px 0">${escapeHtml(value)}</td></tr>`;
   const packageId = resolveSubmissionPackage(input);
-  const packageName = packageId ? (getPackage(packageId)?.name ?? packageId) : "";
+  const packageName = packageId ? (approvedPackageName ?? getPackage(packageId)?.name ?? packageId) : "";
   const optional = [
     input.phone ? row("Phone", input.phone) : "",
     input.businessName ? row("Business", input.businessName) : "",
@@ -199,6 +205,7 @@ export function buildContactHtml(
       ? row("Service detail", input.otherServiceDetail)
       : "",
     packageName ? row("Package", packageName) : "",
+    approvedPriceOptionLabel ? row("Payment option", approvedPriceOptionLabel) : "",
   ].join("");
   const attributionRows = attributionEntries(input)
     .map(({ label, value }) => row(label, value))
@@ -210,13 +217,15 @@ export function buildContactMessage(
   input: ContactInput,
   config: ContactMailConfig,
   submittedAt = new Date().toISOString(),
+  approvedPackageName?: string,
+  approvedPriceOptionLabel?: string,
 ): Message {
   return {
     from: config.from,
     to: config.to,
     subject: buildContactSubject(input),
-    text: buildContactText(input, submittedAt),
-    html: buildContactHtml(input, submittedAt),
+    text: buildContactText(input, submittedAt, approvedPackageName, approvedPriceOptionLabel),
+    html: buildContactHtml(input, submittedAt, approvedPackageName, approvedPriceOptionLabel),
     replyTo: sanitizeHeader(input.email),
   };
 }
@@ -236,7 +245,7 @@ export async function submitContact(
   rawInput: unknown,
   provider: MailProvider,
   config: ContactMailConfig,
-  opts: { submittedAt?: string } = {},
+  opts: { submittedAt?: string; approvedPackageName?: string; approvedPriceOptionLabel?: string } = {},
 ): Promise<ContactSubmissionResult> {
   const parsed = contactInputSchema.safeParse(rawInput);
   if (!parsed.success) {
@@ -270,6 +279,8 @@ export async function submitContact(
     input,
     config,
     opts.submittedAt ?? new Date().toISOString(),
+    opts.approvedPackageName,
+    opts.approvedPriceOptionLabel,
   );
 
   const result: MailResult = await provider.send(message);

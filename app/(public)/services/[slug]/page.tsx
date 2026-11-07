@@ -7,6 +7,7 @@ import { siteConfig } from "@/data/site";
 import { getRelatedArticlesForService } from "@/lib/articles/related";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { pageMetadata } from "@/lib/seo";
+import { loadPublishedWebCatalogue, loadPublicWebPriceOptions } from "@/lib/catalogue/server";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -119,6 +120,14 @@ export default async function ServiceDetailPage({
   // the recommended package, its price points replace the standard
   // display (mirrors the homepage wiring).
   const activePromotions = getActivePromotions();
+  const webPackages = slug === "web-development" ? await loadPublishedWebCatalogue() : null;
+  const webPrices = slug === "web-development" ? await loadPublicWebPriceOptions() : null;
+  const publicWebPrices = (webPrices ?? []).filter(p => p.amountCents !== null).map(p => ({
+    id: p.id, packageId: p.packageId, billingMode: p.billingMode,
+    amountCents: p.amountCents as number, setupFeeCents: p.setupFeeCents,
+    minimumMonths: p.minimumMonths, depositPercent: p.depositPercent,
+    initialHostingMonths: p.initialHostingMonths, handoverPolicy: p.handoverPolicy,
+  }));
 
   return (
     <>
@@ -130,6 +139,8 @@ export default async function ServiceDetailPage({
         relatedArticles={relatedArticles}
         featuredPromotion={featuredPromotion}
         activePromotions={activePromotions}
+        webPackages={webPackages}
+        webPrices={publicWebPrices}
       />
     </>
   );

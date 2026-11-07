@@ -87,16 +87,14 @@ describe("homepage hero — rotating office locations", () => {
     expect(DEFAULT_HERO_LOCATION).toBe("Maboloka");
   });
 
-  it("renders a static default for SSR/no-JS with client-only rotation", () => {
+  it("renders a stable server-renderable H1 without rotating locations", () => {
     const hero = readSource("components/mogen/hero.tsx");
-    // The visible line falls back to the default when the typewriter
-    // has not run yet (SSR, no-JS, crawlers that skip JS).
-    expect(hero).toContain("typedLocation || DEFAULT_HERO_LOCATION");
-    expect(hero).toContain("HERO_LOCATIONS");
-    // The animated word is hidden from assistive tech; the full office
-    // list is exposed once via sr-only (same pattern as before).
-    expect(hero).toContain('aria-hidden="true"');
-    expect(hero).toContain("sr-only");
+    expect(hero).toContain("Professional {service.name}");
+    expect(hero).toContain("for South African Businesses.");
+    expect(hero).toContain("Maboloka · Soshanguve · Centurion");
+    expect(hero).not.toContain("useTypewriter");
+    expect(hero).not.toContain("typedLocation");
+    expect(hero).not.toContain("HERO_LOCATIONS.join");
   });
 
   it("keeps the H1 service-driven, not a hardcoded service list", () => {
@@ -110,9 +108,10 @@ describe("homepage hero — rotating office locations", () => {
     const hero = readSource("components/mogen/hero.tsx");
     expect(hero).toContain("useConversionCta");
     expect(hero).not.toContain('href="#assessment"');
-    expect(hero).toContain("resolveHeroServiceSlug");
     const home = readSource("app/page.tsx");
-    expect(home).toContain("resolveHeroServiceSlug(promotion)");
+    // Primary homepage positioning is stable even while promotion CTAs vary.
+    expect(home).toContain('const heroServiceSlug = "web-development"');
+    expect(home).not.toContain("resolveHeroServiceSlug(promotion)");
     expect(home).toContain("<Hero");
     expect(home).toContain("featuredPromotion={promotion}");
   });

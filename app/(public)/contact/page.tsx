@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
 import Contact from "@/components/mogen/contact";
+import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
+import { PACKAGES } from "@/data/packages";
+import { getPublishedWebPackages } from "@/db/catalogue";
+import { getPublishedWebPackage, getPublishedWebPriceOption } from "@/db/catalogue";
+import { isPublicWebPrice, type WebPriceOption } from "@/lib/catalogue/commercial";
 import { siteConfig } from "@/data/site";
 import {
   buildAuditEnquiryMessage,
@@ -79,23 +84,63 @@ export default async function ContactPage({
   // Client form below receives plain initial values (no useSearchParams,
   // so no extra Suspense boundary is required).
   const resolvedSearchParams = (await searchParams) ?? {};
-  const details = resolveEnquiryDetails(
-    parseEnquiryContext(resolvedSearchParams),
-  );
+  const context = parseEnquiryContext(resolvedSearchParams);
+  const details = resolveEnquiryDetails(context);
+  const catalogueEnabled = databaseCatalogueEnabled();
+  // In database mode, Web Development choices come from published Neon rows.
+  // Other service packages continue to use the backwards-compatible registry.
+  const publishedWebPackages = catalogueEnabled ? await getPublishedWebPackages() : [];
+  const availablePackages = catalogueEnabled
+    ? [
+        ...PACKAGES.filter(pkg => pkg.serviceSlug !== "web-development"),
+        ...publishedWebPackages.map(pkg => ({
+          id: pkg.id, name: pkg.name, serviceSlug: "web-development",
+        })),
+      ]
+    : PACKAGES;
+
+  const dbPackage = catalogueEnabled && context.package
+    ? await getPublishedWebPackage(context.package)
+    : undefined;
+  // Do not preselect a draft/retired web package or a superseded web promotion.
+  const selectedPackage = catalogueEnabled
+    ? (dbPackage?.id ?? (details.package?.serviceSlug === "web-development" ? undefined : details.package?.id))
+    : details.package?.id;
+  const selectedService = dbPackage ? "Web Development" : details.serviceName;
+  const requestedPriceOption = typeof resolvedSearchParams.priceOption === "string"
+    ? resolvedSearchParams.priceOption : undefined;
+  const priceOption = catalogueEnabled && dbPackage && requestedPriceOption
+    ? await getPublishedWebPriceOption(requestedPriceOption) : undefined;
+  const selectedPriceOption = priceOption && dbPackage &&
+    priceOption.packageId === dbPackage.id &&
+    isPublicWebPrice(priceOption as WebPriceOption, new Set([dbPackage.id]))
+      ? priceOption.id : undefined;
+  const priceModeLabels: Record<string, string> = {
+    managed_monthly: "Managed Monthly",
+    once_off: "Once-Off",
+    self_hosted: "Self-Hosted",
+  };
+  const selectedPriceOptionLabel = selectedPriceOption && priceOption
+    ? priceModeLabels[priceOption.billingMode] : undefined;
+  const supersededPromotion = catalogueEnabled &&
+    details.promotion?.relatedService === "web-development";
   return (
     <>
       <ContactJsonLd />
       <Contact
         numbering={8}
-        initialService={details.serviceName}
-        initialPackage={details.package?.id}
+        initialService={selectedService}
+        initialPackage={selectedPackage}
+        initialPriceOption={selectedPriceOption}
+        initialPriceOptionLabel={selectedPriceOptionLabel}
         initialMessage={
-          details.message ?? buildAuditEnquiryMessage(details.website)
+          (supersededPromotion ? undefined : details.message) ?? buildAuditEnquiryMessage(details.website)
         }
-        initialPromotionName={details.promotion?.name}
-        initialServiceNotice={details.serviceNotice}
-        initialPackageNotice={details.packageNotice}
+        initialPromotionName={supersededPromotion ? undefined : details.promotion?.name}
+        initialServiceNotice={supersededPromotion ? undefined : details.serviceNotice}
+        initialPackageNotice={supersededPromotion ? undefined : details.packageNotice}
         initialAttribution={details.attribution}
+        availablePackages={availablePackages}
       />
     </>
   );

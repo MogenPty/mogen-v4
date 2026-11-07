@@ -7,6 +7,7 @@ import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import { formatNumber } from "@/lib/utils";
 import { siteConfig } from "@/data/site";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
+import type { ServicePackage } from "@/data/packages";
 import ContactForm from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -18,6 +19,8 @@ interface Props {
   initialService?: string;
   /** Resolved package identifier (`package=` or inferred from `promotion=`). */
   initialPackage?: string;
+  initialPriceOption?: string;
+  initialPriceOptionLabel?: string;
   /** Editable starter message from `?promotion=` (absent without promotion). */
   initialMessage?: string;
   /** Display name of the recognised promotion, if any. */
@@ -28,17 +31,21 @@ interface Props {
   initialPackageNotice?: string;
   /** Attribution carried through the enquiry journey (never shown in copy). */
   initialAttribution?: EnquiryAttribution;
+  availablePackages?: ServicePackage[];
 }
 
 export default function Contact({
   numbering = 1,
   initialService,
   initialPackage,
+  initialPriceOption,
+  initialPriceOptionLabel,
   initialMessage,
   initialPromotionName,
   initialServiceNotice,
   initialPackageNotice,
   initialAttribution,
+  availablePackages,
 }: Readonly<Props>) {
   return (
     <div className="bg-bone">
@@ -141,11 +148,14 @@ export default function Contact({
                 <ContactForm
                   initialService={initialService}
                   initialPackage={initialPackage}
+                  initialPriceOption={initialPriceOption}
+                  initialPriceOptionLabel={initialPriceOptionLabel}
                   initialMessage={initialMessage}
                   initialPromotionName={initialPromotionName}
                   initialServiceNotice={initialServiceNotice}
                   initialPackageNotice={initialPackageNotice}
                   initialAttribution={initialAttribution}
+                  availablePackages={availablePackages}
                 />
               </div>
             </div>
