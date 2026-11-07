@@ -25,6 +25,22 @@ try {
   for (const id of ids) {
     const row = byId.get(id);
     if (!row) { issues.push(`Missing draft option: ${id}`); continue; }
+    const expectedPackage = id === "seed-once-off" ? "seed" :
+      packages.find(p => id.startsWith(`${p}-`));
+    const expectedMode = id === "seed-once-off" ? "once_off" :
+      modes.find(m => id === `${expectedPackage}-${m.replaceAll("_", "-")}`);
+    if (!expectedPackage || !expectedMode ||
+        row.package_id !== expectedPackage || row.billing_mode !== expectedMode) {
+      issues.push(`Incorrect package or billing mode for template ${id}`);
+    }
+    if (id !== "seed-once-off") {
+      const expectedHosting = expectedMode === "self_hosted" ? "customer" : "mogen";
+      const expectedMaintenance = expectedMode === "managed_monthly" ? "mogen" : "customer";
+      if (row.hosting_responsibility !== expectedHosting ||
+          row.maintenance_responsibility !== expectedMaintenance) {
+        issues.push(`Incorrect responsibilities for template ${id}`);
+      }
+    }
     if (row.status !== "draft" || row.amount_cents !== null || row.setup_fee_cents !== null ||
         row.minimum_months !== null || row.initial_hosting_months !== null) {
       issues.push(`Draft has unexpected price, contract term or status: ${id}`);
