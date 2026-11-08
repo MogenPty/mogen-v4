@@ -117,6 +117,7 @@ export default async function ContactPage({
       ? priceOption.id : undefined;
   const priceModeLabels: Record<string, string> = {
     managed_monthly: "Managed Monthly",
+    managed_annual: "Managed Annually",
     once_off: "Once-Off",
     self_hosted: "Self-Hosted",
   };
