@@ -49,13 +49,37 @@ The two managed options provide **identical service**; only the billing interval
 - Work must be described, quoted/estimated and approved in writing before chargeable work begins; urgent security/availability repairs within Mogen's managed obligation are not billed merely because they need labour.
 - Mogen may discount additional work at its discretion.
 
-## Renewal and cancellation — LEGAL REVIEW REQUIRED
-- Commercial proposal: R400 standard early-cancellation charge for Monthly, R500 for Annually, based loosely on one-third of their initial commitment. These **are proposals or caps, not unconditional automatic forfeitures**. Determine actual reasonable charges with regard to work delivered, avoided costs, amounts already paid and compulsory law.
-- No standard cancellation penalty at the agreed end of a fixed period; outstanding earned charges may still apply.
-- For CPA section 14 qualifying consumer fixed-term contracts: the consumer may generally cancel on 20 business days' notice, with a reasonable penalty where lawful; notices of expiry and continuation rights apply. **A new fixed-term cycle requires express agreement**; otherwise the statute generally provides month-to-month continuation. Juristic-person transactions have different section 14 applicability. Do not implement blanket six-month/annual automatic fixed-term renewal.
-- Managed Annually's annual prepaid continuation/renewal terms and conversion mechanics require separate legal/payment design.
-- Self-Hosted: 50% initial payment is a credit against contract price, not automatically non-refundable. On cancellation calculate reasonable delivered work, agreed incurred costs and refunds, subject to law.
-- Cancellation, expiry or nonpayment requires explicit domain, email, website suspension and data-export/retention procedures, and reasonable notice.
+## Renewal and cancellation — proposed customer wording; LEGAL REVIEW REQUIRED
+
+**Purpose:** protect actual unrecovered work and acquisition costs without preventing statutory cancellation. This is NOT legal advice or a predetermined statutory penalty.
+
+### Early cancellation and proposed fee schedule
+
+A qualifying consumer may cancel a fixed-term agreement with 20 business days' notice in a recorded form under CPA section 14. The consumer remains responsible for lawfully accrued charges up to cancellation. Mogen may recover only a **reasonable** penalty assessed under CPA Regulation 5, taking account of the actual services/discounts, substantiated unrecovered costs, notice period and other relevant circumstances. Refund unused customer credits. Do not apply a charge to negate the statutory right to cancel.
+
+**Suggested customer-friendly cap, subject to actual reasonable costs:**
+- Monthly initial six-month term: `min(R400 × unexpired term / 6 months, substantiated reasonable unrecovered costs)`.
+- Annual twelve-month term: `min(R500 × unexpired term / 12 months, substantiated reasonable unrecovered costs)`.
+- Use effective cancellation date (following applicable notice), not merely date of request. Prorate by **actual remaining days** in the original term for final invoicing; months are illustrations.
+- These are optional, conservative **maximums**, not guaranteed fees. Separately calculate lawful earned amounts to the effective date; credit unused prepaid customer funds and avoid double recovery. No fee for ordinary fixed-term expiry, or for cancellation for Mogen's actionable material breach.
+- Before development starts: do not charge the standard fee. Return advance payments less only specifically documented, disclosed and lawfully recoverable third-party costs (if any).
+- Self-Hosted: the 50% advance payment is credited to contract price, not an unconditional forfeiture. Calculate work delivered, authorised incurred costs and lawful refund on termination.
+- Send an **itemised cancellation statement**; state reasons and appeal/contact channel.
+
+### Subscription and renewal consents
+
+Customers must expressly acknowledge at order/signature that managed services recur and payment collection continues unless lawfully cancelled. **Separate that ongoing billing authority from consent to enter another fixed term**.
+
+For CPA section 14 qualifying consumer agreements: provide the prescribed expiry notice **40–80 business days** before the fixed-term expiry, including material changes and options. At fixed-term expiry the agreement generally **continues month-to-month** unless the customer expressly terminates or agrees to another fixed term. Initial boilerplate consent to automatic fixed-term renewal must not replace the express renewal agreement the statute requires.
+
+Workflow: record consent, date, terms/version and payment mandate; issue statutory expiry notice, then optional reminders. Provide explicit actions to (1) accept a new six/twelve-month term, or (2) cancel at expiry. Without a valid fixed-term renewal choice, continue month-to-month when required by law. Support cancellation by email or other legally valid recorded means as well as the portal. Preserve full event/audit history. For annual plans, agree a legally compliant month-to-month continuation rate and payment cadence **before publication**, rather than automatically debiting R1,499 for another fixed year.
+
+Section 14 does **not** apply to transactions between juristic persons; still use transparent written terms and obtain appropriate renewal authorisation. CPA compliance and other relevant laws must be checked by South African counsel before launch.
+
+Authoritative sources:
+- https://api.acts.co.za/consumer-protection-act-2008/14_expiry_and_renewal_of_fixed_term_agreements.php
+- https://api.acts.co.za/consumer-protection-act-2008/r293_5__maximum_duration_for_fixed_term_consumer_agreements.php
+- https://api.acts.co.za/consumer-protection-act-2008/r293_annexure_b_section_14%284%29%28c%29.php
 
 ## Intellectual property, handover and portfolio
 - Managed is **website-as-a-service**: Mogen retains its website/source-code rights subject to customer-owned material and third-party licences. Any source-code transfer or buyout is separately negotiated, not automatically included on cancellation.
