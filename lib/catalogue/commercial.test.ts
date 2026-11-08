@@ -55,6 +55,21 @@ describe("web pricing publication rules", () => {
     expect(isPublicWebPrice({ ...annual, hostingResponsibility: "customer" }, published)).toBe(false);
     expect(isPublicWebPrice({ ...annual, billingMode: "once_off" }, published)).toBe(false);
   });
+  it("supports the three Sprout payment choices without making drafts public", () => {
+    const choices: WebPriceOption[] = [
+      { ...option, id: "sprout-managed-monthly", billingMode: "managed_monthly",
+        amountCents: 19900, setupFeeCents: 0, minimumMonths: 6 },
+      { ...option, id: "sprout-once-off", billingMode: "managed_annual",
+        amountCents: 149900, setupFeeCents: 0, minimumMonths: 12 },
+      { ...option, id: "sprout-self-hosted", billingMode: "self_hosted",
+        amountCents: 179900, setupFeeCents: 0, minimumMonths: null,
+        hostingResponsibility: "customer", maintenanceResponsibility: "customer" },
+    ];
+    for (const choice of choices) {
+      expect(isPublicWebPrice({ ...choice, status: "draft" }, published)).toBe(false);
+      expect(isPublicWebPrice({ ...choice, status: "published" }, published)).toBe(true);
+    }
+  });
   it("only offers Once-Off for Seed; future fixes are separately quoted", () => {
     const seed = { ...option, packageId: "seed" };
     const allowed = new Set(["seed"]);
