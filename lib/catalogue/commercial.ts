@@ -2,7 +2,7 @@
  * Pure public safety gates for web price options and campaign targeting.
  * The DB remains authoritative; this does not publish or mutate rows.
  */
-export type BillingMode = "managed_monthly" | "once_off" | "self_hosted";
+export type BillingMode = "managed_monthly" | "managed_annual" | "once_off" | "self_hosted";
 export type Responsibility = "mogen" | "customer" | "not_applicable";
 
 export interface WebPriceOption {
@@ -30,6 +30,7 @@ export function isPublicWebPrice(
 ): boolean {
   // Seed is a one-time business-presence setup, not a recurring website service.
   if (option.packageId === "seed" && option.billingMode !== "once_off") return false;
+  if (option.packageId !== "seed" && option.billingMode === "once_off") return false;
   if (!publishedPackageIds.has(option.packageId) ||
       option.status !== "published" || option.currency !== "ZAR" ||
       option.amountCents === null || !Number.isSafeInteger(option.amountCents) ||
@@ -44,13 +45,12 @@ export function isPublicWebPrice(
 
   switch (option.billingMode) {
     case "managed_monthly":
+    case "managed_annual":
       return option.hostingResponsibility === "mogen" && option.maintenanceResponsibility === "mogen";
     case "self_hosted":
       return option.hostingResponsibility === "customer" && option.maintenanceResponsibility === "customer";
     case "once_off":
-      return option.packageId === "seed"
-        ? option.hostingResponsibility === "not_applicable" && option.maintenanceResponsibility === "not_applicable"
-        : option.hostingResponsibility === "mogen";
+      return option.hostingResponsibility === "not_applicable" && option.maintenanceResponsibility === "not_applicable";
     default:
       return false;
   }
@@ -67,8 +67,8 @@ export interface WebPromotionTarget {
 }
 
 export function validPromotionTarget(target: WebPromotionTarget, mode: BillingMode): boolean {
-  if (target.appliesTo === "recurring" && mode !== "managed_monthly") return false;
-  if (target.appliesTo === "project" && mode === "managed_monthly") return false;
+  if (target.appliesTo === "recurring" && mode !== "managed_monthly" && mode !== "managed_annual") return false;
+  if (target.appliesTo === "project" && (mode === "managed_monthly" || mode === "managed_annual")) return false;
   if (target.discountedMonths !== null &&
       (target.appliesTo !== "recurring" || !Number.isInteger(target.discountedMonths) || target.discountedMonths <= 0)) return false;
   if (target.discountKind === "fixed") {
