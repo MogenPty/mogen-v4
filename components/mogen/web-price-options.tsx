@@ -18,12 +18,14 @@ export interface PublicWebPriceChoice {
 
 const labels: Record<BillingMode, string> = {
   managed_monthly: "Managed Monthly",
+  managed_annual: "Managed Annually",
   once_off: "Once-Off",
   self_hosted: "Self-Hosted",
 };
 const descriptions: Record<BillingMode, string> = {
   managed_monthly: "Mogen hosts, maintains and supports your website on an ongoing subscription.",
-  once_off: "Mogen builds and deploys your website. Any hosting renewal is priced separately.",
+  managed_annual: "The same managed hosting, maintenance and support, billed annually at the same recurring rate.",
+  once_off: "One-time setup. Any later fixes are quoted separately.",
   self_hosted: "Mogen hands over the source code and project files. You handle hosting and maintenance.",
 };
 
@@ -59,7 +61,7 @@ export default function WebPriceOptions({
       </select>
       <div aria-live="polite" className="mt-3 space-y-2">
         <p className="font-display text-2xl font-black text-ink">
-          {zar(selected.amountCents)}{selected.billingMode === "managed_monthly" ? "/month" : " once-off"}
+          {zar(selected.amountCents)}{selected.billingMode === "managed_monthly" ? "/month" : selected.billingMode === "managed_annual" ? "/year" : " once-off"}
         </p>
         {selected.setupFeeCents !== null && selected.setupFeeCents > 0 &&
           <p className="text-sm text-ink/70">Setup: {zar(selected.setupFeeCents)}</p>}
@@ -67,7 +69,7 @@ export default function WebPriceOptions({
           <p className="text-sm text-ink/70">Minimum term: {selected.minimumMonths} months</p>}
         {selected.depositPercent !== null && selected.depositPercent > 0 &&
           <p className="text-sm text-ink/70">Deposit: {selected.depositPercent}%</p>}
-        {selected.billingMode === "once_off" && selected.initialHostingMonths !== null &&
+        {selected.billingMode === "managed_annual" && selected.initialHostingMonths !== null &&
           <p className="text-sm text-ink/70">Initial hosting: {selected.initialHostingMonths} months</p>}
         <p className="text-sm text-ink/70">{descriptions[selected.billingMode]}</p>
         <p className="text-xs text-ink/60">{selected.handoverPolicy}</p>
