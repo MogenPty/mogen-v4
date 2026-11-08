@@ -106,3 +106,23 @@ Legal reference URLs (consult current authoritative text and counsel):
 - CPA section 14: https://lawlibrary.org.za/akn/za/act/2008/68/eng%402015-03-13
 - CPA Regulation 5: https://api.acts.co.za/consumer-protection-act-2008/r293_5__maximum_duration_for_fixed_term_consumer_agreements.php
 - ZARC CO.ZA policies: https://registrar.coza.net.za/content.php?contentid=111&gen=1&title=CO.ZA+Published+Policies+and+Procedures
+
+## Registration and tax status — 8 November 2026
+
+**User-confirmed status:** Mogen is not yet incorporated/registered at CIPC and is not VAT-registered; the founder intends to complete registration before the end of 2026. They also report not being tax-registered. These are three separate concepts and one should not be represented as the other. **Do not imply that Mogen (Pty) Ltd already exists**, or use a fictitious company registration/VAT number in quotations, contracts, checkout, invoices, footer or structured data.
+
+**Until registration:**
+- Commercial proposal prices are **R199 per month**, **R1,499 recurring annually**, and **R1,799 self-hosted once-off**. These are total proposed amounts **without VAT charged** while the supplier is not a VAT vendor. Do not label these amounts VAT-inclusive or issue a VAT tax invoice; use a conventional invoice/receipt identifying the actual contracting natural person trading as Mogen, subject to legal/accounting confirmation and privacy considerations.
+- Include a clear factual notice such as **"Mogen is not currently registered as a VAT vendor. VAT is not charged on these services."** on any relevant customer quote/invoice if appropriate. Keep all prices unpublished until expressly authorised.
+- Confirm the contracting party's legal name and invoice details before accepting customer contracts; never present an unregistered company as incorporated.
+- Income-tax responsibilities can arise before CIPC incorporation or VAT registration. Obtain accounting advice, keep proper sales/expense records and assess personal income-tax registration/eFiling.
+- When the company is registered, update legal identity, contracting party, invoicing, tax information, website disclosures, payment mandates, and consent/assignment arrangements where necessary. **CIPC registration does not automatically create VAT registration or permission to charge VAT**.
+- As of April 2026, SARS administers a **R2.3m compulsory** VAT-registration threshold for annual taxable supplies and **R120k voluntary** threshold subject to conditions. Check updated guidance when registering and before changing VAT status. Only charge VAT from the appropriate effective VAT registration date, with contract price-change disclosures where relevant.
+
+Sources:
+- https://www.sars.gov.za/about/sars-tax-and-customs-system/budget/budget-2026-frequently-asked-questions/
+- https://www.sars.gov.za/types-of-tax/value-added-tax/register-for-vat/
+- https://www.sars.gov.za/businesses-and-employers/small-businesses-taxpayers/starting-a-business-and-tax/
+- https://www.cipc.co.za/?page_id=10462
+
+**Open legal/accounting item:** who contracts with customers before incorporation, and whether the business currently has any SARS income-tax registration obligations or an existing personal tax number. Avoid collecting sensitive identifiers in this draft.
