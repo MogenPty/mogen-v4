@@ -1,4 +1,4 @@
-import { boolean, integer, jsonb, pgTable, text, timestamp, uniqueIndex, index, primaryKey } from "drizzle-orm/pg-core";
+import { bigint, boolean, integer, jsonb, pgTable, text, timestamp, uuid, uniqueIndex, index, primaryKey } from "drizzle-orm/pg-core";
 
 /** Product scope and display content; never store currency values as floats. */
 export const webPackages = pgTable("web_packages", {
@@ -88,4 +88,56 @@ export const webPromotionPrices = pgTable("web_promotion_prices", {
 }, t => [
   primaryKey({ columns: [t.promotionId, t.packagePriceId, t.appliesTo] }),
   index("web_promotion_prices_price_idx").on(t.packagePriceId),
+]);
+
+/**
+ * Private document metadata only; file bytes live in a private Neon Object
+ * Storage bucket. Do not expose these tables or S3 credentials to public APIs.
+ * Migration: drizzle/0007_private_documents.sql (manual development branch).
+ */
+export const privateDocuments = pgTable("private_documents", {
+  id: uuid("id").primaryKey(),
+  title: text("title").notNull(),
+  documentType: text("document_type").notNull(),
+  status: text("status").notNull().default("draft"),
+  classification: text("classification").notNull().default("confidential"),
+  relatedCustomerId: text("related_customer_id"),
+  createdBy: text("created_by").notNull(),
+  currentVersion: integer("current_version").notNull().default(0),
+  legalHold: boolean("legal_hold").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [
+  index("private_documents_customer_idx").on(t.relatedCustomerId),
+]);
+
+export const privateDocumentVersions = pgTable("private_document_versions", {
+  id: uuid("id").primaryKey(),
+  documentId: uuid("document_id").notNull().references(() => privateDocuments.id, { onDelete: "restrict" }),
+  versionNumber: integer("version_number").notNull(),
+  bucket: text("bucket").notNull().default("assets"),
+  objectKey: text("object_key").notNull().unique(),
+  originalFilename: text("original_filename").notNull(),
+  contentType: text("content_type").notNull(),
+  sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),
+  sha256Hex: text("sha256_hex").notNull(),
+  uploadedBy: text("uploaded_by").notNull(),
+  scanStatus: text("scan_status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [
+  uniqueIndex("private_document_versions_doc_version_unique").on(t.documentId, t.versionNumber),
+  index("private_document_versions_doc_idx").on(t.documentId, t.versionNumber),
+]);
+
+export const privateDocumentAccessLog = pgTable("private_document_access_log", {
+  id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+  documentId: uuid("document_id").references(() => privateDocuments.id, { onDelete: "set null" }),
+  versionId: uuid("version_id").references(() => privateDocumentVersions.id, { onDelete: "set null" }),
+  actorId: text("actor_id").notNull(),
+  action: text("action").notNull(),
+  outcome: text("outcome").notNull(),
+  reason: text("reason"),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [
+  index("private_doc_log_doc_idx").on(t.documentId, t.occurredAt),
 ]);
