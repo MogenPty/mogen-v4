@@ -89,6 +89,8 @@ ALTER TABLE public.web_package_prices
   );
 
 ALTER TABLE public.web_package_prices
+  DROP CONSTRAINT IF EXISTS web_package_prices_annual_scope_check;
+ALTER TABLE public.web_package_prices
   ADD CONSTRAINT web_package_prices_annual_scope_check
   CHECK (package_id = 'seed' OR billing_mode <> 'once_off');
 
