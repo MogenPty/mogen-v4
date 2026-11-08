@@ -22,8 +22,9 @@ BEGIN
         OR amount_cents IS NOT NULL AND amount_cents <>
            CASE id WHEN 'sprout-managed-monthly' THEN 19900 ELSE 179900 END
         OR setup_fee_cents IS NOT NULL AND setup_fee_cents <> 0
-        OR minimum_months IS NOT NULL AND minimum_months <>
-           CASE id WHEN 'sprout-managed-monthly' THEN 6 ELSE NULL END
+        OR (id = 'sprout-managed-monthly'
+          AND minimum_months IS NOT NULL AND minimum_months <> 6)
+        OR (id = 'sprout-self-hosted' AND minimum_months IS NOT NULL)
         OR initial_hosting_months IS NOT NULL
         OR deposit_percent IS NOT NULL)
   ) THEN
