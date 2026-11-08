@@ -72,7 +72,11 @@ Customers must expressly acknowledge at order/signature that managed services re
 
 For CPA section 14 qualifying consumer agreements: provide the prescribed expiry notice **40–80 business days** before the fixed-term expiry, including material changes and options. At fixed-term expiry the agreement generally **continues month-to-month** unless the customer expressly terminates or agrees to another fixed term. Initial boilerplate consent to automatic fixed-term renewal must not replace the express renewal agreement the statute requires.
 
-Workflow: record consent, date, terms/version and payment mandate; issue statutory expiry notice, then optional reminders. Provide explicit actions to (1) accept a new six/twelve-month term, or (2) cancel at expiry. Without a valid fixed-term renewal choice, continue month-to-month when required by law. Support cancellation by email or other legally valid recorded means as well as the portal. Preserve full event/audit history. For annual plans, agree a legally compliant month-to-month continuation rate and payment cadence **before publication**, rather than automatically debiting R1,499 for another fixed year.
+**Agreed Sprout annual-expiry policy:** On expiry of the original annual fixed term, a customer who expressly accepts another annual commitment renews at the then-agreed annual price (currently proposed R1,499/year). A customer who terminates receives cancellation and offboarding according to applicable law. A customer who neither agrees to a new fixed term nor terminates continues **month-to-month at the disclosed R199/month**, payable one month in advance, **without a restarted six-month minimum**, where CPA section 14 applies. Any future price changes require appropriate disclosure and compliance with law. Do not automatically debit another annual fee merely because a customer is silent.
+
+**Non-payment policy agreed in principle:** Monthly continuation requires advance payment. If payment is not made, Mogen may suspend service following a legally compliant notice and cure process; continued non-payment may lead to termination after further appropriate notice. Exact grace periods, suspension, data retention, restoration charges and handling of domain/email must be separately documented before implementation; never delete client data immediately or suspend contrary to mandatory law.
+
+Workflow: record consent, date, terms/version and payment mandate; issue statutory expiry notice, then optional reminders. Provide explicit actions to (1) renew annual term, (2) continue month-to-month, or (3) cancel at expiry. Without a valid fixed-term renewal choice or express cancellation, use the legally required month-to-month continuation. Support cancellation by email or other legally valid recorded means as well as the portal. Preserve full event/audit history.
 
 Section 14 does **not** apply to transactions between juristic persons; still use transparent written terms and obtain appropriate renewal authorisation. CPA compliance and other relevant laws must be checked by South African counsel before launch.
 
@@ -96,6 +100,7 @@ Authoritative sources:
 6. Domain registrant metadata, transfer procedure, provider availability and allowance overruns.
 7. VAT status and tax-inclusive/exclusive display.
 8. Explicit commercial approval before any Neon draft status becomes published.
+9. Automated renewal notices and lawful non-payment suspension/termination workflow (deferred; no implementation yet).
 
 Legal reference URLs (consult current authoritative text and counsel):
 - CPA section 14: https://lawlibrary.org.za/akn/za/act/2008/68/eng%402015-03-13
