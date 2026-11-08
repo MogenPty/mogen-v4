@@ -1,5 +1,5 @@
 /**
- * Read-only verification of 0004 draft commercial option templates.
+ * Read-only verification of 0004–0006 draft commercial option templates.
  * Requires DATABASE_URL pointing to Neon DEVELOPMENT. Does not modify rows.
  */
 import "dotenv/config";
@@ -43,11 +43,15 @@ try {
         issues.push(`Incorrect responsibilities for template ${id}`);
       }
     }
-    const sproutAnnual = id === "sprout-once-off";
+    const expectedSprout = {
+      "sprout-managed-monthly": { amount: 19900, setup: 0, months: 6 },
+      "sprout-once-off": { amount: 149900, setup: 0, months: 12 },
+      "sprout-self-hosted": { amount: 179900, setup: 0, months: null },
+    }[id];
     if (row.status !== "draft" ||
-        row.amount_cents !== (sproutAnnual ? 149900 : null) ||
-        row.setup_fee_cents !== (sproutAnnual ? 0 : null) ||
-        row.minimum_months !== (sproutAnnual ? 12 : null) ||
+        row.amount_cents !== (expectedSprout?.amount ?? null) ||
+        row.setup_fee_cents !== (expectedSprout?.setup ?? null) ||
+        row.minimum_months !== (expectedSprout?.months ?? null) ||
         row.initial_hosting_months !== null) {
       issues.push(`Draft has unexpected price, contract term or status: ${id}`);
     }
@@ -72,7 +76,7 @@ try {
     for (const issue of issues) console.error("ERROR:", issue);
     process.exitCode = 1;
   } else {
-    console.log("All 16 draft options verified; Sprout annual R1,499/year is still unpublished.");
+    console.log("All 16 draft options verified; Sprout monthly R199, annual R1,499, self-hosted R1,799 are unpublished drafts.");
   }
   const otherPublished = rows.filter(r => r.status === "published");
   if (otherPublished.length) console.warn(`Note: ${otherPublished.length} other published price row(s) already exist in this branch; inspect separately.`);
