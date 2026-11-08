@@ -56,3 +56,23 @@ No live prices, signed documents or sensitive identity details should be committ
 - https://neon.com/blog/building-neon-object-storage
 - https://neon.com/docs/storage/authentication
 - https://popia.co.za/section-14-retention-and-restriction-of-records/
+
+## Implementation checkpoint — Neon mogen-packages-dev / assets (8 November 2026)
+
+The user has created Neon Object Storage on database branch **`mogen-packages-dev`** with bucket **`assets`**, and supplied the AWS S3 SDK example with `forcePathStyle: true`. This is the **Neon database/storage branch**, not a Git branch. The application implementation continues on Git branch `feat/neon-drizzle-web-catalogue`.
+
+**Added now:** `drizzle/0007_private_documents.sql` (manual, additive, development only) and matching Drizzle metadata tables; read-only preflight `scripts/verify-neon-object-storage.mjs`; server-only environment variable examples. No customer documents were read or written, and no admin upload/download endpoints or signed-URL issuance are exposed.
+
+**Your local steps:**
+1. In Neon Console confirm that `mogen-packages-dev` has the `assets` bucket and that its **access is private**, not `public_read`. This must be explicitly checked: a bucket name alone does not establish privacy.
+2. Put `AWS_ENDPOINT_URL_S3`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY` from that branch in `.env.local`. Do not commit values. Set `MOGEN_DOCUMENT_BUCKET=assets`.
+3. Install the SDK locally and commit the resulting `package.json` **and lockfile** together to the feature branch: `pnpm add @aws-sdk/client-s3 @aws-sdk/s3-request-presigner`. `dotenv` is already present as a dev dependency and Node 26 supports `--env-file`.
+4. Run `node --env-file=.env.local scripts/verify-neon-object-storage.mjs`. The command issues only `HeadBucket`; it does not list/download/upload any files.
+5. Apply `drizzle/0007_private_documents.sql` manually in the Neon SQL editor for the **verified development branch only**, after inspecting it. Do **not** use `drizzle-kit migrate` until the project establishes a journal/snapshot baseline.
+6. Run `pnpm typecheck` and `pnpm build`. No production routes are enabled.
+
+**Access blocker:** current `app/(admin)/admin/page.tsx` displays user sign-in state without proving staff/admin role, and `app/(admin)/proxy.ts` matcher only protects `/account/:path*`. Upload/download endpoints **must not be added** until a server-side staff-role authority and access-denied tests exist. A login session alone is not sufficient to access signed contracts.
+
+**Preview/branch security:** Neon Object Storage objects branch with the data. Any branch of live production may inherit signed private documents and enable access by privileged branch credentials. Use isolated production document storage/project and do not expose production document keys to preview deployments.
+
+The sample `GetObjectCommand` presigned URL with `expiresIn: 3600` is suitable for demonstration but **not for confidential contracts**. Production URLs should have brief TTLs, only be issued after server-side authorisation, and never be logged, indexed or embedded in unauthorised responses.
