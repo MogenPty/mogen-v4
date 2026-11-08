@@ -135,6 +135,8 @@ export async function POST(req: Request) {
         }
         const modes: Record<string, string> = {
           managed_monthly: "Managed Monthly",
+    managed_annual: "Managed Annually",
+          managed_annual: "Managed Annually",
           once_off: "Once-Off",
           self_hosted: "Self-Hosted",
         };
