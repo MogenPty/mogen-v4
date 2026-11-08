@@ -171,3 +171,24 @@ pnpm build
 ```
 
 Next decisions for each option: approved base/project/monthly amount in ZAR, applicable setup fee, VAT presentation, deposits, minimum commitment, Once-Off hosting inclusion/renewal, domain/email support, maintenance SLA, source-code ownership and exit/transfer terms. Once the commercial approvals are settled, add controlled validation and publish workflow; do not simply change a draft row's status in production.
+
+## Sprout Managed Annually — recurring subscription (8 November 2026)
+
+**Commercial decision:** Sprout is one landing page (up to five sections). Managed Annually is the **same managed hosting, maintenance and support service** as Managed Monthly, only billed annually. Sprout Managed Annually is **R1,499 every year** (`amount_cents=149900`), not a first-year special. There is **no separate `renewal_amount_cents`**; the normal yearly subscription price recurs each year. Its draft row uses `setup_fee_cents=0`, `minimum_months=12` and `status='draft'`. Managed Monthly and Self-Hosted amounts are not changed by this migration.
+
+Development SQL: **`drizzle/0005_managed_annual_sprout_pricing.sql`** (run manually on the verified **Neon development branch only**, after 0004). It changes the five website-package draft `once_off` rows to `managed_annual`, with Mogen responsible for both hosting and maintenance, changes the associated constraints, and sets Sprout's annual draft amount to 149900 cents. Seed retains its distinct `once_off` mode without website hosting or maintenance. All 16 options remain drafts, so no public price appears. The existing IDs ending `-once-off` remain stable internal IDs to avoid invalidating references; `billing_mode` now provides the authoritative payment semantics.
+
+The public selector shows `Managed Annually` with `/year`. Contact context and email labels follow that same mode, and the pricing safety gate requires the same responsibilities as Managed Monthly. Annual discounts are recurring, not project discounts. Promotion publication/redemption rules remain pending.
+
+**Do not rerun the original 0004 seed to replace or reset annual records.** It uses stable IDs and `ON CONFLICT DO NOTHING`, so it does not overwrite updated existing records, but 0005 is the authoritative correction.
+
+Verification (read-only):
+```powershell
+node scripts/verify-web-pricing-drafts.mjs
+node scripts/verify-web-commercial.mjs
+pnpm exec vitest run lib/catalogue/commercial.test.ts lib/contact/catalogue-mail.test.ts
+pnpm typecheck
+pnpm build
+```
+
+No price publishing or production migration has been authorised.
