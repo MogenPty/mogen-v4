@@ -46,9 +46,14 @@ describe("web pricing publication rules", () => {
     expect(isPublicWebPrice({...option, hostingResponsibility: "customer"}, published)).toBe(false);
     expect(isPublicWebPrice({...option, billingMode: "self_hosted", hostingResponsibility: "customer", maintenanceResponsibility: "customer"}, published)).toBe(true);
   });
-  it("keeps Once-Off as a Mogen-deployed project with explicit handover policy", () => {
-    expect(isPublicWebPrice({...option, billingMode: "once_off", maintenanceResponsibility: "customer", initialHostingMonths: 12}, published)).toBe(true);
-    expect(isPublicWebPrice({...option, billingMode: "once_off", hostingResponsibility: "customer"}, published)).toBe(false);
+  it("treats Managed Annually as the same managed service billed every year", () => {
+    const annual = { ...option, id: "sprout-once-off", billingMode: "managed_annual" as const,
+      amountCents: 149900, setupFeeCents: 0, minimumMonths: 12 };
+    expect(isPublicWebPrice(annual, published)).toBe(true);
+    expect(isPublicWebPrice({ ...annual, status: "draft" }, published)).toBe(false);
+    expect(isPublicWebPrice({ ...annual, maintenanceResponsibility: "customer" }, published)).toBe(false);
+    expect(isPublicWebPrice({ ...annual, hostingResponsibility: "customer" }, published)).toBe(false);
+    expect(isPublicWebPrice({ ...annual, billingMode: "once_off" }, published)).toBe(false);
   });
   it("only offers Once-Off for Seed; future fixes are separately quoted", () => {
     const seed = { ...option, packageId: "seed" };
@@ -77,6 +82,8 @@ describe("promotion targets", () => {
     expect(validPromotionTarget(target, "managed_monthly")).toBe(true);
     expect(validPromotionTarget({...target, appliesTo: "project", discountedMonths: null}, "self_hosted")).toBe(true);
     expect(validPromotionTarget(target, "self_hosted")).toBe(false);
+    expect(validPromotionTarget(target, "managed_annual")).toBe(true);
+    expect(validPromotionTarget({...target, appliesTo: "project", discountedMonths: null}, "managed_annual")).toBe(false);
     expect(validPromotionTarget({...target, discountedMonths: 0}, "managed_monthly")).toBe(false);
   });
   it("uses whole cents and basis points for discounts", () => {
