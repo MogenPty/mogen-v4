@@ -29,12 +29,14 @@ export const webLocationOffers = pgTable("web_location_offers", {
 /**
  * Each package can have multiple commercial options. All amounts are
  * integer minor units (ZAR cents); null means not priced/approved.
+ * Managed Annual amount_cents is the full recurring yearly payment, not a
+ * first-year fee; there is no separate renewal_amount_cents column.
  * This table stores responsibilities separately from payment timing.
  */
 export const webPackagePrices = pgTable("web_package_prices", {
   id: text("id").primaryKey(),
   packageId: text("package_id").notNull().references(() => webPackages.id),
-  billingMode: text("billing_mode").notNull(), // managed_monthly | once_off | self_hosted
+  billingMode: text("billing_mode").notNull(), // managed_monthly | managed_annual | once_off (Seed only) | self_hosted
   currency: text("currency").notNull().default("ZAR"),
   amountCents: integer("amount_cents"),
   setupFeeCents: integer("setup_fee_cents"),
