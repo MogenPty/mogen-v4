@@ -192,3 +192,19 @@ pnpm build
 ```
 
 No price publishing or production migration has been authorised.
+
+## Sprout complete draft pricing (8 November 2026)
+
+**Development-only** SQL migration `drizzle/0006_sprout_remaining_draft_prices.sql` must run on the verified Neon **development branch**, after 0005. It safely rejects unexpected prior status, price or contract-term edits, and retains `status='draft'` for both updated options.
+
+| Sprout choice | `billing_mode` | `amount_cents` | `setup_fee_cents` | `minimum_months` | Responsibilities |
+| --- | --- | ---: | ---: | ---: | --- |
+| Managed Monthly | `managed_monthly` | 19900 | 0 | 6 | Mogen hosting, maintenance and support |
+| Managed Annually | `managed_annual` | 149900 | 0 | 12 | Same managed service, paid annually every year |
+| Self-Hosted | `self_hosted` | 179900 | 0 | NULL | Source code/project files delivered, customer hosting and maintenance |
+
+The Managed Annually record was established by 0005 and is not modified by 0006. No `renewal_amount_cents` exists: annual `amount_cents` is the recurring annual subscription amount. The Self-Hosted option is a one-time project fee; delivery, training and hosting are not included unless separately agreed. The Sprout package is a **single landing page with up to five sections**, not five separate pages.
+
+Run `node scripts/verify-web-pricing-drafts.mjs` after 0006 to check **all three** draft Sprout figures and the 13 other unpriced options. Follow with `node scripts/verify-web-commercial.mjs`, `pnpm exec vitest run lib/catalogue/commercial.test.ts`, `pnpm typecheck`, and `pnpm build`.
+
+**Still to agree before publishing:** exact included maintenance/support scope, domain/email eligibility, VAT treatment, cancellation/renewal notice, warranty, and ownership/handover specifics. Do not set any `status='published'` or apply migrations in production.
