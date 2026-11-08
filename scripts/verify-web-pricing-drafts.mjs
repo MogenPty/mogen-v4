@@ -11,8 +11,10 @@ if (!process.env.DATABASE_URL) {
 }
 const sql = neon(process.env.DATABASE_URL);
 const packages = ["sprout", "seedling", "vegetative", "budding", "flowering"];
-const modes = ["managed_monthly", "once_off", "self_hosted"];
-const ids = ["seed-once-off", ...packages.flatMap(p => modes.map(m => `${p}-${m.replaceAll("_", "-")}`))];
+const modes = ["managed_monthly", "managed_annual", "self_hosted"];
+// Legacy stable IDs survive the billing-model correction to preserve references.
+const optionId = (p, mode) => `${p}-${mode === "managed_annual" ? "once-off" : mode.replaceAll("_", "-")}`;
+const ids = ["seed-once-off", ...packages.flatMap(p => modes.map(m => optionId(p, m)))];
 
 try {
   const rows = await sql`
@@ -28,21 +30,25 @@ try {
     const expectedPackage = id === "seed-once-off" ? "seed" :
       packages.find(p => id.startsWith(`${p}-`));
     const expectedMode = id === "seed-once-off" ? "once_off" :
-      modes.find(m => id === `${expectedPackage}-${m.replaceAll("_", "-")}`);
+      modes.find(m => id === optionId(expectedPackage, m));
     if (!expectedPackage || !expectedMode ||
         row.package_id !== expectedPackage || row.billing_mode !== expectedMode) {
       issues.push(`Incorrect package or billing mode for template ${id}`);
     }
     if (id !== "seed-once-off") {
       const expectedHosting = expectedMode === "self_hosted" ? "customer" : "mogen";
-      const expectedMaintenance = expectedMode === "managed_monthly" ? "mogen" : "customer";
+      const expectedMaintenance = expectedMode === "self_hosted" ? "customer" : "mogen";
       if (row.hosting_responsibility !== expectedHosting ||
           row.maintenance_responsibility !== expectedMaintenance) {
         issues.push(`Incorrect responsibilities for template ${id}`);
       }
     }
-    if (row.status !== "draft" || row.amount_cents !== null || row.setup_fee_cents !== null ||
-        row.minimum_months !== null || row.initial_hosting_months !== null) {
+    const sproutAnnual = id === "sprout-once-off";
+    if (row.status !== "draft" ||
+        row.amount_cents !== (sproutAnnual ? 149900 : null) ||
+        row.setup_fee_cents !== (sproutAnnual ? 0 : null) ||
+        row.minimum_months !== (sproutAnnual ? 12 : null) ||
+        row.initial_hosting_months !== null) {
       issues.push(`Draft has unexpected price, contract term or status: ${id}`);
     }
   }
@@ -60,13 +66,13 @@ try {
   }
   console.table(rows.filter(r => ids.includes(r.id)).map(r => ({
     package: r.package_id, mode: r.billing_mode, status: r.status,
-    amount: r.amount_cents === null ? "unapproved" : "set",
+    amount: r.amount_cents === null ? "unpriced" : "draft proposal",
   })));
   if (issues.length) {
     for (const issue of issues) console.error("ERROR:", issue);
     process.exitCode = 1;
   } else {
-    console.log("All 16 development pricing templates verified; amounts remain unapproved.");
+    console.log("All 16 draft options verified; Sprout annual R1,499/year is still unpublished.");
   }
   const otherPublished = rows.filter(r => r.status === "published");
   if (otherPublished.length) console.warn(`Note: ${otherPublished.length} other published price row(s) already exist in this branch; inspect separately.`);
