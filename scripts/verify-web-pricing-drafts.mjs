@@ -1,5 +1,5 @@
 /**
- * Read-only verification of 0004–0006 draft commercial option templates.
+ * Read-only verification of 0004–0008 draft commercial option templates.
  * Requires DATABASE_URL pointing to Neon DEVELOPMENT. Does not modify rows.
  */
 import "dotenv/config";
@@ -43,15 +43,29 @@ try {
         issues.push(`Incorrect responsibilities for template ${id}`);
       }
     }
-    const expectedSprout = {
-      "sprout-managed-monthly": { amount: 19900, setup: 0, months: 6 },
-      "sprout-once-off": { amount: 149900, setup: 0, months: 12 },
-      "sprout-self-hosted": { amount: 179900, setup: 0, months: null },
-    }[id];
+    const pricing = {
+      "seed-once-off": [49900, 0, null],
+      "sprout-managed-monthly": [19900, 0, 6],
+      "sprout-once-off": [149900, 0, 12],
+      "sprout-self-hosted": [179900, 0, null],
+      "seedling-managed-monthly": [44900, 99900, null],
+      "seedling-once-off": [349900, 99900, null],
+      "seedling-self-hosted": [549900, 0, null],
+      "vegetative-managed-monthly": [79900, 199900, null],
+      "vegetative-once-off": [649900, 199900, null],
+      "vegetative-self-hosted": [999900, 0, null],
+      "budding-managed-monthly": [119900, 299900, null],
+      "budding-once-off": [999900, 299900, null],
+      "budding-self-hosted": [1499900, 0, null],
+      "flowering-managed-monthly": [179900, 499900, null],
+      "flowering-once-off": [1499900, 499900, null],
+      "flowering-self-hosted": [2299900, 0, null],
+    };
+    const [expectedAmount, expectedSetup, expectedMonths] = pricing[id] ?? [null, null, null];
     if (row.status !== "draft" ||
-        row.amount_cents !== (expectedSprout?.amount ?? null) ||
-        row.setup_fee_cents !== (expectedSprout?.setup ?? null) ||
-        row.minimum_months !== (expectedSprout?.months ?? null) ||
+        row.amount_cents !== expectedAmount ||
+        row.setup_fee_cents !== expectedSetup ||
+        row.minimum_months !== expectedMonths ||
         row.initial_hosting_months !== null) {
       issues.push(`Draft has unexpected price, contract term or status: ${id}`);
     }
@@ -76,7 +90,7 @@ try {
     for (const issue of issues) console.error("ERROR:", issue);
     process.exitCode = 1;
   } else {
-    console.log("All 16 draft options verified; Sprout monthly R199, annual R1,499, self-hosted R1,799 are unpublished drafts.");
+    console.log("All 16 draft website pricing options verified across Seed through Flowering; Ripening remains quotation-only. Nothing published.");
   }
   const otherPublished = rows.filter(r => r.status === "published");
   if (otherPublished.length) console.warn(`Note: ${otherPublished.length} other published price row(s) already exist in this branch; inspect separately.`);
