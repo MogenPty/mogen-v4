@@ -260,7 +260,7 @@ export default function ServiceDetail({
             Development discovery CTAs always have an `#assessment`
             target no matter which service is currently promoted. */}
         {serviceSlug === "web-development" && webPackages !== null && webPackages !== undefined && (
-          <WebCatalogueFinder packages={webPackages} />
+          <WebCatalogueFinder packages={webPackages} prices={webPrices} attribution={attribution} />
         )}
         {serviceSlug === "web-development" && webPackages === null && (
           <WebsiteQuestionnaire
