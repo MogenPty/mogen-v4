@@ -1,7 +1,10 @@
 import Link from "next/link";
 import type { PublicLocationOffer } from "@/lib/catalogue/location-offer";
+import type { PublicWebPriceChoice } from "@/components/mogen/web-price-options";
 
-export default function LocationWebOffers({ offer }: Readonly<{ offer: PublicLocationOffer }>) {
+const currency = (cents: number) => new Intl.NumberFormat("en-ZA", {style:"currency",currency:"ZAR", maximumFractionDigits:0}).format(cents / 100);
+
+export default function LocationWebOffers({ offer, prices = [] }: Readonly<{ offer: PublicLocationOffer; prices?: PublicWebPriceChoice[] }>) {
   return (
     <section aria-labelledby="location-website-plans" className="bg-bone px-6 py-16 lg:px-10 lg:py-24">
       <div className="mx-auto max-w-[1600px]">
@@ -29,11 +32,17 @@ export default function LocationWebOffers({ offer }: Readonly<{ offer: PublicLoc
                 {slot.featured && <span className="small-caps w-fit rounded-full border border-white/50 bg-white/15 px-3 py-1 font-bold text-white">Recommended for this location</span>}
                 <h3 className={`mt-3 font-display font-black ${slot.featured ? "text-3xl text-white" : "text-2xl text-ink"}`}>{slot.package.name}</h3>
                 <p className={`mt-3 text-sm ${slot.featured ? "text-white/90" : "text-ink/70"}`}>{slot.package.summary}</p>
-                <p className={`mt-5 font-semibold ${slot.featured ? "text-white" : "text-ink"}`}>{slot.package.pricingLabel}</p>
+                {(() => {
+                  const price = prices.find(p => p.packageId === slot.package.id && p.billingMode === "managed_monthly");
+                  return price
+                    ? <div className="mt-5"><p className={`font-display text-2xl font-black ${slot.featured ? "text-white" : "text-ink"}`}>From {currency(price.amountCents)}/month</p>
+                        {price.setupFeeCents !== null && price.setupFeeCents > 0 && <p className={`text-sm ${slot.featured ? "text-white/90" : "text-ink/70"}`}>Plus {currency(price.setupFeeCents)} setup</p>}</div>
+                    : <p className={`mt-5 font-semibold ${slot.featured ? "text-white" : "text-ink"}`}>{slot.package.pricingLabel}</p>;
+                })()}
                 <ul className={`mt-5 flex-1 space-y-2 text-sm ${slot.featured ? "text-white/95" : "text-ink/80"}`}>
                   {slot.package.features.slice(0, 4).map(feature => <li key={feature}>✓ {feature}</li>)}
                 </ul>
-                <Link className={`mt-7 inline-flex justify-center rounded px-4 py-3 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${slot.featured ? "bg-white !text-[#171717] hover:bg-[#f3f3f3] hover:!text-[#171717] focus-visible:outline-white" : "bg-catalyst !text-white hover:bg-catalyst-hover hover:!text-white focus-visible:outline-catalyst"}`} href={`/contact?service=web-development&package=${encodeURIComponent(slot.package.id)}`}>
+                <Link className={`mt-7 inline-flex justify-center rounded px-4 py-3 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${slot.featured ? "bg-white !text-[#171717] hover:bg-[#f3f3f3] hover:!text-[#171717] focus-visible:outline-white" : "bg-catalyst !text-white hover:bg-catalyst-hover hover:!text-white focus-visible:outline-catalyst"}`} href={`/contact?service=web-development&package=${encodeURIComponent(slot.package.id)}${prices.some(p => p.packageId === slot.package.id && p.billingMode === "managed_monthly") ? `&priceOption=${encodeURIComponent(prices.find(p => p.packageId === slot.package.id && p.billingMode === "managed_monthly")!.id)}` : ""}`}>
                   Enquire about {slot.package.name}
                 </Link>
               </article>
@@ -43,7 +52,8 @@ export default function LocationWebOffers({ offer }: Readonly<{ offer: PublicLoc
         <div className="mt-8 rounded-lg border border-ink/15 bg-secondary p-5">
           <h3 className="font-display text-xl font-bold text-ink">Seed — Not ready for a website?</h3>
           <p className="mt-2 text-sm text-ink/70">{offer.seedCallout} Google Business Profile availability is subject to eligibility and verification.</p>
-          <Link href="/contact?service=web-development&package=seed" className="mt-3 inline-block font-semibold text-catalyst underline">Ask about Seed</Link>
+          {prices.some(p => p.packageId === "seed" && p.billingMode === "once_off") && <p className="mt-3 font-bold text-ink">{currency(prices.find(p => p.packageId === "seed" && p.billingMode === "once_off")!.amountCents)} once-off</p>}
+          <Link href={`/contact?service=web-development&package=seed${prices.find(p => p.packageId === "seed" && p.billingMode === "once_off") ? `&priceOption=${encodeURIComponent(prices.find(p => p.packageId === "seed" && p.billingMode === "once_off")!.id)}` : ""}`} className="mt-3 inline-block font-semibold text-catalyst underline">Ask about Seed</Link>
         </div>
       </div>
     </section>
