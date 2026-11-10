@@ -35,6 +35,16 @@ export default function PricingDirectoryPage() {
                   ? "Our Web Development range includes six website stages and a separate Seed online-presence service. Explore published packages on the Web Development page, or browse the other services below."
                   : "Each service has its own three-tier pricing, detailed on its authoritative service page. Select a service below to view its current packages, add-ons and FAQs. No generic bundles — you pay only for the service you need."}
               </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/services/web-development#pricing"
+                  className="inline-flex items-center gap-2 rounded bg-catalyst px-6 py-3 font-semibold !text-white hover:bg-catalyst-hover">
+                  View website packages and prices <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <Link href="/services/web-development#assessment"
+                  className="inline-flex items-center rounded border border-ink/25 px-6 py-3 font-semibold text-ink hover:border-catalyst">
+                  Help me choose a website
+                </Link>
+              </div>
             </div>
           </div>
         </BlueprintGrid>
