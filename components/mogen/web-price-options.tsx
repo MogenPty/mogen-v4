@@ -29,6 +29,8 @@ const descriptions: Record<BillingMode, string> = {
   self_hosted: "Mogen hands over the source code and project files. You handle hosting and maintenance.",
 };
 
+const priority: Record<BillingMode, number> = { managed_monthly: 0, managed_annual: 1, self_hosted: 2, once_off: 3 };
+
 const zar = (amount: number) =>
   new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(amount / 100);
 
@@ -36,8 +38,9 @@ export default function WebPriceOptions({
   packageId,
   options,
 }: Readonly<{ packageId: string; options: PublicWebPriceChoice[] }>) {
-  const [selectedId, setSelectedId] = useState(options[0]?.id ?? "");
-  const selected = options.find(option => option.id === selectedId) ?? options[0];
+  const sortedOptions = [...options].sort((a, b) => priority[a.billingMode] - priority[b.billingMode]);
+  const [selectedId, setSelectedId] = useState(sortedOptions[0]?.id ?? "");
+  const selected = sortedOptions.find(option => option.id === selectedId) ?? sortedOptions[0];
   if (!selected) {
     return (
       <Link href={`/contact?service=web-development&package=${encodeURIComponent(packageId)}`}
@@ -55,7 +58,7 @@ export default function WebPriceOptions({
       <select id={`billing-${packageId}`} value={selected.id}
         onChange={e => setSelectedId(e.target.value)}
         className="mt-2 w-full rounded border border-ink/30 bg-white px-3 py-2 text-sm text-[#171717]">
-        {options.map(option =>
+        {sortedOptions.map(option =>
           <option key={option.id} value={option.id}>{labels[option.billingMode]}</option>
         )}
       </select>
@@ -64,7 +67,7 @@ export default function WebPriceOptions({
           {zar(selected.amountCents)}{selected.billingMode === "managed_monthly" ? "/month" : selected.billingMode === "managed_annual" ? "/year" : " once-off"}
         </p>
         {selected.setupFeeCents !== null && selected.setupFeeCents > 0 &&
-          <p className="text-sm text-ink/70">Setup: {zar(selected.setupFeeCents)}</p>}
+          <p className="text-sm text-ink/70">One-time setup fee: {zar(selected.setupFeeCents)}</p>}
         {selected.minimumMonths !== null && selected.minimumMonths > 0 &&
           <p className="text-sm text-ink/70">Minimum term: {selected.minimumMonths} months</p>}
         {selected.depositPercent !== null && selected.depositPercent > 0 &&
