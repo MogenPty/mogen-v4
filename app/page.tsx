@@ -15,7 +15,7 @@ import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
 import WhatMogenDoes from "@/components/mogen/what-mogen-does";
 import WhyMogen from "@/components/mogen/why-mogen";
 import { getActivePromotions, getFeaturedPromotion } from "@/data/promotions";
-import { loadPublishedWebCatalogue } from "@/lib/catalogue/server";
+import { loadPublishedWebCatalogue, loadPublicWebPriceOptions } from "@/lib/catalogue/server";
 import WebCatalogueFinder from "@/components/mogen/web-catalogue-finder";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { pageMetadata } from "@/lib/seo";
@@ -51,7 +51,8 @@ export default async function Home({
   // Active promotions for the questionnaire: when one targets the
   // recommended package, its price points replace the standard display.
   const activePromotions = getActivePromotions();
-  const webPackages = await loadPublishedWebCatalogue();
+  const [webPackages, priceRows] = await Promise.all([loadPublishedWebCatalogue(), loadPublicWebPriceOptions()]);
+  const webPrices = (priceRows ?? []).filter(p => p.amountCents !== null).map(p => ({ id: p.id, packageId: p.packageId, billingMode: p.billingMode, amountCents: p.amountCents as number, setupFeeCents: p.setupFeeCents, minimumMonths: p.minimumMonths, depositPercent: p.depositPercent, initialHostingMonths: p.initialHostingMonths, handoverPolicy: p.handoverPolicy }));
   // Carry allowlisted attribution (utm_*) from the homepage URL into
   // the featured promotion's enquiry CTA.
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});
@@ -83,7 +84,7 @@ export default async function Home({
         />
         <WhyMogen numbering={numbering++} />
         {webPackages !== null ? (
-          <WebCatalogueFinder packages={webPackages} />
+          <WebCatalogueFinder packages={webPackages} prices={webPrices} attribution={attribution} />
         ) : (
           <WebsiteQuestionnaire numbering={numbering++} initialAttribution={attribution} promotions={activePromotions} />
         )}
