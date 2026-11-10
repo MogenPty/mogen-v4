@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { recommendCataloguePackage, type CatalogueNeed } from "@/lib/catalogue/recommendation";
 import type { CatalogueWebPackage } from "@/lib/catalogue/location-offer";
+import type { PublicWebPriceChoice } from "@/components/mogen/web-price-options";
+import { withAttribution, type EnquiryAttribution } from "@/lib/enquiry/enquiry";
 
 const choices: Array<{ value: CatalogueNeed; label: string }> = [
   { value: "first", label: "I need my first website" },
@@ -14,12 +16,16 @@ const choices: Array<{ value: CatalogueNeed; label: string }> = [
   { value: "custom", label: "I need a custom business platform" },
 ];
 
-export default function WebCatalogueFinder({ packages }: Readonly<{ packages: CatalogueWebPackage[] }>) {
+export default function WebCatalogueFinder({ packages, prices = [], attribution }: Readonly<{ packages: CatalogueWebPackage[]; prices?: PublicWebPriceChoice[]; attribution?: EnquiryAttribution }>) {
   const [need, setNeed] = useState<CatalogueNeed>("first");
   const recommendation = useMemo(() => recommendCataloguePackage(packages, need), [packages, need]);
-  const href = recommendation
-    ? `/contact?service=web-development&package=${encodeURIComponent(recommendation.id)}`
-    : "/contact?service=web-development";
+  const monthly = recommendation && prices.find(p => p.packageId === recommendation.id && p.billingMode === "managed_monthly");
+  const onceOff = recommendation?.id === "seed" ? prices.find(p => p.packageId === "seed" && p.billingMode === "once_off") : undefined;
+  const selectedPrice = monthly ?? onceOff;
+  const href = withAttribution(recommendation
+    ? `/contact?service=web-development&package=${encodeURIComponent(recommendation.id)}${selectedPrice ? `&priceOption=${encodeURIComponent(selectedPrice.id)}` : ""}`
+    : "/contact?service=web-development", attribution);
+  const zar = (cents: number) => new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(cents / 100);
   return (
     <section id="assessment" className="bg-ink px-6 py-20 text-bone lg:px-10" aria-labelledby="website-assessment-heading">
       <div className="mx-auto max-w-4xl">
@@ -38,7 +44,14 @@ export default function WebCatalogueFinder({ packages }: Readonly<{ packages: Ca
             <p className="small-caps text-catalyst">Suggested starting point</p>
             <h3 className="mt-2 font-display text-3xl font-black">{recommendation.name}</h3>
             <p className="mt-3 text-bone/80">{recommendation.summary}</p>
-            <p className="mt-3 font-semibold">{recommendation.pricingLabel}</p>
+            {selectedPrice ? (
+              <div className="mt-3">
+                <p className="font-display text-2xl font-black">{zar(selectedPrice.amountCents)}{monthly ? "/month" : " once-off"}</p>
+                {monthly && monthly.setupFeeCents !== null && monthly.setupFeeCents > 0 &&
+                  <p className="mt-1 text-sm text-bone/80">Plus {zar(monthly.setupFeeCents)} once-off setup</p>}
+                <p className="mt-1 text-xs text-bone/70">Other payment choices available on the Web Development pricing page.</p>
+              </div>
+            ) : <p className="mt-3 font-semibold">{recommendation.pricingLabel}</p>}
             <Link className="mt-6 inline-block rounded bg-catalyst px-5 py-3 font-semibold text-white" href={href}>
               Discuss {recommendation.name} with Mogen
             </Link>
