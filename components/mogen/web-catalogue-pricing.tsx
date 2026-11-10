@@ -42,8 +42,10 @@ export default function WebCataloguePricing({ packages, prices = [] }: Readonly<
         <div className="mt-8 rounded-lg border border-ink/15 bg-secondary p-6">
           <h3 className="font-display text-xl font-bold text-ink">Seed — Not ready for a website?</h3>
           <p className="mt-2 text-ink/70">{seed.summary}. Google Business Profile requires an eligible business and verification.</p>
-          <p className="mt-2 font-semibold text-ink">{seed.pricingLabel}</p>
-          <Link className="mt-3 inline-block text-catalyst underline" href="/contact?service=web-development&package=seed">Ask about Seed</Link>
+          {prices.find(price => price.packageId === "seed" && price.billingMode === "once_off")
+            ? <p className="mt-2 font-semibold text-ink">{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(prices.find(price => price.packageId === "seed" && price.billingMode === "once_off")!.amountCents / 100)} once-off</p>
+            : <p className="mt-2 font-semibold text-ink">{seed.pricingLabel}</p>}
+          <Link className="mt-3 inline-block text-catalyst underline" href={`/contact?service=web-development&package=seed${prices.find(price => price.packageId === "seed" && price.billingMode === "once_off") ? `&priceOption=${encodeURIComponent(prices.find(price => price.packageId === "seed" && price.billingMode === "once_off")!.id)}` : ""}`}>Ask about Seed</Link>
         </div>
       )}
     </section>
