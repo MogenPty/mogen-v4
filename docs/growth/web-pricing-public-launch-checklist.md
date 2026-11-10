@@ -37,3 +37,23 @@ Seed's R499 is once-off GBP + WhatsApp setup, not a self-hosted website option. 
 ## Funnel
 Homepage/location/local SEO -> Web Development pricing -> billing choice -> package-aware contact -> Turnstile -> email -> human follow-up -> quotation / signed agreement / deposit.
 Cloudflare pilot is explicitly deferred. Customer acquisition and public website conversion take priority.
+
+## Funnel implementation update — 10 November 2026
+
+- `components/mogen/web-catalogue-finder.tsx` now shows the published Managed Monthly starting price for every recommended fixed-price package, the associated managed setup fee, and a deep link into /contact carrying the validated priceOption identifier. Seed uses its Once-Off price; Ripening stays quotation-only.
+- `app/page.tsx` and `components/mogen/service-detail.tsx` pass validated published price choices into the finder, with UTM attribution from the homepage/service page.
+- Existing `data/promotions.ts` *already expires* all static web-development promotions when `MOGEN_WEB_CATALOGUE_SOURCE=database`. Historical promotion-detail pages can still display old prices labelled expired; check search engines/indexing and decide whether to redirect or noindex them. Do not show a stale promotion as currently available.
+- As confirmed by the user, migration 0009 has been applied to `mogen-packages-dev`, and `scripts/verify-web-pricing-published.mjs` PASSED: 7 published development packages and 16 published development price options. This is not a production launch.
+- The legacy `data/services.ts` still contains older Seed/Sprout/Vegetative pricing as a *fallback* when database mode is disabled. Keep the flag enabled in the **development preview environment** while testing, and do not change live production until a production DB has been prepared and verified.
+- The developer must still run `pnpm typecheck`, `pnpm build`, and the targeted catalogue/contact regression tests for this new React wiring. No local tests were executed by the assistant. Vercel build/check status was pending at the time of the commit.
+
+### Immediate QA sequence on local development branch
+
+1. In `.env`, verify `DATABASE_URL` targets `mogen-packages-dev` and add `MOGEN_WEB_CATALOGUE_SOURCE=database` (server-only). Do not send secrets to chat or commit the .env.
+2. Run `pnpm typecheck && pnpm build`; `pnpm exec vitest run lib/catalogue/commercial.test.ts lib/catalogue/recommendation.test.ts lib/catalogue/location-offer.test.ts lib/contact/catalogue-mail.test.ts`.
+3. Start site and test home finder: first website should show Sprout R199/month; clicking CTA should open /contact with Sprout and `sprout-managed-monthly` populated.
+4. Validate /services/web-development#pricing for payment switching; select annual/self-hosted and verify the selected option arrives in contact.
+5. Validate location cards: Maboloka Sprout R199/month; Soshanguve Vegetative R799/month + R1,999 setup; Centurion Flowering R1,799/month + R4,999 setup. Seed displays R499 once-off.
+6. Verify /promotions shows no currently active Seed/Sprout legacy web development offers; /promotions/mogen-sprout-first-100 must say expired.
+7. Submit a test enquiry using configured Turnstile and verify incoming email includes correct package/mode. Check spam, errors and accessibility.
+8. Complete commercial scope/legal/hosting and promotional archive review BEFORE copying migrations to production and enabling production flag.
