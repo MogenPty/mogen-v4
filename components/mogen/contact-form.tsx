@@ -65,6 +65,7 @@ interface ContactFormProps {
    * Display name of the recognised promotion, if any.
    */
   initialPromotionName?: string;
+  initialPromotionSlug?: string;
   /**
    * Non-blocking explanation when the promotion adjusted the service
    * selection (e.g. contradictory service + promotion in the URL).
@@ -93,6 +94,7 @@ export default function ContactForm({
   initialPriceOptionLabel,
   initialMessage,
   initialPromotionName,
+  initialPromotionSlug,
   initialServiceNotice,
   initialPackageNotice,
   initialAttribution,
@@ -115,6 +117,7 @@ export default function ContactForm({
     // never edited by the visitor.
     package: resolvedPackage,
     priceOption: resolvedPackage ? (initialPriceOption ?? "") : "",
+    promotion: resolvedPackage ? (initialPromotionSlug ?? "") : "",
     message: initialMessage ?? "",
     // Honeypot — hidden from humans, bots fill it in.
     companyWebsite: "",
@@ -322,7 +325,7 @@ export default function ContactForm({
           onChange={(e) => {
             const next = switchEnquiryService(form, e.target.value, packageMemory.current, availablePackages);
             packageMemory.current = next.memory;
-            setForm(next.form);
+            setForm({ ...next.form, promotion: e.target.value === "Web Development" ? form.promotion : "" });
           }}
           required
           aria-required="true"
@@ -347,7 +350,7 @@ export default function ContactForm({
               onChange={(e) => {
                 const next = switchEnquiryPackage(form, e.target.value, packageMemory.current, availablePackages);
                 packageMemory.current = next.memory;
-                setForm(next.form);
+                setForm({ ...next.form, promotion: "" });
               }}
               className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark"
             >
@@ -363,7 +366,7 @@ export default function ContactForm({
               onChange={event => {
                 const next = switchEnquiryPriceOption(form, event.target.value, packageMemory.current, packagePriceOptions.map(option => option.id));
                 packageMemory.current = next.memory;
-                setForm(next.form);
+                setForm({ ...next.form, promotion: "" });
               }}
               className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark">
               <option value="">Not sure yet / please advise</option>
@@ -378,7 +381,7 @@ export default function ContactForm({
             )}
           </div>
         )}
-        {(initialPromotionName || form.package) && (
+        {((initialPromotionName && (!availablePriceOptions.length || form.promotion)) || form.package) && (
           <div className="mt-3 border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/70">
             {form.package && (
               <p>
@@ -399,7 +402,7 @@ export default function ContactForm({
                 <span className="font-semibold text-ink">{selectedOption ? paymentLabels[selectedOption.billingMode] : initialPriceOptionLabel}</span>
               </p>
             )}
-            {initialPromotionName && (
+            {initialPromotionName && (!availablePriceOptions.length || form.promotion) && (
               <p>
                 Promotion:{" "}
                 <span className="font-semibold text-ink">
