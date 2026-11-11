@@ -60,3 +60,28 @@ export async function getPublishedWebPriceOption(id: string) {
     .limit(1);
   return option;
 }
+
+/** Public DB promotion candidates. The server projection applies target/price/date guards. */
+export async function getPublicWebPromotionRows() {
+  return getCatalogueDb().select().from(webPromotions)
+    .where(eq(webPromotions.status, "active"))
+    .orderBy(asc(webPromotions.sortOrder), asc(webPromotions.id));
+}
+
+/** Includes a scheduled/expired campaign for historical detail if it has a public slug. */
+export async function getWebPromotionBySlug(slug: string) {
+  const [row] = await getCatalogueDb().select().from(webPromotions)
+    .where(eq(webPromotions.slug, slug)).limit(1);
+  return row && row.status !== "draft" && row.status !== "archived" ? row : undefined;
+}
+
+export async function getAllPublicWebPromotionRows() {
+  const campaigns = await getCatalogueDb().select().from(webPromotions)
+    .orderBy(asc(webPromotions.sortOrder), asc(webPromotions.id));
+  return campaigns.filter(row => row.status !== "draft" && row.status !== "archived");
+}
+
+/** All campaign links; public projection validates linked package and payment rows. */
+export async function getAllPromotionTargets() {
+  return getCatalogueDb().select().from(webPromotionPrices);
+}
