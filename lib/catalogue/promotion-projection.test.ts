@@ -31,8 +31,8 @@ describe("Neon promotion presentation safety", () => {
     expect(offer?.source).toBe("database");
     expect(offer?.relatedPackage).toBe("sprout");
     expect(offer?.targetPriceOptionId).toBe("sprout-managed-monthly");
-    expect(offer?.pricing[0].regular.replace(/\\s/g, "")).toBe("R199");
-    expect(offer?.pricing[0].promotional?.replace(/\\s/g, "")).toBe("R149");
+    expect(offer?.pricing[0].regular.replace(/\s/g, "")).toBe("R199");
+    expect(offer?.pricing[0].promotional?.replace(/\s/g, "")).toBe("R149");
     expect(offer?.pricing[0].note).toContain("3");
   });
   it("never shows a draft promotion", () => {
