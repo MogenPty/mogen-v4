@@ -26,6 +26,7 @@ interface Props {
   initialMessage?: string;
   /** Display name of the recognised promotion, if any. */
   initialPromotionName?: string;
+  initialPromotionSlug?: string;
   /** Non-blocking explanation when the context adjusted the service. */
   initialServiceNotice?: string;
   /** Non-blocking explanation when the promotion adjusted the package. */
@@ -44,6 +45,7 @@ export default function Contact({
   initialPriceOptionLabel,
   initialMessage,
   initialPromotionName,
+  initialPromotionSlug,
   initialServiceNotice,
   initialPackageNotice,
   initialAttribution,
@@ -155,6 +157,7 @@ export default function Contact({
                   initialPriceOptionLabel={initialPriceOptionLabel}
                   initialMessage={initialMessage}
                   initialPromotionName={initialPromotionName}
+                  initialPromotionSlug={initialPromotionSlug}
                   initialServiceNotice={initialServiceNotice}
                   initialPackageNotice={initialPackageNotice}
                   initialAttribution={initialAttribution}
