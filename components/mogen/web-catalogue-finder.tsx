@@ -6,7 +6,6 @@ import Script from "next/script";
 import type { CatalogueWebPackage } from "@/lib/catalogue/location-offer";
 import type { PublicWebPriceChoice } from "./web-price-options";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
-import { withAttribution } from "@/lib/enquiry/enquiry";
 import { trackConversion } from "@/lib/rampify-tracker";
 import {
   INITIAL_ASSESSMENT,
@@ -72,10 +71,6 @@ export default function WebCatalogueFinder({
     ? `${zar(selectedOption.amountCents)}${selectedOption.billingMode === "managed_monthly" ? "/month" :
         selectedOption.billingMode === "managed_annual" ? "/year" : " once-off"}${selectedOption.setupFeeCents ? ` + ${zar(selectedOption.setupFeeCents)} setup` : ""}`
     : undefined;
-  const packageHref = withAttribution(
-    `/contact?service=web-development${recommendation ? `&package=${encodeURIComponent(recommendation.id)}` : ""}${selectedOption ? `&priceOption=${encodeURIComponent(selectedOption.id)}` : ""}`,
-    attribution,
-  );
   const setField = <K extends keyof AssessmentAnswers>(field: K, value: AssessmentAnswers[K]) =>
     setAnswers(old => ({ ...old, [field]: value }));
   const inputStyle = "mt-2 w-full rounded border border-ink/20 bg-bone px-4 py-3 text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
@@ -277,7 +272,6 @@ export default function WebCatalogueFinder({
                   <p className="mt-2">{recommendation.summary}</p>
                   <p className="mt-2 text-xl font-bold">{priceDescription ?? "Tailored quotation"}</p>
                   <p className={`mt-2 text-sm ${style.muted}`}>The final scope and price are confirmed after reviewing your requirements.</p>
-                  <Link className="mt-3 inline-block underline" href={packageHref}>Review this package on the contact page</Link>
                 </div>}
                 <p className="font-semibold">Where may we send your recommendation?</p>
                 <div className="grid gap-4 sm:grid-cols-2">
