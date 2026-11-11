@@ -102,6 +102,10 @@ export interface PromotionFaq {
 export interface Promotion {
   id: string;
   slug: string;
+  /** DB-backed source marker; legacy static promotions omit this property. */
+  source?: "database";
+  /** Approved published payment option targeted by this promotion. */
+  targetPriceOptionId?: string;
   name: string;
   shortDescription: string;
   description: string;
