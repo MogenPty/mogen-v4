@@ -46,4 +46,15 @@ describe("database catalogue enquiry mail", () => {
     expect(html).not.toContain("<Once-Off>");
   });
 
+  it("includes only a server-approved promotion name in both email formats", () => {
+    const promoted = contactInputSchema.parse({ ...input, promotion: "sprout-launch" });
+    const plain = buildContactText(promoted, "2026-11-11T12:00:00.000Z", "Sprout", "Managed Monthly", "Sprout Launch");
+    const html = buildContactHtml(promoted, "2026-11-11T12:00:00.000Z", "Sprout", "Managed Monthly", "Sprout Launch");
+    expect(plain).toContain("Promotion: Sprout Launch");
+    expect(html).toContain("Promotion");
+    expect(html).toContain("Sprout Launch");
+    const withoutApproval = buildContactText(promoted, "2026-11-11T12:00:00.000Z", "Sprout", "Managed Monthly");
+    expect(withoutApproval).not.toContain("Promotion:");
+  });
+
 });
