@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PACKAGES } from "@/data/packages";
-import { switchEnquiryPackage, switchEnquiryService } from "./package-selection";
+import { switchEnquiryPackage, switchEnquiryPriceOption, switchEnquiryService } from "./package-selection";
 
 const initial = {
   service: "Web Development",
@@ -46,5 +46,22 @@ describe("contact package selection restoration", () => {
     const selected = switchEnquiryPackage(initial, "", {}, PACKAGES);
     expect(selected.form.package).toBe("");
     expect(selected.form.priceOption).toBe("");
+  });
+
+  it("restores a visitor-changed billing option after switching Web -> SEO -> Web", () => {
+    const selected = switchEnquiryPriceOption(initial, "sprout-self-hosted", {}, [
+      "sprout-managed-monthly", "sprout-managed-annual", "sprout-self-hosted",
+    ]);
+    expect(selected.form.priceOption).toBe("sprout-self-hosted");
+    const seo = switchEnquiryService(selected.form, "SEO", selected.memory, PACKAGES);
+    expect(seo.form.priceOption).toBe("");
+    const back = switchEnquiryService(seo.form, "Web Development", seo.memory, PACKAGES);
+    expect(back.form.package).toBe("sprout");
+    expect(back.form.priceOption).toBe("sprout-self-hosted");
+  });
+
+  it("rejects an option not listed for the selected package", () => {
+    const changed = switchEnquiryPriceOption(initial, "flowering-self-hosted", {}, ["sprout-managed-monthly"]);
+    expect(changed.form.priceOption).toBe("");
   });
 });
