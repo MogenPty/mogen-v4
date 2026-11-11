@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Contact from "@/components/mogen/contact";
 import { databaseCatalogueEnabled, loadPublicWebPriceOptions } from "@/lib/catalogue/server";
+import { loadPromotionBySlug } from "@/lib/catalogue/promotions-server";
+import { getEffectiveStatus } from "@/data/promotions";
 import { PACKAGES } from "@/data/packages";
 import { getPublishedWebPackages } from "@/db/catalogue";
 import { getPublishedWebPackage, getPublishedWebPriceOption } from "@/db/catalogue";
@@ -100,8 +102,20 @@ export default async function ContactPage({
       ]
     : PACKAGES;
 
-  const dbPackage = catalogueEnabled && context.package
-    ? await getPublishedWebPackage(context.package)
+  const campaignSlug = typeof resolvedSearchParams.promotion === "string" ? resolvedSearchParams.promotion : "";
+  const candidateCampaign = catalogueEnabled && campaignSlug ? await loadPromotionBySlug(campaignSlug) : undefined;
+  const liveCampaign = candidateCampaign && getEffectiveStatus(candidateCampaign) === "active"
+    ? candidateCampaign : undefined;
+  // A DB promotion's server-validated parent choice wins only when there is
+  // no conflicting explicit package or billing option in the URL.
+  const campaignMatches = liveCampaign &&
+    (!context.package || context.package === liveCampaign.relatedPackage) &&
+    (typeof resolvedSearchParams.priceOption !== "string" ||
+      resolvedSearchParams.priceOption === liveCampaign.targetPriceOptionId);
+  const approvedCampaign = campaignMatches ? liveCampaign : undefined;
+  const requestedPackageId = approvedCampaign?.relatedPackage ?? context.package;
+  const dbPackage = catalogueEnabled && requestedPackageId
+    ? await getPublishedWebPackage(requestedPackageId)
     : undefined;
   // Do not preselect a draft/retired web package or a superseded web promotion.
   const selectedPackage = catalogueEnabled
@@ -110,8 +124,9 @@ export default async function ContactPage({
   const selectedService = dbPackage ? "Web Development" : details.serviceName;
   const requestedPriceOption = typeof resolvedSearchParams.priceOption === "string"
     ? resolvedSearchParams.priceOption : undefined;
-  const priceOption = catalogueEnabled && dbPackage && requestedPriceOption
-    ? await getPublishedWebPriceOption(requestedPriceOption) : undefined;
+  const effectivePriceOptionId = requestedPriceOption ?? approvedCampaign?.targetPriceOptionId;
+  const priceOption = catalogueEnabled && dbPackage && effectivePriceOptionId
+    ? await getPublishedWebPriceOption(effectivePriceOptionId) : undefined;
   const selectedPriceOption = priceOption && dbPackage &&
     priceOption.packageId === dbPackage.id &&
     isPublicWebPrice(priceOption as WebPriceOption, new Set([dbPackage.id]))
@@ -136,9 +151,9 @@ export default async function ContactPage({
         initialPriceOption={selectedPriceOption}
         initialPriceOptionLabel={selectedPriceOptionLabel}
         initialMessage={
-          (supersededPromotion ? undefined : details.message) ?? buildAuditEnquiryMessage(details.website)
+          (approvedCampaign ? `I am interested in the ${approvedCampaign.name} promotion. Please confirm eligibility and the final quotation.` : supersededPromotion ? undefined : details.message) ?? buildAuditEnquiryMessage(details.website)
         }
-        initialPromotionName={supersededPromotion ? undefined : details.promotion?.name}
+        initialPromotionName={approvedCampaign?.name ?? (supersededPromotion ? undefined : details.promotion?.name)}
         initialServiceNotice={supersededPromotion ? undefined : details.serviceNotice}
         initialPackageNotice={supersededPromotion ? undefined : details.packageNotice}
         initialAttribution={details.attribution}
