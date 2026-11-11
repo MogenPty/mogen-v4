@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Contact from "@/components/mogen/contact";
-import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
+import { databaseCatalogueEnabled, loadPublicWebPriceOptions } from "@/lib/catalogue/server";
 import { PACKAGES } from "@/data/packages";
 import { getPublishedWebPackages } from "@/db/catalogue";
 import { getPublishedWebPackage, getPublishedWebPriceOption } from "@/db/catalogue";
@@ -89,7 +89,8 @@ export default async function ContactPage({
   const catalogueEnabled = databaseCatalogueEnabled();
   // In database mode, Web Development choices come from published Neon rows.
   // Other service packages continue to use the backwards-compatible registry.
-  const publishedWebPackages = catalogueEnabled ? await getPublishedWebPackages() : [];
+  const [publishedWebPackages, publishedPriceRows] = await Promise.all([catalogueEnabled ? getPublishedWebPackages() : Promise.resolve([]), loadPublicWebPriceOptions()]);
+  const priceOptions = (publishedPriceRows ?? []).filter(option => option.amountCents !== null).map(option => ({ id: option.id, packageId: option.packageId, billingMode: option.billingMode, amountCents: option.amountCents as number, setupFeeCents: option.setupFeeCents, minimumMonths: option.minimumMonths, depositPercent: option.depositPercent, initialHostingMonths: option.initialHostingMonths, handoverPolicy: option.handoverPolicy }));
   const availablePackages = catalogueEnabled
     ? [
         ...PACKAGES.filter(pkg => pkg.serviceSlug !== "web-development"),
@@ -142,6 +143,7 @@ export default async function ContactPage({
         initialPackageNotice={supersededPromotion ? undefined : details.packageNotice}
         initialAttribution={details.attribution}
         availablePackages={availablePackages}
+        availablePriceOptions={priceOptions}
       />
     </>
   );
