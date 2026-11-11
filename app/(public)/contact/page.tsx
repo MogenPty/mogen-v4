@@ -154,6 +154,7 @@ export default async function ContactPage({
           (approvedCampaign ? `I am interested in the ${approvedCampaign.name} promotion. Please confirm eligibility and the final quotation.` : supersededPromotion ? undefined : details.message) ?? buildAuditEnquiryMessage(details.website)
         }
         initialPromotionName={approvedCampaign?.name ?? (supersededPromotion ? undefined : details.promotion?.name)}
+        initialPromotionSlug={approvedCampaign?.slug}
         initialServiceNotice={supersededPromotion ? undefined : details.serviceNotice}
         initialPackageNotice={supersededPromotion ? undefined : details.packageNotice}
         initialAttribution={details.attribution}
