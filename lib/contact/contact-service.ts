@@ -57,6 +57,8 @@ export const contactInputSchema = z
      */
     package: z.string().trim().max(80).optional().default(""),
     priceOption: z.string().trim().max(120).optional().default(""),
+    /** Promotion slug, verified on the API against active database campaigns. */
+    promotion: z.string().trim().max(120).optional().default(""),
     /**
      * Free-text specification required only when service is "Other".
      * Never part of enquiry URLs — user-entered form data only.
@@ -160,6 +162,7 @@ export function buildContactText(
   submittedAt: string,
   approvedPackageName?: string,
   approvedPriceOptionLabel?: string,
+  approvedPromotionName?: string,
 ): string {
   const attribution = attributionEntries(input).map(
     ({ label, value }) => `${label}: ${value}`,
@@ -176,6 +179,7 @@ export function buildContactText(
     `Service: ${input.service}`,
     ...(packageName ? [`Package: ${packageName}`] : []),
     ...(approvedPriceOptionLabel ? [`Payment option: ${approvedPriceOptionLabel}`] : []),
+    ...(approvedPromotionName ? [`Promotion: ${approvedPromotionName}`] : []),
     ...(input.service === "Other" && input.otherServiceDetail
       ? [`Service detail: ${input.otherServiceDetail}`]
       : []),
@@ -206,6 +210,7 @@ export function buildContactHtml(
       : "",
     packageName ? row("Package", packageName) : "",
     approvedPriceOptionLabel ? row("Payment option", approvedPriceOptionLabel) : "",
+    approvedPromotionName ? row("Promotion", approvedPromotionName) : "",
   ].join("");
   const attributionRows = attributionEntries(input)
     .map(({ label, value }) => row(label, value))
@@ -219,13 +224,14 @@ export function buildContactMessage(
   submittedAt = new Date().toISOString(),
   approvedPackageName?: string,
   approvedPriceOptionLabel?: string,
+  approvedPromotionName?: string,
 ): Message {
   return {
     from: config.from,
     to: config.to,
     subject: buildContactSubject(input),
-    text: buildContactText(input, submittedAt, approvedPackageName, approvedPriceOptionLabel),
-    html: buildContactHtml(input, submittedAt, approvedPackageName, approvedPriceOptionLabel),
+    text: buildContactText(input, submittedAt, approvedPackageName, approvedPriceOptionLabel, approvedPromotionName),
+    html: buildContactHtml(input, submittedAt, approvedPackageName, approvedPriceOptionLabel, approvedPromotionName),
     replyTo: sanitizeHeader(input.email),
   };
 }
@@ -245,7 +251,7 @@ export async function submitContact(
   rawInput: unknown,
   provider: MailProvider,
   config: ContactMailConfig,
-  opts: { submittedAt?: string; approvedPackageName?: string; approvedPriceOptionLabel?: string } = {},
+  opts: { submittedAt?: string; approvedPackageName?: string; approvedPriceOptionLabel?: string; approvedPromotionName?: string } = {},
 ): Promise<ContactSubmissionResult> {
   const parsed = contactInputSchema.safeParse(rawInput);
   if (!parsed.success) {
@@ -281,6 +287,7 @@ export async function submitContact(
     opts.submittedAt ?? new Date().toISOString(),
     opts.approvedPackageName,
     opts.approvedPriceOptionLabel,
+    opts.approvedPromotionName,
   );
 
   const result: MailResult = await provider.send(message);
