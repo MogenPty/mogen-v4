@@ -13,13 +13,11 @@ import PromotionEnquiryCta from "@/components/mogen/promotion-enquiry-cta";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import {
   getEffectiveStatus,
-  getFeaturedPromotion,
-  getPromotionBySlug,
-  getPromotions,
   needsCadenceSuffix,
   type Promotion,
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
+import { loadFeaturedPromotion, loadPromotionBySlug, getStaticPromotionSlugs } from "@/lib/catalogue/promotions-server";
 import {
   buildEnquiryHref,
   parseEnquiryAttribution,
@@ -37,12 +35,12 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return getPromotions().map((p) => ({ slug: p.slug }));
+  return getStaticPromotionSlugs().map(slug => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const promo = getPromotionBySlug(slug);
+  const promo = await loadPromotionBySlug(slug);
   if (!promo) return { title: "Promotion not found" };
   const canonical = `${siteConfig.url}/promotions/${promo.slug}`;
   return {
@@ -253,7 +251,7 @@ export default async function PromotionDetailPage({
   // The promotions routes behave like the homepage: the valid featured
   // promotion (not necessarily this page's promotion) selects the
   // ConversionBar journey.
-  const featuredPromotion = getFeaturedPromotion();
+  const featuredPromotion = await loadFeaturedPromotion();
 
   return (
     <div className="bg-bone">
