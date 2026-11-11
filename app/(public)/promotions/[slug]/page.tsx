@@ -1,7 +1,7 @@
 import { ArrowLeft, Check } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -13,10 +13,12 @@ import PromotionEnquiryCta from "@/components/mogen/promotion-enquiry-cta";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import {
   getEffectiveStatus,
+  getPromotions,
   needsCadenceSuffix,
   type Promotion,
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
+import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
 import { loadFeaturedPromotion, loadPromotionBySlug, getStaticPromotionSlugs } from "@/lib/catalogue/promotions-server";
 import {
   buildEnquiryHref,
