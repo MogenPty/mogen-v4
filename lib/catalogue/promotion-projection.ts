@@ -31,7 +31,7 @@ export function projectPromotion(
     .filter(target => target.promotionId === row.id)
     .flatMap(target => {
       const option = options.find(p => p.id === target.packagePriceId);
-      if (!option || option.amountCents === null || option.currency !== "ZAR" ||
+      if (!option || option.status !== "published" || option.amountCents === null || option.currency !== "ZAR" ||
           !validPromotionTarget(target, option.billingMode)) return [];
       const base = target.appliesTo === "setup" ? option.setupFeeCents : option.amountCents;
       if (base === null) return [];
