@@ -300,7 +300,7 @@ export default async function PromotionDetailPage({
               )}
             </div>
             <div className="mt-10 flex flex-wrap gap-4">
-              {status === "expired" ? (
+              {status !== "active" ? (
                 <MagneticButton
                   as="a"
                   href={buildEnquiryHref({ attribution })}
@@ -480,7 +480,9 @@ export default async function PromotionDetailPage({
                 <p className="mt-6 max-w-md text-lg text-bone/70">
                   {status === "expired"
                     ? "This promotion is no longer available, but we can still help — send us your details and we will suggest the closest current option."
-                    : "Send us your details and we will confirm eligibility and next steps within one business day — no obligation."}
+                    : status === "scheduled"
+                      ? "This promotion is not open yet. Contact Mogen about currently available options."
+                      : "Send us your details and we will confirm eligibility and next steps within one business day — no obligation."}
                 </p>
               </div>
               <div className="flex flex-col justify-center gap-4">
