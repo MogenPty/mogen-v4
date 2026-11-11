@@ -335,7 +335,7 @@ export function getEffectiveStatus(
   // once the database-backed catalogue is explicitly activated.
   if (
     process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
-    promotion.relatedService === "web-development"
+    promotion.relatedService === "web-development" && promotion.source !== "database"
   ) return "expired";
   if (
     promotion.status === "draft" ||
@@ -457,7 +457,7 @@ export function orderPublicPromotions(
 export function getPublicPromotions(today: string = todayISO()): Promotion[] {
   return orderPublicPromotions(PROMOTIONS, today).map(p =>
     process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
-    p.relatedService === "web-development"
+    p.relatedService === "web-development" && p.source !== "database"
       ? { ...p, status: "expired" as const }
       : p
   );
