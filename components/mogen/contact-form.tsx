@@ -4,7 +4,8 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Script from "next/script";
 import { type FormEvent, useRef, useState } from "react";
 import { PACKAGES, type ServicePackage } from "@/data/packages";
-import { switchEnquiryPackage, switchEnquiryService, type PackageMemory } from "@/lib/contact/package-selection";
+import type { PublicWebPriceChoice } from "./web-price-options";
+import { switchEnquiryPackage, switchEnquiryService, switchEnquiryPriceOption, type PackageMemory } from "@/lib/contact/package-selection";
 import { SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
@@ -82,6 +83,7 @@ interface ContactFormProps {
   initialAttribution?: EnquiryAttribution;
   /** Server-approved public package choices (Neon published rows in catalogue mode). */
   availablePackages?: ServicePackage[];
+  availablePriceOptions?: PublicWebPriceChoice[];
 }
 
 export default function ContactForm({
@@ -95,6 +97,7 @@ export default function ContactForm({
   initialPackageNotice,
   initialAttribution,
   availablePackages = PACKAGES,
+  availablePriceOptions = [],
 }: Readonly<ContactFormProps> = {}) {
   const resolvedService =
     initialService && CONTACT_SERVICES.includes(initialService)
@@ -122,6 +125,19 @@ export default function ContactForm({
   const servicePackages = availablePackages.filter(pkg =>
     pkg.serviceSlug === SERVICES.find(service => service.name === form.service)?.slug
   );
+  const packagePriceOptions = form.service === "Web Development"
+    ? availablePriceOptions.filter(option => option.packageId === form.package)
+      .sort((a, b) => {
+        const order = ["managed_monthly", "managed_annual", "self_hosted", "once_off"];
+        return order.indexOf(a.billingMode) - order.indexOf(b.billingMode);
+      }) : [];
+  const selectedOption = packagePriceOptions.find(option => option.id === form.priceOption);
+  const paymentLabels = {
+    managed_monthly: "Managed Monthly",
+    managed_annual: "Managed Annually",
+    self_hosted: "Self-Hosted",
+    once_off: "Once-Off",
+  };
   const [attribution] = useState<EnquiryAttribution>(initialAttribution ?? {});
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
@@ -340,6 +356,28 @@ export default function ContactForm({
             </select>
           </div>
         )}
+        {packagePriceOptions.length > 0 && (
+          <div className="mt-3">
+            <label htmlFor="contact-payment-option" className="small-caps text-ink/60">Payment type</label>
+            <select id="contact-payment-option" name="priceOption" value={selectedOption?.id ?? ""}
+              onChange={event => {
+                const next = switchEnquiryPriceOption(form, event.target.value, packageMemory.current, packagePriceOptions.map(option => option.id));
+                packageMemory.current = next.memory;
+                setForm(next.form);
+              }}
+              className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark">
+              <option value="">Not sure yet / please advise</option>
+              {packagePriceOptions.map(option => (
+                <option key={option.id} value={option.id}>
+                  {paymentLabels[option.billingMode]} — {new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(option.amountCents / 100)}{option.billingMode === "managed_monthly" ? "/month" : option.billingMode === "managed_annual" ? "/year" : " once-off"}
+                </option>
+              ))}
+            </select>
+            {selectedOption?.setupFeeCents !== null && selectedOption?.setupFeeCents !== undefined && selectedOption.setupFeeCents > 0 && (
+              <p className="mt-1 text-xs text-ink/65">Plus {new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(selectedOption.setupFeeCents / 100)} setup</p>
+            )}
+          </div>
+        )}
         {(initialPromotionName || form.package) && (
           <div className="mt-3 border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/70">
             {form.package && (
@@ -355,10 +393,10 @@ export default function ContactForm({
                 Seed is a Once-Off setup. Future changes or fixes are quoted individually.
               </p>
             )}
-            {form.priceOption && initialPriceOptionLabel && (
+            {form.priceOption && (
               <p className="mt-1">
                 Payment option:{" "}
-                <span className="font-semibold text-ink">{initialPriceOptionLabel}</span>
+                <span className="font-semibold text-ink">{selectedOption ? paymentLabels[selectedOption.billingMode] : initialPriceOptionLabel}</span>
               </p>
             )}
             {initialPromotionName && (
