@@ -70,3 +70,18 @@ export function switchEnquiryPackage<T extends PackageChoiceState>(
   else delete nextMemory[current.service];
   return { memory: nextMemory, form: { ...current, package: id, priceOption: "" } };
 }
+
+/** Remember a visitor's explicit billing selection for the active service/package. */
+export function switchEnquiryPriceOption<T extends PackageChoiceState>(
+  current: T,
+  optionId: string,
+  memory: PackageMemory,
+  availableOptionIds: readonly string[],
+): { form: T; memory: PackageMemory } {
+  const valid = current.package && availableOptionIds.includes(optionId) ? optionId : "";
+  const nextMemory = { ...memory };
+  if (current.package && valid) {
+    nextMemory[current.service] = { packageId: current.package, priceOption: valid };
+  }
+  return { form: { ...current, priceOption: valid }, memory: nextMemory };
+}
