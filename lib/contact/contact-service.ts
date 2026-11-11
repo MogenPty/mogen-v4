@@ -197,6 +197,7 @@ export function buildContactHtml(
   submittedAt: string,
   approvedPackageName?: string,
   approvedPriceOptionLabel?: string,
+  approvedPromotionName?: string,
 ): string {
   const row = (label: string, value: string) =>
     `<tr><td style="padding:4px 12px 4px 0;color:#666">${escapeHtml(label)}</td><td style="padding:4px 0">${escapeHtml(value)}</td></tr>`;
