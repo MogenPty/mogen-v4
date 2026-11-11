@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LocationOfferPayment from "./location-offer-payment";
 import type { PublicLocationOffer } from "@/lib/catalogue/location-offer";
 import type { PublicWebPriceChoice } from "@/components/mogen/web-price-options";
 
@@ -32,19 +33,10 @@ export default function LocationWebOffers({ offer, prices = [] }: Readonly<{ off
                 {slot.featured && <span className="small-caps w-fit rounded-full border border-white/50 bg-white/15 px-3 py-1 font-bold text-white">Recommended for this location</span>}
                 <h3 className={`mt-3 font-display font-black ${slot.featured ? "text-3xl text-white" : "text-2xl text-ink"}`}>{slot.package.name}</h3>
                 <p className={`mt-3 text-sm ${slot.featured ? "text-white/90" : "text-ink/70"}`}>{slot.package.summary}</p>
-                {(() => {
-                  const price = prices.find(p => p.packageId === slot.package.id && p.billingMode === "managed_monthly");
-                  return price
-                    ? <div className="mt-5"><p className={`font-display text-2xl font-black ${slot.featured ? "text-white" : "text-ink"}`}>From {currency(price.amountCents)}/month</p>
-                        {price.setupFeeCents !== null && price.setupFeeCents > 0 && <p className={`text-sm ${slot.featured ? "text-white/90" : "text-ink/70"}`}>Plus {currency(price.setupFeeCents)} setup</p>}</div>
-                    : <p className={`mt-5 font-semibold ${slot.featured ? "text-white" : "text-ink"}`}>{slot.package.pricingLabel}</p>;
-                })()}
                 <ul className={`mt-5 flex-1 space-y-2 text-sm ${slot.featured ? "text-white/95" : "text-ink/80"}`}>
                   {slot.package.features.slice(0, 4).map(feature => <li key={feature}>✓ {feature}</li>)}
                 </ul>
-                <Link className={`mt-7 inline-flex justify-center rounded px-4 py-3 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${slot.featured ? "bg-white !text-[#171717] hover:bg-[#f3f3f3] hover:!text-[#171717] focus-visible:outline-white" : "bg-catalyst !text-white hover:bg-catalyst-hover hover:!text-white focus-visible:outline-catalyst"}`} href={`/contact?service=web-development&package=${encodeURIComponent(slot.package.id)}${prices.some(p => p.packageId === slot.package.id && p.billingMode === "managed_monthly") ? `&priceOption=${encodeURIComponent(prices.find(p => p.packageId === slot.package.id && p.billingMode === "managed_monthly")!.id)}` : ""}`}>
-                  Enquire about {slot.package.name}
-                </Link>
+                <LocationOfferPayment packageId={slot.package.id} packageName={slot.package.name} featured={slot.featured} options={prices.filter(price => price.packageId === slot.package.id)} />
               </article>
             )
           ))}
