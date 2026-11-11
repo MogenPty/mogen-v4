@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ServiceDetail from "@/components/mogen/service-detail";
-import { getActivePromotions, getFeaturedPromotion } from "@/data/promotions";
+import { loadActivePromotions, loadFeaturedPromotion } from "@/lib/catalogue/promotions-server";
 import { getService, SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { getRelatedArticlesForService } from "@/lib/articles/related";
@@ -115,11 +115,11 @@ export default async function ServiceDetailPage({
   const relatedArticles = getRelatedArticlesForService(slug);
   // Authoritative featured promotion for the ConversionBar override
   // (Phase 2 — resolved server-side so date transitions apply on ISR).
-  const featuredPromotion = getFeaturedPromotion();
+  const featuredPromotion = await loadFeaturedPromotion();
   // Active promotions for the embedded questionnaire: when one targets
   // the recommended package, its price points replace the standard
   // display (mirrors the homepage wiring).
-  const activePromotions = getActivePromotions();
+  const activePromotions = await loadActivePromotions();
   const webPackages = slug === "web-development" ? await loadPublishedWebCatalogue() : null;
   const webPrices = slug === "web-development" ? await loadPublicWebPriceOptions() : null;
   const publicWebPrices = (webPrices ?? []).filter(p => p.amountCents !== null).map(p => ({
