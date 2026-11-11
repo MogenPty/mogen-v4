@@ -27,12 +27,6 @@ const STYLES: Record<Accent, { section: string; badge: string; button: string; t
 };
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const paymentOrder = ["managed_monthly", "managed_annual", "self_hosted", "once_off"];
-const payLabels: Record<string, string> = {
-  managed_monthly: "Managed Monthly",
-  managed_annual: "Managed Annually",
-  self_hosted: "Self-Hosted",
-  once_off: "Once-Off",
-};
 const needs = [
   ["whatsapp", "WhatsApp enquiry button"],
   ["email", "Business email"],
@@ -45,15 +39,6 @@ const needs = [
 const zar = (cents: number) => new Intl.NumberFormat("en-ZA", {
   style: "currency", currency: "ZAR", maximumFractionDigits: 0,
 }).format(cents / 100);
-interface TurnstileApi {
-  render: (element: HTMLElement, options: {
-    sitekey: string; action: string; theme: "auto";
-    callback: (token: string) => void;
-    "expired-callback": () => void; "error-callback": () => void;
-  }) => string;
-  reset: (id: string) => void;
-}
-declare global { interface Window { turnstile?: TurnstileApi } }
 type ContactState = { name: string; email: string; phone: string; businessName: string; companyWebsite: string };
 
 export default function WebCatalogueFinder({
