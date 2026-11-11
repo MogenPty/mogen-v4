@@ -57,3 +57,35 @@ Cloudflare pilot is explicitly deferred. Customer acquisition and public website
 6. Verify /promotions shows no currently active Seed/Sprout legacy web development offers; /promotions/mogen-sprout-first-100 must say expired.
 7. Submit a test enquiry using configured Turnstile and verify incoming email includes correct package/mode. Check spam, errors and accessibility.
 8. Complete commercial scope/legal/hosting and promotional archive review BEFORE copying migrations to production and enabling production flag.
+
+## Funnel UX fixes — 11 November 2026
+
+User-requested fixes on development code only:
+
+1. **Location cards:** each published fixed-price Web Development package now offers a Managed Monthly / Managed Annually / Self-Hosted selector, shows the selected amount, applicable setup fee, and passes the selected `priceOption` in the contact link. Ripening stays custom quote; Seed retains Once-Off.
+2. **Contact page:** server passes only published and date-valid catalogue options to the client. A Payment type dropdown appears only for a Web Development package with published options, lets the visitor change the initial selection, and remembers the selected option while switching Web Development -> SEO -> Web Development.
+3. **Homepage / Web Development website assessment:** restore detailed lead profiling (existing website state/address, industry, location, objectives, size, requested features, managed/self-hosted preference) and contact capture (name, email, phone/WhatsApp, business). Results submit to the existing Turnstile-protected `/api/contact` route with an itemised requirement summary, UTM attribution and the server-validated published package/priceOption; no extra unprotected API route.
+4. **Assessment accent:** `WebCatalogueFinder` defaults to `accent="catalyst"`; override with `accent="ink"` or `accent="secondary"` at other call sites. This is a component colour token, not a change to the site-wide theme.
+
+The recommendation helper in `lib/catalogue/assessment.ts` maps size/features to the currently published seven-stage catalogue. It does not promise booking/ecommerce/custom apps within a fixed price: all displayed quotes require scope confirmation.
+
+### Local QA
+
+```powershell
+git pull --ff-only origin feat/neon-drizzle-web-catalogue
+node --env-file=.env scripts/verify-web-pricing-published.mjs
+pnpm exec vitest run lib/catalogue/assessment.test.ts lib/catalogue/commercial.test.ts lib/contact/package-selection.test.ts lib/contact/catalogue-mail.test.ts
+pnpm typecheck
+pnpm build
+pnpm dev
+```
+
+Manually validate:
+
+- Location billing selectors on `/locations/maboloka`, `/locations/soshanguve`, `/locations/centurion`. Select annual/self-hosted and confirm the contact payment choice is preselected.
+- On `/contact`, switch Web Development to SEO and back: both package and payment type must return. Change package: payment list should update; remove package: payment selector should hide. For Seed: Once-Off only; Ripening: no fixed payment selector.
+- Home `#assessment`: step through existing website, goals, features, payment preference and contact fields; verify submitted test email contains all responses and correct package/price option.
+- Test mobile and dark-mode component colours. If using a different accent, pass `accent="ink"` or `accent="secondary"` to `WebCatalogueFinder`.
+- Verify Turnstile (site key plus expected action and hostname) and real test email delivery; no customer data should be submitted to development without informed consent.
+- **Do not migrate or change the production DB** yet. As of this commit, automated typecheck/build and live interactive tests have not been executed by the assistant; await developer results.
+
