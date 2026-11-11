@@ -27,6 +27,9 @@ export function projectPromotion(
   if (!row.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(row.slug)) return;
   if (row.status === "draft" || row.status === "archived") return;
   const content = rec(row.presentation);
+  // Marketing terms must be reviewed before any campaign can become public.
+  if (!str(content.shortDescription).trim() || !str(content.ctaLabel).trim() ||
+      strings(content.terms).length === 0) return;
   const selected = targets
     .filter(target => target.promotionId === row.id)
     .flatMap(target => {
@@ -68,7 +71,10 @@ export function projectPromotion(
     description: row.description, status,
     startDate: date(row.startsAt), endDate: date(row.endsAt),
     isFeatured: row.isFeatured, sortOrder: row.sortOrder,
-    pricing, eligibility: strings(content.eligibility).length ? strings(content.eligibility) : row.eligibility ? [row.eligibility] : [],
+    pricing, eligibility: [
+      ...(strings(content.eligibility).length ? strings(content.eligibility) : row.eligibility ? [row.eligibility] : []),
+      ...(row.locationSlug ? [`Only available for eligible businesses in ${row.locationSlug}.`] : []),
+    ],
     terms: strings(content.terms),
     images: Array.isArray(content.images) ? content.images.filter((img): img is PromotionImage =>
       typeof img === "object" && img !== null && typeof img.src === "string" && typeof img.alt === "string") : [],
