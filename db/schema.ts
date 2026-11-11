@@ -60,6 +60,10 @@ export const webPackagePrices = pgTable("web_package_prices", {
 /** Campaign metadata; a promotion does not represent a payment mode. */
 export const webPromotions = pgTable("web_promotions", {
   id: text("id").primaryKey(),
+  slug: text("slug"),
+  isFeatured: boolean("is_featured").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(100),
+  presentation: jsonb("presentation").notNull().default({}),
   name: text("name").notNull(),
   description: text("description").notNull().default(""),
   status: text("status").notNull().default("draft"),
