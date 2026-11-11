@@ -14,7 +14,7 @@ import Services from "@/components/mogen/services";
 import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
 import WhatMogenDoes from "@/components/mogen/what-mogen-does";
 import WhyMogen from "@/components/mogen/why-mogen";
-import { getActivePromotions, getFeaturedPromotion } from "@/data/promotions";
+import { loadActivePromotions, loadFeaturedPromotion } from "@/lib/catalogue/promotions-server";
 import { loadPublishedWebCatalogue, loadPublicWebPriceOptions } from "@/lib/catalogue/server";
 import WebCatalogueFinder from "@/components/mogen/web-catalogue-finder";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
@@ -47,10 +47,10 @@ export default async function Home({
 }: Readonly<{
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }>) {
-  const promotion = getFeaturedPromotion();
+  const promotion = await loadFeaturedPromotion();
   // Active promotions for the questionnaire: when one targets the
   // recommended package, its price points replace the standard display.
-  const activePromotions = getActivePromotions();
+  const activePromotions = await loadActivePromotions();
   const [webPackages, priceRows] = await Promise.all([loadPublishedWebCatalogue(), loadPublicWebPriceOptions()]);
   const webPrices = (priceRows ?? []).filter(p => p.amountCents !== null).map(p => ({ id: p.id, packageId: p.packageId, billingMode: p.billingMode, amountCents: p.amountCents as number, setupFeeCents: p.setupFeeCents, minimumMonths: p.minimumMonths, depositPercent: p.depositPercent, initialHostingMonths: p.initialHostingMonths, handoverPolicy: p.handoverPolicy }));
   // Carry allowlisted attribution (utm_*) from the homepage URL into
