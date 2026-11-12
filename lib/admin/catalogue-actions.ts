@@ -34,6 +34,54 @@ function refresh() {
   revalidatePath("/admin/promotions");
 }
 
+/** Create an unpublished tier. A unique stage and slug are required. */
+export async function createPackageAction(data: FormData) {
+  await requireCatalogueAdmin();
+  const slug = id.parse(field(data, "id"));
+  const name = z.string().trim().min(2).max(120).parse(field(data, "name"));
+  const stage = z.coerce.number().int().min(1).max(50).parse(field(data, "stage"));
+  const db = getCatalogueDb();
+  // Database also enforces unique stage; never shift existing stages implicitly.
+  const all = await db.select({ id: webPackages.id, stage: webPackages.stage }).from(webPackages);
+  if (all.some(pkg => pkg.id === slug || pkg.stage === stage)) throw new Error("Package ID or stage already exists.");
+  await db.insert(webPackages).values({
+    id: slug, name, stage, summary: "", description: "",
+    websiteIncluded: boolean(data, "websiteIncluded"),
+    features: [], seoScope: [], exclusions: [],
+    pricingLabel: "Request a quote", status: "draft",
+  });
+  refresh();
+  redirect(`/admin/packages/${slug}`);
+}
+
+/** Create an unpublished billing option, leaving money unapproved until edited. */
+export async function createPriceAction(data: FormData) {
+  await requireCatalogueAdmin();
+  const packageId = id.parse(field(data, "packageId"));
+  const mode = z.enum(["managed_monthly", "managed_annual", "once_off", "self_hosted"]).parse(field(data, "billingMode"));
+  if ((packageId === "seed") !== (mode === "once_off"))
+    throw new Error("Seed is Once-Off only; other packages cannot use Once-Off.");
+  const db = getCatalogueDb();
+  const [pkg] = await db.select().from(webPackages).where(eq(webPackages.id, packageId)).limit(1);
+  if (!pkg) throw new Error("Package not found.");
+  const optionId = `${packageId}-${mode.replaceAll("_", "-")}`;
+  const existing = await db.select({ id: webPackagePrices.id, billingMode: webPackagePrices.billingMode })
+    .from(webPackagePrices).where(eq(webPackagePrices.packageId, packageId));
+  if (existing.some(option => option.id === optionId || option.billingMode === mode))
+    throw new Error("That package already has this billing option.");
+  const managed = mode === "managed_monthly" || mode === "managed_annual";
+  await db.insert(webPackagePrices).values({
+    id: optionId, packageId, billingMode: mode,
+    currency: "ZAR", amountCents: null, setupFeeCents: null,
+    status: "draft",
+    hostingResponsibility: managed ? "mogen" : mode === "self_hosted" ? "customer" : "not_applicable",
+    maintenanceResponsibility: managed ? "mogen" : mode === "self_hosted" ? "customer" : "not_applicable",
+    handoverPolicy: "", notes: "",
+  });
+  refresh();
+  redirect(`/admin/packages/${packageId}`);
+}
+
 export async function updatePackageAction(data: FormData) {
   await requireCatalogueAdmin();
   const parsed = z.object({
@@ -69,19 +117,23 @@ export async function updatePriceAction(data: FormData) {
   await requireCatalogueAdmin();
   const priceId = id.parse(field(data, "id"));
   const status = z.enum(statuses).parse(field(data, "status"));
-  const amount = money.parse(field(data, "amountCents"));
+  const amount = field(data, "amountCents").trim() ? money.parse(field(data, "amountCents")) : null;
   const setup = field(data, "setupFeeCents").trim() ? money.parse(field(data, "setupFeeCents")) : null;
   const db = getCatalogueDb();
   const [current] = await db.select().from(webPackagePrices).where(eq(webPackagePrices.id, priceId)).limit(1);
   if (!current) throw new Error("Price option not found.");
   const [pkg] = await db.select().from(webPackages).where(eq(webPackages.id, current.packageId)).limit(1);
   if (!pkg) throw new Error("Parent package missing.");
-  const candidate = { ...current, amountCents: amount, setupFeeCents: setup, status };
+  const handoverPolicy = z.string().trim().max(1000).parse(field(data, "handoverPolicy"));
+  const notes = z.string().trim().max(2000).parse(field(data, "notes"));
+  const minimumMonths = field(data, "minimumMonths").trim() ? z.coerce.number().int().min(0).parse(field(data, "minimumMonths")) : null;
+  const depositPercent = field(data, "depositPercent").trim() ? z.coerce.number().int().min(0).max(100).parse(field(data, "depositPercent")) : null;
+  const candidate = { ...current, amountCents: amount, setupFeeCents: setup, status, handoverPolicy, minimumMonths, depositPercent };
   if (status === "published" && !isPublicWebPrice(candidate as WebPriceOption, new Set([pkg.id]))) {
     throw new Error("Price cannot be published: check package publication, billing mode, dates and responsibilities.");
   }
   await db.update(webPackagePrices).set({
-    status, amountCents: amount, setupFeeCents: setup, updatedAt: new Date(),
+    status, amountCents: amount, setupFeeCents: setup, handoverPolicy, notes, minimumMonths, depositPercent, updatedAt: new Date(),
   }).where(eq(webPackagePrices.id, priceId));
   refresh();
   redirect(`/admin/packages/${current.packageId}?saved=1`);
