@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { adminCardClass, adminFieldClass, adminLabelClass, adminPrimaryClass } from "@/components/mogen/admin-card";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { requireCatalogueAdmin } from "@/lib/admin/access";
@@ -7,8 +8,8 @@ import { getCatalogueDb } from "@/db/client";
 import { webPackages, webPackagePrices } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
-const input = "mt-2 w-full rounded border border-ink/20 bg-white px-4 py-3 text-ink";
-const label = "block text-sm font-semibold text-ink";
+const input = adminFieldClass;
+const label = adminLabelClass;
 
 export default async function EditPackagePage({ params, searchParams }: Readonly<{
   params: Promise<{ id: string }>;
@@ -32,7 +33,7 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
         <p className="small-caps mt-10 text-catalyst">Stage {pkg.stage} · {pkg.id}</p>
         <h1 className="mt-3 font-display text-4xl font-black">Edit {pkg.name}</h1>
         {saved === "1" && <p role="status" className="mt-5 rounded border border-catalyst p-4 font-semibold">Changes saved.</p>}
-        <form action={updatePackageAction} className="mt-8 grid gap-5 rounded-xl border border-ink/15 bg-white p-6 sm:grid-cols-2">
+        <form action={updatePackageAction} className={`mt-8 grid gap-5 ${adminCardClass} p-6 sm:grid-cols-2`}>
           <input type="hidden" name="id" value={pkg.id} />
           <div><label className={label} htmlFor="pkg-name">Display name</label><input className={input} id="pkg-name" name="name" required defaultValue={pkg.name} /></div>
           <div><label className={label} htmlFor="pkg-status">Publication status</label>
@@ -55,12 +56,12 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
             </div>
           ))}
           <div className="sm:col-span-2">
-            <button className="rounded bg-catalyst px-6 py-3 font-semibold text-white">Save package</button>
+            <button className={adminPrimaryClass}>Save package</button>
           </div>
         </form>
         <h2 className="mt-12 font-display text-3xl font-black">Payment choices</h2>
-        <p className="mt-2 text-ink/70">Amounts are in South African rand. Only publish a price after checking package eligibility and contract terms.</p>
-        <form action={createPriceAction} className="mt-6 flex flex-wrap items-end gap-4 rounded-xl border border-ink/15 bg-white p-6">
+        <p className="mt-2 text-muted-foreground">Amounts are in South African rand. Only publish a price after checking package eligibility and contract terms.</p>
+        <form action={createPriceAction} className={`mt-6 flex flex-wrap items-end gap-4 ${adminCardClass} p-6`}>
           <input type="hidden" name="packageId" value={pkg.id} />
           <div className="min-w-56 flex-1">
             <label className={label} htmlFor="new-billing-mode">Add payment mode (starts as draft)</label>
@@ -72,14 +73,14 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
               </>}
             </select>
           </div>
-          <button className="rounded bg-catalyst px-5 py-3 font-semibold text-white">Create draft price</button>
+          <button className={adminPrimaryClass}>Create draft price</button>
         </form>
         <div className="mt-6 grid gap-5 md:grid-cols-2">
           {prices.map(price => (
-            <form key={price.id} action={updatePriceAction} className="rounded-xl border border-ink/15 bg-white p-6">
+            <form key={price.id} action={updatePriceAction} className={`${adminCardClass} p-6`}>
               <input type="hidden" name="id" value={price.id} />
               <h3 className="font-display text-xl font-bold">{price.billingMode.replaceAll("_", " ")}</h3>
-              <p className="mt-1 break-all text-xs text-ink/60">{price.id}</p>
+              <p className="mt-1 break-all text-xs text-muted-foreground">{price.id}</p>
               <div className="mt-4">
                 <label className={label} htmlFor={`amount-${price.id}`}>Price (ZAR cents)</label>
                 <input className={input} name="amountCents" id={`amount-${price.id}`} type="number" min="0" defaultValue={price.amountCents ?? ""} />
@@ -110,7 +111,7 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
                 <label className={label} htmlFor={`notes-${price.id}`}>Internal/commercial notes</label>
                 <textarea className={input} name="notes" id={`notes-${price.id}`} rows={2} defaultValue={price.notes} />
               </div>
-              <p className="mt-4 text-xs text-ink/60">Hosting: {price.hostingResponsibility} · Maintenance: {price.maintenanceResponsibility}</p>
+              <p className="mt-4 text-xs text-muted-foreground">Hosting: {price.hostingResponsibility} · Maintenance: {price.maintenanceResponsibility}</p>
               <button className="mt-5 rounded bg-catalyst px-5 py-3 font-semibold text-white">Save payment choice</button>
             </form>
           ))}
