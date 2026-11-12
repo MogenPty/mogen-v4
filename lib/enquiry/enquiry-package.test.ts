@@ -222,6 +222,7 @@ describe("package in enquiry submission", () => {
     phone: "",
     businessName: "",
     priceOption: "",
+  promotion: "",
     otherServiceDetail: "",
     message: "We need a new website for our business.",
     companyWebsite: "",
