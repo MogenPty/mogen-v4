@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { requireCatalogueAdmin } from "@/lib/admin/access";
-import { updatePackageAction, updatePriceAction } from "@/lib/admin/catalogue-actions";
+import { updatePackageAction, updatePriceAction, createPriceAction } from "@/lib/admin/catalogue-actions";
 import { getCatalogueDb } from "@/db/client";
 import { webPackages, webPackagePrices } from "@/db/schema";
 
@@ -60,6 +60,20 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
         </form>
         <h2 className="mt-12 font-display text-3xl font-black">Payment choices</h2>
         <p className="mt-2 text-ink/70">Amounts are in South African rand. Only publish a price after checking package eligibility and contract terms.</p>
+        <form action={createPriceAction} className="mt-6 flex flex-wrap items-end gap-4 rounded-xl border border-ink/15 bg-white p-6">
+          <input type="hidden" name="packageId" value={pkg.id} />
+          <div className="min-w-56 flex-1">
+            <label className={label} htmlFor="new-billing-mode">Add payment mode (starts as draft)</label>
+            <select id="new-billing-mode" name="billingMode" className={input}>
+              {pkg.id === "seed" ? <option value="once_off">Once-Off</option> : <>
+                <option value="managed_monthly">Managed Monthly</option>
+                <option value="managed_annual">Managed Annually</option>
+                <option value="self_hosted">Self-Hosted</option>
+              </>}
+            </select>
+          </div>
+          <button className="rounded bg-catalyst px-5 py-3 font-semibold text-white">Create draft price</button>
+        </form>
         <div className="mt-6 grid gap-5 md:grid-cols-2">
           {prices.map(price => (
             <form key={price.id} action={updatePriceAction} className="rounded-xl border border-ink/15 bg-white p-6">
@@ -68,7 +82,7 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
               <p className="mt-1 break-all text-xs text-ink/60">{price.id}</p>
               <div className="mt-4">
                 <label className={label} htmlFor={`amount-${price.id}`}>Price (ZAR cents)</label>
-                <input className={input} name="amountCents" id={`amount-${price.id}`} type="number" min="0" required defaultValue={price.amountCents ?? ""} />
+                <input className={input} name="amountCents" id={`amount-${price.id}`} type="number" min="0" defaultValue={price.amountCents ?? ""} />
               </div>
               <div className="mt-4">
                 <label className={label} htmlFor={`setup-${price.id}`}>Setup fee (ZAR cents)</label>
@@ -80,7 +94,23 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
                   <option value="draft">Draft</option><option value="published">Published</option><option value="retired">Retired</option>
                 </select>
               </div>
-              <p className="mt-4 text-xs text-ink/60">Minimum term: {price.minimumMonths ?? "n/a"} months · Hosting: {price.hostingResponsibility} · Maintenance: {price.maintenanceResponsibility}</p>
+              <div className="mt-4">
+                <label className={label} htmlFor={`min-${price.id}`}>Minimum contract months</label>
+                <input className={input} name="minimumMonths" id={`min-${price.id}`} type="number" min="0" defaultValue={price.minimumMonths ?? ""} />
+              </div>
+              <div className="mt-4">
+                <label className={label} htmlFor={`deposit-${price.id}`}>Deposit percentage</label>
+                <input className={input} name="depositPercent" id={`deposit-${price.id}`} type="number" min="0" max="100" defaultValue={price.depositPercent ?? ""} />
+              </div>
+              <div className="mt-4">
+                <label className={label} htmlFor={`handover-${price.id}`}>Handover terms</label>
+                <textarea className={input} name="handoverPolicy" id={`handover-${price.id}`} rows={2} defaultValue={price.handoverPolicy} />
+              </div>
+              <div className="mt-4">
+                <label className={label} htmlFor={`notes-${price.id}`}>Internal/commercial notes</label>
+                <textarea className={input} name="notes" id={`notes-${price.id}`} rows={2} defaultValue={price.notes} />
+              </div>
+              <p className="mt-4 text-xs text-ink/60">Hosting: {price.hostingResponsibility} · Maintenance: {price.maintenanceResponsibility}</p>
               <button className="mt-5 rounded bg-catalyst px-5 py-3 font-semibold text-white">Save payment choice</button>
             </form>
           ))}
