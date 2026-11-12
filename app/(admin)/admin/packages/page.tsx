@@ -26,7 +26,7 @@ export default async function AdminPackagesPage() {
         <p className="mt-3 max-w-3xl text-muted-foreground">
           Edit published catalogue content and manage price approvals. Package IDs and growth stages are immutable here to preserve live enquiry links and location recommendations.
         </p>
-        <form action={createPackageAction} className="mt-8 grid gap-4 rounded-xl border border-ink/15 bg-white p-6 sm:grid-cols-4 sm:items-end">
+        <form action={createPackageAction} className={`mt-8 grid gap-4 ${adminCardClass} p-6 sm:grid-cols-4 sm:items-end`}>
           <div><label htmlFor="new-package-name" className="block text-sm font-semibold">New package name</label>
             <input id="new-package-name" name="name" required minLength={2} className={adminFieldClass} /></div>
           <div><label htmlFor="new-package-id" className="block text-sm font-semibold">Identifier</label>
@@ -40,7 +40,7 @@ export default async function AdminPackagesPage() {
         </form>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {packages.map(pkg => (
-            <article key={pkg.id} className={`${adminCardClass} p-6">
+            <article key={pkg.id} className={`${adminCardClass} p-6`}
               <p className="small-caps text-catalyst">Stage {pkg.stage} · {pkg.status}</p>
               <h2 className="mt-3 font-display text-2xl font-bold">{pkg.name}</h2>
               <p className="mt-3 min-h-14 text-sm text-muted-foreground">{pkg.summary}</p>
