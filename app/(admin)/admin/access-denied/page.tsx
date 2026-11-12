@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth/server";
+import AdminVerificationRequest from "@/components/mogen/admin-verification-request";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -39,37 +40,39 @@ export default async function AdminAccessDeniedPage({
   const details = guidance[reason];
 
   return (
-    <main className="surface-light flex min-h-screen items-center justify-center bg-[#f4f5f2] px-5 py-16 text-[#171a18]" style={{ colorScheme: "light" }}>
-      <section className="w-full max-w-2xl rounded-2xl border border-[#dce3dd] bg-white p-7 shadow-lg sm:p-10">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#1f7a50]">Mogen administration</p>
-        <h1 className="mt-4 text-3xl font-black leading-tight text-[#171a18] sm:text-4xl">
+    <main className="flex min-h-screen items-center justify-center bg-[#111514] px-5 py-16 text-[#f1f4f2]" style={{ colorScheme: "dark" }}>
+      <section className="w-full max-w-2xl rounded-2xl border border-[#35463e] bg-[#1d2521] p-7 shadow-2xl sm:p-10">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7cdda5]">Mogen administration</p>
+        <h1 className="mt-4 text-3xl font-black leading-tight text-[#f5f8f6] sm:text-4xl">
           Admin access restricted
         </h1>
-        <p className="mt-4 text-base leading-relaxed text-[#37423b]">
+        <p className="mt-4 text-base leading-relaxed text-[#c6d3cb]">
           You're signed in, but the account cannot access the catalogue administration yet.
         </p>
 
         {userEmail && (
-          <div className="mt-6 rounded-lg bg-[#f2f5f2] p-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#4b5b50]">Signed-in account</p>
-            <p className="mt-1 break-all font-semibold text-[#171a18]">{userEmail}</p>
+          <div className="mt-6 rounded-lg border border-[#35463e] bg-[#28342d] p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#9caea2]">Signed-in account</p>
+            <p className="mt-1 break-all font-semibold text-[#f5f8f6]">{userEmail}</p>
           </div>
         )}
 
-        <div className="mt-6 border-l-4 border-[#1f7a50] pl-5">
-          <h2 className="text-lg font-bold text-[#171a18]">{details.title}</h2>
-          <p className="mt-2 leading-relaxed text-[#37423b]">{details.detail}</p>
-          <p className="mt-3 leading-relaxed text-[#37423b]">{details.fix}</p>
+        <div className="mt-6 border-l-4 border-[#4fbe7d] pl-5">
+          <h2 className="text-lg font-bold text-[#f5f8f6]">{details.title}</h2>
+          <p className="mt-2 leading-relaxed text-[#c6d3cb]">{details.detail}</p>
+          <p className="mt-3 leading-relaxed text-[#c6d3cb]">{details.fix}</p>
         </div>
 
+        {reason === "not-verified" && userEmail && <AdminVerificationRequest email={userEmail} />}
+
         <div className="mt-8 flex flex-wrap items-center gap-5">
-          <Link href="/admin" className="rounded-lg bg-[#1f7a50] px-5 py-3 font-semibold text-white hover:bg-[#155b3a]">
+          <Link href="/admin" className="rounded-lg border border-[#4c7f61] bg-[#2e5b42] px-5 py-3 font-semibold text-white hover:bg-[#397152]">
             Try admin again
           </Link>
-          <Link href="/auth/sign-in" className="font-semibold text-[#1f7a50] underline underline-offset-4">
+          <Link href="/auth/sign-in" className="font-semibold text-[#7cdda5] underline underline-offset-4">
             Sign in with another account
           </Link>
-          <Link href="/" className="font-semibold text-[#47564b] underline underline-offset-4">
+          <Link href="/" className="font-semibold text-[#b2c6b9] underline underline-offset-4">
             Return home
           </Link>
         </div>
