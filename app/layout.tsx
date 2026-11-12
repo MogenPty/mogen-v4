@@ -83,14 +83,12 @@ export default function RootLayout({
       data-accent={DEFAULT_ACCENT}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        {/* Apply the persisted accent before first paint (no flash). */}
+      <body className="min-h-full flex flex-col">
+        {/* App Router injects beforeInteractive scripts into the document head. */}
         <Script id="mogen-accent-init" strategy="beforeInteractive">{ACCENT_INIT_SCRIPT}</Script>
         {process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID && <RampifyAnalytics />}
         <JSAnalytics />
         <Script id="supermetry" strategy="afterInteractive" src="https://app.supermetry.com/js/vymccwn7ggad.js" />
-      </head>
-      <body className="min-h-full flex flex-col">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
