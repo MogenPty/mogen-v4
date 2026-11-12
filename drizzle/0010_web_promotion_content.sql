@@ -10,27 +10,24 @@ ALTER TABLE public.web_promotions
   ADD COLUMN IF NOT EXISTS presentation jsonb NOT NULL DEFAULT '{}'::jsonb;
 
 CREATE UNIQUE INDEX IF NOT EXISTS web_promotions_slug_unique
-  ON public.web_promotions(slug)
+  ON public.web_promotions (slug)
   WHERE slug IS NOT NULL;
 
-DO $
+DO $promotion_slug_guard$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
+    SELECT 1
+    FROM pg_constraint
     WHERE conname = 'web_promotions_slug_format_check'
       AND conrelid = 'public.web_promotions'::regclass
   ) THEN
     ALTER TABLE public.web_promotions
       ADD CONSTRAINT web_promotions_slug_format_check
-      CHECK (slug IS NULL OR slug ~ '^[a-z0-9]+(-[a-z0-9]+)*
-
--- Existing campaigns, if any, remain unchanged and cannot appear publicly
--- without an approved slug and a valid target on a published payment option.
-COMMIT;
-);
+      CHECK (slug IS NULL OR slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$');
   END IF;
-END $;
+END
+$promotion_slug_guard$;
 
--- Existing campaigns, if any, remain unchanged and cannot appear publicly
+-- Existing campaigns remain unchanged and cannot appear publicly
 -- without an approved slug and a valid target on a published payment option.
 COMMIT;
