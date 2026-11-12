@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { adminCardClass, adminFieldClass, adminLabelClass, adminPrimaryClass } from "@/components/mogen/admin-card";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { requireCatalogueAdmin } from "@/lib/admin/access";
@@ -9,8 +10,8 @@ import { getCatalogueDb } from "@/db/client";
 import { webPackages, webPackagePrices, webPromotions, webPromotionPrices } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
-const fieldStyle = "mt-2 w-full rounded border border-ink/20 bg-white px-4 py-3 text-ink";
-const labelStyle = "block text-sm font-semibold text-ink";
+const fieldStyle = adminFieldClass;
+const labelStyle = adminLabelClass;
 const lines = (value: unknown) => Array.isArray(value) ? value.filter((s): s is string => typeof s === "string").join("\n") : "";
 const isoLocal = (value: Date | null) => value ? new Date(value.getTime() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16) : "";
 
@@ -50,7 +51,7 @@ export default async function EditPromotionPage({ params, searchParams }: Readon
             <button className="rounded border border-red-600 bg-white px-5 py-3 font-semibold text-red-700">Expire this promotion now</button>
           </form>
         )}
-        <form action={updatePromotionAction} className="mt-8 grid gap-5 rounded-xl border border-ink/15 bg-white p-6 sm:grid-cols-2">
+        <form action={updatePromotionAction} className={`mt-8 grid gap-5 ${adminCardClass} p-6 sm:grid-cols-2`}>
           <input type="hidden" name="id" value={campaign.id} />
           <div><label htmlFor="promotion-name" className={labelStyle}>Name</label>
             <input id="promotion-name" name="name" required className={fieldStyle} defaultValue={campaign.name} /></div>
@@ -83,18 +84,18 @@ export default async function EditPromotionPage({ params, searchParams }: Readon
                 defaultValue={lines(presentation[key]) || (key === "eligibility" ? campaign.eligibility : "")} />
             </div>
           ))}
-          <div className="sm:col-span-2"><button className="rounded bg-catalyst px-6 py-3 font-semibold text-white">Save campaign details</button></div>
+          <div className="sm:col-span-2"><button className={adminPrimaryClass}>Save campaign details</button></div>
         </form>
         <h2 className="mt-12 font-display text-3xl font-black">Discount and target</h2>
-        <p className="mt-2 text-ink/70">Choose an approved published payment choice. For a fixed discount, enter cents; for a percentage, enter basis points (500 = 5%). Only one target per campaign is supported in this editor.</p>
+        <p className="mt-2 text-muted-foreground">Choose an approved published payment choice. For a fixed discount, enter cents; for a percentage, enter basis points (500 = 5%). Only one target per campaign is supported in this editor.</p>
         {targets.length > 0 && (
-          <div className="mt-5 rounded-lg border border-ink/15 bg-white p-5">
+          <div className={`mt-5 ${adminCardClass} p-5`}>
             {targets.map(t => <p key={`${t.packagePriceId}:${t.appliesTo}`} className="text-sm">
               {t.packagePriceId} · {t.appliesTo} · {t.discountKind} · {t.discountKind === "fixed" ? `R${(t.discountAmountCents ?? 0) / 100}` : `${(t.discountPercentBps ?? 0) / 100}%`} · {t.discountedMonths ?? "no"} limited months
             </p>)}
           </div>
         )}
-        <form action={savePromotionTargetAction} className="mt-6 grid gap-5 rounded-xl border border-ink/15 bg-white p-6 sm:grid-cols-2">
+        <form action={savePromotionTargetAction} className={`mt-6 grid gap-5 ${adminCardClass} p-6 sm:grid-cols-2`}>
           <input type="hidden" name="promotionId" value={campaign.id} />
           <div className="sm:col-span-2"><label htmlFor="promotion-target" className={labelStyle}>Published package payment option</label>
             <select id="promotion-target" name="packagePriceId" required className={fieldStyle} defaultValue={targets[0]?.packagePriceId ?? ""}>
@@ -122,17 +123,17 @@ export default async function EditPromotionPage({ params, searchParams }: Readon
             <input id="promotion-months" name="discountedMonths" type="number" min="1" className={fieldStyle}
               defaultValue={targets[0]?.discountedMonths ?? ""} />
           </div>
-          <div className="sm:col-span-2"><button className="rounded bg-catalyst px-6 py-3 font-semibold text-white">Save discount target</button></div>
+          <div className="sm:col-span-2"><button className={adminPrimaryClass}>Save discount target</button></div>
         </form>
         <h2 className="mt-12 font-display text-3xl font-black">Publication</h2>
-        <p className="mt-2 text-ink/70">Save campaign details and discount target before activating. Publication verifies approved terms, linked pricing and effective dates.</p>
+        <p className="mt-2 text-muted-foreground">Save campaign details and discount target before activating. Publication verifies approved terms, linked pricing and effective dates.</p>
         <div className="mt-5 flex flex-wrap gap-3">
           {(["draft", "scheduled", "active", "expired", "archived"] as const).map(status => (
             <form key={status} action={setPromotionStatusAction}>
               <input type="hidden" name="id" value={campaign.id} />
               <input type="hidden" name="status" value={status} />
               <button disabled={campaign.status === status}
-                className={`rounded border px-4 py-3 text-sm font-semibold disabled:opacity-40 ${status === "expired" ? "border-red-600 text-red-700" : "border-ink/25"}`}>
+                className={`rounded border px-4 py-3 text-sm font-semibold disabled:opacity-40 ${status === "expired" ? "border-red-600 text-red-700" : "border-border"}`}>
                 {status === "active" ? "Publish active" : status === "scheduled" ? "Schedule" : status === "expired" ? "Expire now" : status === "archived" ? "Archive" : "Move to draft"}
               </button>
             </form>
