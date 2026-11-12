@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const fieldStyle = "mt-2 w-full rounded border border-ink/20 bg-white px-4 py-3 text-ink";
 const labelStyle = "block text-sm font-semibold text-ink";
 const lines = (value: unknown) => Array.isArray(value) ? value.filter((s): s is string => typeof s === "string").join("\n") : "";
-const isoLocal = (value: Date | null) => value ? new Date(value.getTime() - value.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "";
+const isoLocal = (value: Date | null) => value ? new Date(value.getTime() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16) : "";
 
 export default async function EditPromotionPage({ params, searchParams }: Readonly<{
   params: Promise<{ id: string }>;
@@ -67,9 +67,9 @@ export default async function EditPromotionPage({ params, searchParams }: Readon
               <option value="">All locations</option><option value="maboloka">Maboloka</option>
               <option value="soshanguve">Soshanguve</option><option value="centurion">Centurion</option>
             </select></div>
-          <div><label htmlFor="promotion-start" className={labelStyle}>Starts (local browser time)</label>
+          <div><label htmlFor="promotion-start" className={labelStyle}>Starts (South African time, SAST)</label>
             <input id="promotion-start" name="startsAt" type="datetime-local" className={fieldStyle} defaultValue={isoLocal(campaign.startsAt)} /></div>
-          <div><label htmlFor="promotion-end" className={labelStyle}>Ends (local browser time)</label>
+          <div><label htmlFor="promotion-end" className={labelStyle}>Ends (South African time, SAST)</label>
             <input id="promotion-end" name="endsAt" type="datetime-local" className={fieldStyle} defaultValue={isoLocal(campaign.endsAt)} /></div>
           <div><label htmlFor="promotion-cap" className={labelStyle}>Maximum customers (empty = no cap)</label>
             <input id="promotion-cap" name="maximumCustomers" type="number" min="1" className={fieldStyle} defaultValue={campaign.maximumCustomers ?? ""} /></div>
