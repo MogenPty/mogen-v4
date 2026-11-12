@@ -40,7 +40,7 @@ export default async function AdminPackagesPage() {
         </form>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {packages.map(pkg => (
-            <article key={pkg.id} className={`${adminCardClass} p-6`}
+            <AdminCard key={pkg.id} as="article" className="p-6">
               <p className="small-caps text-catalyst">Stage {pkg.stage} · {pkg.status}</p>
               <h2 className="mt-3 font-display text-2xl font-bold">{pkg.name}</h2>
               <p className="mt-3 min-h-14 text-sm text-muted-foreground">{pkg.summary}</p>
