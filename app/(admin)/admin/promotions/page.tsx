@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AdminCard, { adminCardClass, adminFieldClass, adminPrimaryClass } from "@/components/mogen/admin-card";
 import { asc } from "drizzle-orm";
 import { requireCatalogueAdmin } from "@/lib/admin/access";
 import { createPromotionAction, setPromotionStatusAction } from "@/lib/admin/catalogue-actions";
@@ -17,27 +18,27 @@ export default async function AdminPromotionsPage() {
           <Link href="/admin">Admin</Link><Link href="/admin/packages">Packages</Link>
         </nav>
         <h1 className="font-display text-4xl font-black">Promotions</h1>
-        <p className="mt-3 max-w-3xl text-ink/70">
+        <p className="mt-3 max-w-3xl text-muted-foreground">
           Create draft campaigns, link approved payment choices, then publish on a schedule. Only active promotions are claimable. Customer caps require manual monitoring.
         </p>
         <form action={createPromotionAction} className="mt-8 grid gap-4 rounded-xl border border-ink/15 bg-white p-6 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
           <div><label className="block text-sm font-semibold" htmlFor="promo-new-name">New campaign name</label>
-            <input id="promo-new-name" name="name" required minLength={3} placeholder="Spring launch" className="mt-2 w-full rounded border border-ink/20 px-4 py-3" />
+            <input id="promo-new-name" name="name" required minLength={3} placeholder="Spring launch" className={adminFieldClass} />
           </div>
           <div><label className="block text-sm font-semibold" htmlFor="promo-new-slug">URL slug</label>
-            <input id="promo-new-slug" name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required placeholder="spring-launch" className="mt-2 w-full rounded border border-ink/20 px-4 py-3" />
+            <input id="promo-new-slug" name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required placeholder="spring-launch" className={adminFieldClass} />
           </div>
-          <button className="rounded bg-catalyst px-5 py-3 font-semibold text-white">Create draft</button>
+          <button className={adminPrimaryClass}>Create draft</button>
         </form>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {campaigns.map(campaign => (
-            <article key={campaign.id} className="rounded-xl border border-ink/15 bg-white p-6">
+            <article key={campaign.id} className={`${adminCardClass} p-6">
               <p className="small-caps text-catalyst">{campaign.status} · {campaign.locationSlug ?? "All locations"}</p>
               <h2 className="mt-3 font-display text-2xl font-bold">{campaign.name}</h2>
-              <p className="mt-2 text-sm text-ink/70">{campaign.description || "No description yet"}</p>
-              <p className="mt-2 text-xs text-ink/60">Slug: {campaign.slug ?? "not assigned"} {campaign.isFeatured ? "· Featured" : ""}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{campaign.description || "No description yet"}</p>
+              <p className="mt-2 text-xs text-muted-foreground">Slug: {campaign.slug ?? "not assigned"} {campaign.isFeatured ? "· Featured" : ""}</p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
-                <Link className="rounded bg-catalyst px-5 py-3 font-semibold text-white" href={`/admin/promotions/${campaign.id}`}>Edit promotion</Link>
+                <Link className={adminPrimaryClass} href={`/admin/promotions/${campaign.id}`}>Edit promotion</Link>
                 {campaign.status === "active" || campaign.status === "scheduled" ? (
                   <form action={setPromotionStatusAction}>
                     <input type="hidden" name="id" value={campaign.id} />
@@ -46,9 +47,9 @@ export default async function AdminPromotionsPage() {
                   </form>
                 ) : null}
               </div>
-            </article>
+            </AdminCard>
           ))}
-          {!campaigns.length && <p className="rounded border border-ink/15 bg-white p-6 text-ink/70">No campaigns have been created yet.</p>}
+          {!campaigns.length && <p className={`${adminCardClass} p-6 text-muted-foreground`}>No campaigns have been created yet.</p>}
         </div>
       </div>
     </main>
