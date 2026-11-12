@@ -21,7 +21,7 @@ export default async function AdminPromotionsPage() {
         <p className="mt-3 max-w-3xl text-muted-foreground">
           Create draft campaigns, link approved payment choices, then publish on a schedule. Only active promotions are claimable. Customer caps require manual monitoring.
         </p>
-        <form action={createPromotionAction} className="mt-8 grid gap-4 rounded-xl border border-ink/15 bg-white p-6 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+        <form action={createPromotionAction} className={`mt-8 grid gap-4 ${adminCardClass} p-6 sm:grid-cols-[1fr_1fr_auto] sm:items-end`}>
           <div><label className="block text-sm font-semibold" htmlFor="promo-new-name">New campaign name</label>
             <input id="promo-new-name" name="name" required minLength={3} placeholder="Spring launch" className={adminFieldClass} />
           </div>
@@ -32,7 +32,7 @@ export default async function AdminPromotionsPage() {
         </form>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {campaigns.map(campaign => (
-            <article key={campaign.id} className={`${adminCardClass} p-6">
+            <article key={campaign.id} className={`${adminCardClass} p-6`}
               <p className="small-caps text-catalyst">{campaign.status} · {campaign.locationSlug ?? "All locations"}</p>
               <h2 className="mt-3 font-display text-2xl font-bold">{campaign.name}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{campaign.description || "No description yet"}</p>
