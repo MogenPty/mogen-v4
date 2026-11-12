@@ -217,7 +217,8 @@ export async function savePromotionTargetAction(data: FormData) {
     discountPercentBps: kind === "percent" ? rawDiscount : null,
     discountedMonths: months,
   };
-  if (!validPromotionTarget(target, option.billingMode)) throw new Error("Discount does not apply to this payment mode.");
+  const billingMode = z.enum(["managed_monthly", "managed_annual", "once_off", "self_hosted"]).parse(option.billingMode);
+  if (!validPromotionTarget(target, billingMode)) throw new Error("Discount does not apply to this payment mode.");
   const base = appliesTo === "setup" ? option.setupFeeCents : option.amountCents;
   if (base === null || applyDiscountCents(base, target) === base)
     throw new Error("The discount must reduce a nonzero price.");
