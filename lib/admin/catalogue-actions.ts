@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getCatalogueDb } from "@/db/client";
 import { webPackages, webPackagePrices, webPromotions, webPromotionPrices } from "@/db/schema";
@@ -123,6 +123,7 @@ export async function updatePromotionAction(data: FormData) {
   const db = getCatalogueDb();
   const [existing] = await db.select().from(webPromotions).where(eq(webPromotions.id, campaignId)).limit(1);
   if (!existing) throw new Error("Promotion not found.");
+  if (existing.status === "active") throw new Error("Expire the active promotion before editing its marketing content.");
   const presentation = {
     ...((existing.presentation && typeof existing.presentation === "object" && !Array.isArray(existing.presentation))
       ? existing.presentation as Record<string, unknown> : {}),
@@ -190,11 +191,11 @@ export async function setPromotionStatusAction(data: FormData) {
     const { projectPromotion } = await import("@/lib/catalogue/promotion-projection");
     const validated = projectPromotion(
       { ...campaign, status: next },
-      targets, options.filter(option => isPublicWebPrice(option as WebPriceOption, new Set(packages.map(p => p.id)))),
+      targets as WebPromotionTarget[], options.filter(option => isPublicWebPrice(option as WebPriceOption, new Set(packages.map(p => p.id)))) as WebPriceOption[],
     );
     if (!validated || validated.status === "expired") throw new Error("Campaign cannot be published: check approved content, terms, price target and schedule.");
-    if (next === "scheduled" && !campaign.startsAt)
-      throw new Error("Schedule requires a start date.");
+    if (next === "scheduled" && (!campaign.startsAt || campaign.startsAt <= new Date()))
+      throw new Error("Scheduled campaigns must have a future start date.");
   }
   await db.update(webPromotions).set({
     status: next,
