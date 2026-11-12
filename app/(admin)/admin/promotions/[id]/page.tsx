@@ -48,7 +48,7 @@ export default async function EditPromotionPage({ params, searchParams }: Readon
           <form action={setPromotionStatusAction} className="mt-6">
             <input type="hidden" name="id" value={campaign.id} />
             <input type="hidden" name="status" value="expired" />
-            <button className="rounded border border-red-600 bg-white px-5 py-3 font-semibold text-red-700">Expire this promotion now</button>
+            <button className="rounded border border-red-500 bg-card px-5 py-3 font-semibold text-red-600 dark:text-red-300 hover:bg-muted">Expire this promotion now</button>
           </form>
         )}
         <form action={updatePromotionAction} className={`mt-8 grid gap-5 ${adminCardClass} p-6 sm:grid-cols-2`}>
@@ -133,7 +133,7 @@ export default async function EditPromotionPage({ params, searchParams }: Readon
               <input type="hidden" name="id" value={campaign.id} />
               <input type="hidden" name="status" value={status} />
               <button disabled={campaign.status === status}
-                className={`rounded border px-4 py-3 text-sm font-semibold disabled:opacity-40 ${status === "expired" ? "border-red-600 text-red-700" : "border-border"}`}>
+                className={`rounded border px-4 py-3 text-sm font-semibold disabled:opacity-40 ${status === "expired" ? "border-red-500 text-red-600 dark:text-red-300" : "border-border"}`}>
                 {status === "active" ? "Publish active" : status === "scheduled" ? "Schedule" : status === "expired" ? "Expire now" : status === "archived" ? "Archive" : "Move to draft"}
               </button>
             </form>
