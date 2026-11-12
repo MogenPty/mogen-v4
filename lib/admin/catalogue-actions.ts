@@ -17,7 +17,8 @@ const campaignStatuses = ["draft", "scheduled", "active", "expired", "archived"]
 const field = (data: FormData, name: string) => String(data.get(name) ?? "");
 const boolean = (data: FormData, name: string) => data.get(name) === "on";
 const list = (input: string) => input.split("\n").map(s => s.trim()).filter(Boolean);
-const dateValue = (input: string) => input ? new Date(input) : null;
+/** Admin date/time controls use South African Standard Time (UTC+02:00). */
+const dateValue = (input: string) => input ? new Date(`${input}+02:00`) : null;
 function validDate(input: string) {
   const value = dateValue(input);
   if (input && (!value || Number.isNaN(value.getTime()))) throw new Error("Enter a valid date/time.");
