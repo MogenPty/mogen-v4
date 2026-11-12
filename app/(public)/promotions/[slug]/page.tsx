@@ -242,7 +242,7 @@ export default async function PromotionDetailPage({
   searchParams,
 }: Readonly<Props>) {
   const { slug } = await params;
-  const promo = getPromotionBySlug(slug);
+  const promo = await loadPromotionBySlug(slug);
   if (!promo) notFound();
   // Carry allowlisted attribution (utm_*) from the promotion URL into
   // the enquiry CTAs — explicit promotion context always wins.
