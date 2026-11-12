@@ -32,7 +32,7 @@ export default async function AdminPromotionsPage() {
         </form>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {campaigns.map(campaign => (
-            <article key={campaign.id} className={`${adminCardClass} p-6`}
+            <AdminCard key={campaign.id} as="article" className="p-6">
               <p className="small-caps text-catalyst">{campaign.status} · {campaign.locationSlug ?? "All locations"}</p>
               <h2 className="mt-3 font-display text-2xl font-bold">{campaign.name}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{campaign.description || "No description yet"}</p>
