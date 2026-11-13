@@ -80,6 +80,7 @@ export default function RootLayout({
     <html
       lang={siteConfig.lang}
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       data-accent={DEFAULT_ACCENT}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
