@@ -12,7 +12,11 @@ if (!secret) {
   throw new Error("BETTER_AUTH_SECRET must be configured");
 }
 
-const baseURL = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const fallbackBaseURL =
+  process.env.BETTER_AUTH_URL?.trim() ||
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  "http://localhost:3000";
+const usesLocalBaseURL = /^http:\/\/(localhost|127\.0\.0\.1)(?::\d+)?$/i.test(fallbackBaseURL);
 
 async function sendVerificationCode(email: string, otp: string, type: string) {
   const result = await getMailProvider().send({
@@ -27,7 +31,16 @@ async function sendVerificationCode(email: string, otp: string, type: string) {
 
 export const auth = betterAuth({
   appName: "Mogen",
-  baseURL,
+  baseURL: {
+    allowedHosts: [
+      "mogen.co.za",
+      "www.mogen.co.za",
+      "*.vercel.app",
+      ...(usesLocalBaseURL ? ["localhost:*", "127.0.0.1:*"] : []),
+    ],
+    protocol: usesLocalBaseURL ? "auto" : "https",
+    fallback: fallbackBaseURL,
+  },
   secret,
   database: drizzleAdapter(getAuthDb(), {
     provider: "pg",
