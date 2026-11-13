@@ -1,15 +1,16 @@
 import "server-only";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 
 /**
- * Require BOTH a signed-in, verified Neon Auth user and an explicit
+ * Require BOTH a signed-in, verified Better Auth user and an explicit
  * server-only allowlist entry. The guard is shared by all admin routes and
  * all catalogue mutations; public registration never grants admin access.
  */
 export async function requireCatalogueAdmin(): Promise<string> {
-  const { data: session } = await auth.getSession();
+  const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.email) redirect("/auth/sign-in");
 
   const email = session.user.email.trim().toLowerCase();

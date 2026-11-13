@@ -1,16 +1,13 @@
 /**
- * Read-only commercial schema verification for the Neon development branch.
- * Usage: node scripts/verify-web-commercial.mjs
+ * Read-only commercial schema verification.
+ * Usage: node scripts/verify-web-commercial.mjs --target=development|production
  * Does not print credentials or write any rows.
  */
-import "dotenv/config";
 import { neon } from "@neondatabase/serverless";
+import { loadDatabaseEnvironment } from "./lib/database-environment.mjs";
 
-if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL is not configured.");
-  process.exit(1);
-}
-const sql = neon(process.env.DATABASE_URL);
+const database = loadDatabaseEnvironment({ operation: "Commercial schema verification" });
+const sql = neon(database.databaseUrl);
 try {
   const tables = await sql`
     SELECT table_name FROM information_schema.tables
@@ -24,7 +21,7 @@ try {
     if (!existing.has(name)) console.error(`MISSING: public.${name}`);
   }
   if (existing.size !== required.length) {
-    console.error("Run drizzle/0001_web_commercial_options.sql on the verified DEVELOPMENT Neon branch only.");
+    console.error(`Run drizzle/0001_web_commercial_options.sql on the verified ${database.target} Neon branch.`);
     process.exitCode = 1;
   } else {
     const options = await sql`
@@ -40,7 +37,7 @@ try {
     if (options.length === 0) console.log("No payment options yet: expected until commercial prices and terms are approved.");
   }
 } catch (error) {
-  console.error("Commercial schema verification failed. Confirm the Neon development branch and SQL migration.");
+  console.error(`Commercial schema verification failed. Confirm the Neon ${database.target} branch and SQL migration.`);
   console.error(error instanceof Error ? error.message.replace(/postgresql:\/\/\S+/g, "[REDACTED_CONNECTION]") : String(error));
   process.exitCode = 1;
 }

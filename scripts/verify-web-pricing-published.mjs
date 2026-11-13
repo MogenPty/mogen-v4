@@ -3,15 +3,13 @@
  * Use only with DATABASE_URL pointing at the Neon branch under examination.
  * Does not migrate, update, publish, or send email.
  *
- * Usage: node --env-file=.env scripts/verify-web-pricing-published.mjs
+ * Usage: node scripts/verify-web-pricing-published.mjs --target=development|production
  */
 import { neon } from "@neondatabase/serverless";
+import { loadDatabaseEnvironment } from "./lib/database-environment.mjs";
 
-if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL is missing. Set it for the specific Neon branch being verified.");
-  process.exit(1);
-}
-const sql = neon(process.env.DATABASE_URL);
+const database = loadDatabaseEnvironment({ operation: "Published pricing verification" });
+const sql = neon(database.databaseUrl);
 
 const expected = [
   ["seed-once-off", "seed", "once_off", 49900, 0],

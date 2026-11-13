@@ -22,7 +22,7 @@ MOGEN_ADMIN_EMAILS=your-verified-admin-login@example.com
 
 Comma-separated verified emails are supported. Do not prefix the setting with `NEXT_PUBLIC_`. By default (unset or empty), nobody is authorised. `lib/admin/access.ts` checks the Neon Auth session, verified email and allowlist on **every admin page and every write action**. Unauthorised visitors cannot read or mutate catalogue data.
 
-Neon Auth still requires `NEON_AUTH_BASE_URL` and `NEON_AUTH_COOKIE_SECRET`. Admin pages use the existing auth integration. The root `proxy.ts` is a Rampify tracker and is **not** the admin authorisation layer; all routes/actions check access on the server.
+Self-managed Better Auth requires `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, and `DATABASE_URL`. Admin pages use the Better Auth integration. The root `proxy.ts` is a Rampify tracker and is **not** the admin authorisation layer; all routes/actions check access on the server.
 
 ## Operations
 

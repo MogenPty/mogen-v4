@@ -46,7 +46,7 @@ Store Mogen's private documents, agreement templates, unsigned/signed customer a
 
 ## Repository notes
 
-`package.json` contains `@neondatabase/auth`, `@neondatabase/serverless`, `drizzle-orm`, Next.js and Zod. `db/schema.ts` currently models web catalogues, not a secure document vault. Validate the admin authentication/authorisation implementation rather than assuming it exists.
+`package.json` contains Better Auth, `@neondatabase/serverless`, `drizzle-orm`, Next.js and Zod. `db/schema.ts` currently models web catalogues, not a secure document vault. Validate the admin authentication/authorisation implementation rather than assuming it exists.
 
 No live prices, signed documents or sensitive identity details should be committed to this repository.
 

@@ -2,14 +2,14 @@
  * Read-only verification of 0004–0008 draft commercial option templates.
  * Requires DATABASE_URL pointing to Neon DEVELOPMENT. Does not modify rows.
  */
-import "dotenv/config";
 import { neon } from "@neondatabase/serverless";
+import { loadDatabaseEnvironment } from "./lib/database-environment.mjs";
 
-if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL must point to the Neon DEVELOPMENT branch.");
-  process.exit(1);
-}
-const sql = neon(process.env.DATABASE_URL);
+const database = loadDatabaseEnvironment({
+  operation: "Draft pricing verification",
+  allowedTargets: ["development"],
+});
+const sql = neon(database.databaseUrl);
 const packages = ["sprout", "seedling", "vegetative", "budding", "flowering"];
 const modes = ["managed_monthly", "managed_annual", "self_hosted"];
 // Legacy stable IDs survive the billing-model correction to preserve references.

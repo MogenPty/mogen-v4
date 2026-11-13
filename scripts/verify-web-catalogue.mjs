@@ -1,16 +1,12 @@
 /**
- * Read-only catalogue verification. Usage: node scripts/verify-web-catalogue.mjs
- * Loads DATABASE_URL from .env. Does not print credentials or mutate the DB.
+ * Read-only catalogue verification.
+ * Usage: node scripts/verify-web-catalogue.mjs --target=development|production
  */
-import "dotenv/config";
 import { neon } from "@neondatabase/serverless";
+import { loadDatabaseEnvironment } from "./lib/database-environment.mjs";
 
-const url = process.env.DATABASE_URL;
-if (!url) {
-  console.error("DATABASE_URL is not configured.");
-  process.exit(1);
-}
-const sql = neon(url);
+const database = loadDatabaseEnvironment({ operation: "Catalogue verification" });
+const sql = neon(database.databaseUrl);
 const required = ["seed", "sprout", "seedling", "vegetative", "budding", "flowering", "ripening"];
 const expected = { maboloka: "sprout", soshanguve: "vegetative", centurion: "flowering" };
 
