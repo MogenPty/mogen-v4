@@ -1,6 +1,8 @@
 'use server';
 
 import { auth } from '@/lib/auth/server';
+import { isAPIError } from "better-auth/api";
+import { headers } from "next/headers";
 import { redirect } from 'next/navigation';
 
 export async function signUpWithEmail(
@@ -18,14 +20,17 @@ export async function signUpWithEmail(
   //  return { error: 'Email must be from my-company.com' };
   // }
 
-  const { error } = await auth.signUp.email({
-    email,
-    name: formData.get('name') as string,
-    password: formData.get('password') as string,
-  });
-
-  if (error) {
-    return { error: error.message || 'Failed to create account' };
+  try {
+    await auth.api.signUpEmail({
+      body: {
+        email,
+        name: formData.get('name') as string,
+        password: formData.get('password') as string,
+      },
+      headers: await headers(),
+    });
+  } catch (error) {
+    return { error: isAPIError(error) ? error.message : 'Failed to create account' };
   }
 
   redirect('/');

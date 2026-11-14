@@ -1,6 +1,7 @@
 import MagneticButton from "./magnet-button";
 import {
   buildEnquiryHref,
+  withAttribution,
   type EnquiryAttribution,
 } from "@/lib/enquiry/enquiry";
 import type { Promotion } from "@/data/promotions";
@@ -33,10 +34,12 @@ export default function PromotionEnquiryCta({
   variant = "catalyst",
   className,
 }: Readonly<Props>) {
-  const href = buildEnquiryHref({
-    promotion: promotion.slug,
-    attribution,
-  });
+  const href = promotion.source === "database" && promotion.relatedPackage && promotion.targetPriceOptionId
+    ? withAttribution(
+        `/contact?service=web-development&package=${encodeURIComponent(promotion.relatedPackage)}&priceOption=${encodeURIComponent(promotion.targetPriceOptionId)}&promotion=${encodeURIComponent(promotion.slug)}`,
+        attribution,
+      )
+    : buildEnquiryHref({ promotion: promotion.slug, attribution });
   return (
     <MagneticButton as="a" href={href} variant={variant} className={className}>
       {promotion.cta.label}

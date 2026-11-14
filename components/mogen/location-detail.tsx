@@ -1,5 +1,8 @@
 import { ArrowRight, CalendarCheck, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
+import LocationWebOffers from "@/components/mogen/location-web-offers";
+import type { PublicLocationOffer } from "@/lib/catalogue/location-offer";
+import type { PublicWebPriceChoice } from "@/components/mogen/web-price-options";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import FinalCTA from "@/components/mogen/final-cta";
 import MagneticButton from "@/components/mogen/magnet-button";
@@ -11,11 +14,15 @@ import { formatNumber } from "@/lib/utils";
 interface Props {
   locationSlug: string;
   numbering?: number;
+  webOffer?: PublicLocationOffer | null;
+  webPrices?: PublicWebPriceChoice[];
 }
 
 export default function LocationDetail({
   locationSlug,
   numbering = 1,
+  webOffer,
+  webPrices,
 }: Readonly<Props>) {
   const location = getLocationDetail(locationSlug);
 
@@ -117,6 +124,8 @@ export default function LocationDetail({
           </div>
         </div>
       </BlueprintGrid>
+
+      {webOffer && <LocationWebOffers offer={webOffer} prices={webPrices} />}
 
       {/* Visiting / contact */}
       <BlueprintGrid className="bg-secondary py-24 lg:py-32">

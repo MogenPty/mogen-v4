@@ -102,6 +102,10 @@ export interface PromotionFaq {
 export interface Promotion {
   id: string;
   slug: string;
+  /** DB-backed source marker; legacy static promotions omit this property. */
+  source?: "database";
+  /** Approved published payment option targeted by this promotion. */
+  targetPriceOptionId?: string;
   name: string;
   shortDescription: string;
   description: string;
@@ -330,6 +334,13 @@ export function getEffectiveStatus(
   promotion: Promotion,
   today: string = todayISO(),
 ): PromotionStatus {
+  // The old web-development promotions refer to retired three-tier scopes.
+  // Preserve historical details, but never permit a stale offer to be claimed
+  // once the database-backed catalogue is explicitly activated.
+  if (
+    process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
+    promotion.relatedService === "web-development" && promotion.source !== "database"
+  ) return "expired";
   if (
     promotion.status === "draft" ||
     promotion.status === "archived" ||
@@ -366,7 +377,12 @@ export function getPromotions(): Promotion[] {
 }
 
 export function getPromotionBySlug(slug: string): Promotion | undefined {
-  return PROMOTIONS.find((p) => p.slug === slug);
+  const promotion = PROMOTIONS.find((p) => p.slug === slug);
+  if (promotion && process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
+      promotion.relatedService === "web-development") {
+    return { ...promotion, status: "expired" };
+  }
+  return promotion;
 }
 
 /**
@@ -443,7 +459,12 @@ export function orderPublicPromotions(
 
 /** Public promotions for /promotions, in display order. */
 export function getPublicPromotions(today: string = todayISO()): Promotion[] {
-  return orderPublicPromotions(PROMOTIONS, today);
+  return orderPublicPromotions(PROMOTIONS, today).map(p =>
+    process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
+    p.relatedService === "web-development" && p.source !== "database"
+      ? { ...p, status: "expired" as const }
+      : p
+  );
 }
 
 export function isPromotionExpired(

@@ -12,6 +12,10 @@ import MagneticButton from "@/components/mogen/magnet-button";
 import Nav from "@/components/mogen/nav";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import ServicePricing from "@/components/mogen/service-pricing";
+import WebCataloguePricing from "@/components/mogen/web-catalogue-pricing";
+import type { PublicWebPriceChoice } from "@/components/mogen/web-price-options";
+import WebCatalogueFinder from "@/components/mogen/web-catalogue-finder";
+import type { CatalogueWebPackage } from "@/lib/catalogue/location-offer";
 import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
 import { getService, SERVICES } from "@/data/services";
 import type { Promotion } from "@/data/promotions";
@@ -54,6 +58,8 @@ interface Props {
    * enquiry.
    */
   activePromotions?: Promotion[];
+  webPackages?: CatalogueWebPackage[] | null;
+  webPrices?: PublicWebPriceChoice[];
 }
 
 export default function ServiceDetail({
@@ -63,6 +69,8 @@ export default function ServiceDetail({
   relatedArticles = [],
   featuredPromotion,
   activePromotions,
+  webPackages,
+  webPrices,
 }: Readonly<Props>) {
   const service = getService(serviceSlug);
 
@@ -187,7 +195,7 @@ export default function ServiceDetail({
         )}
 
         {/* PRICING */}
-        {service.pricing && (
+        {(webPackages !== null && webPackages !== undefined || service.pricing) && (
           <BlueprintGrid id={"pricing"} className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
@@ -199,20 +207,22 @@ export default function ServiceDetail({
                   {service.name} packages
                 </h2>
                 <p className="mt-4 text-lg text-ink/70">
-                  Transparent rates, no lock-in surprises. Pick the tier that
-                  matches your stage — add-ons let you scale on demand.
+                  {webPackages !== null && webPackages !== undefined
+                    ? "Choose a stage that suits your needs. Pricing and delivery are confirmed after reviewing your requirements."
+                    : "Transparent rates, no lock-in surprises. Pick the tier that matches your stage — add-ons let you scale on demand."}
                 </p>
               </div>
-              <ServicePricing
-                pricing={service.pricing}
-                attribution={attribution}
-              />
+              {webPackages !== null && webPackages !== undefined ? (
+                <WebCataloguePricing packages={webPackages} prices={webPrices} />
+              ) : service.pricing ? (
+                <ServicePricing pricing={service.pricing} attribution={attribution} />
+              ) : null}
             </div>
           </BlueprintGrid>
         )}
 
         {/* ADD-ONS */}
-        {service.addons && service.addons.length > 0 && (
+        {service.addons && service.addons.length > 0 && (serviceSlug !== "web-development" || webPackages === null) && (
           <BlueprintGrid className="bg-secondary py-20">
             <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
               <SectionLabel
@@ -249,7 +259,10 @@ export default function ServiceDetail({
             questionnaire lives here as well as on the homepage, so Web
             Development discovery CTAs always have an `#assessment`
             target no matter which service is currently promoted. */}
-        {serviceSlug === "web-development" && (
+        {serviceSlug === "web-development" && webPackages !== null && webPackages !== undefined && (
+          <WebCatalogueFinder packages={webPackages} prices={webPrices} attribution={attribution} />
+        )}
+        {serviceSlug === "web-development" && webPackages === null && (
           <WebsiteQuestionnaire
             numbering={numbering++}
             initialAttribution={attribution}
@@ -284,7 +297,7 @@ export default function ServiceDetail({
         )}
 
         {/* FAQ */}
-        {service.faq && (
+        {service.faq && (serviceSlug !== "web-development" || webPackages === null) && (
           <BlueprintGrid id={"faq"} className="bg-bone py-20 lg:py-28">
             <div className="mx-auto max-w-225 px-6 lg:px-10">
               <SectionLabel

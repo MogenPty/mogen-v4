@@ -17,6 +17,8 @@ const validInput = {
   businessName: "Test Business",
   service: "Web Development" as const,
   package: "",
+  priceOption: "",
+  promotion: "",
   otherServiceDetail: "",
   message: "We need a new website for our business.",
   companyWebsite: "",

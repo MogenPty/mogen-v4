@@ -83,6 +83,7 @@ export default function PromotionCard({
 }: Readonly<{ promotion: Promotion; attribution?: EnquiryAttribution }>) {
   const status = getEffectiveStatus(promotion);
   const expired = status === "expired";
+  const claimable = status === "active";
   const detailHref = withAttribution(
     `/promotions/${promotion.slug}`,
     attribution,
@@ -115,7 +116,7 @@ export default function PromotionCard({
       </p>
       <PriceSummary promotion={promotion} />
       <div className="mt-6 flex flex-wrap items-center gap-4">
-        {!expired && (
+        {claimable && (
           <PromotionEnquiryCta promotion={promotion} attribution={attribution} />
         )}
         <Link

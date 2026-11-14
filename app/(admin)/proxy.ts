@@ -1,9 +1,12 @@
-import { auth } from '@/lib/auth/server';
+import { getSessionCookie } from "better-auth/cookies";
+import { type NextRequest, NextResponse } from "next/server";
 
-export default auth.middleware({
-  // Redirects unauthenticated users to sign-in page
-  loginUrl: '/auth/sign-in',
-});
+export function proxy(request: NextRequest) {
+  if (!getSessionCookie(request)) {
+    return NextResponse.redirect(new URL("/auth/sign-in", request.url));
+  }
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

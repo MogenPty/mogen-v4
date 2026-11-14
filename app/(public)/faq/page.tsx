@@ -5,6 +5,7 @@ import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import { SERVICES } from "@/data/services";
+import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
 import { siteConfig } from "@/data/site";
 import { pageMetadata } from "@/lib/seo";
 import { STATIC_META } from "@/lib/seo/metadata-registry";
@@ -19,9 +20,9 @@ export const metadata: Metadata = pageMetadata({
 // sitemap and service-page backlinks consistent without a redeploy.
 export const revalidate = 3600;
 
-function FaqJsonLd() {
+function FaqJsonLd({ services }: Readonly<{ services: typeof SERVICES }>) {
   const pageUrl = `${siteConfig.url}/faq`;
-  const mainEntity = SERVICES.flatMap((service) =>
+  const mainEntity = services.flatMap((service) =>
     (service.faq ?? []).map((item) => ({
       "@type": "Question",
       name: `${item.question} (${service.name})`,
@@ -81,9 +82,11 @@ function FaqJsonLd() {
 }
 
 export default function FaqDirectoryPage() {
+  const catalogueEnabled = databaseCatalogueEnabled();
+  const services = catalogueEnabled ? SERVICES.filter(service => service.slug !== "web-development") : SERVICES;
   return (
     <>
-      <FaqJsonLd />
+      <FaqJsonLd services={services} />
       <PageShell
         index="// 01 — FAQ"
         label="Questions, Answered"
@@ -95,7 +98,7 @@ export default function FaqDirectoryPage() {
         }
         intro="Short answers about timelines, process and working with Mogen — grouped by service. Package prices live on each service page; this directory points you there rather than duplicating them."
       >
-        {SERVICES.map((service, i) => (
+        {services.map((service, i) => (
           <BlueprintGrid
             key={service.slug}
             className={i % 2 === 0 ? "bg-secondary py-24 lg:py-32" : "bg-bone py-24 lg:py-32"}
@@ -138,7 +141,7 @@ export default function FaqDirectoryPage() {
             <SectionLabel index="// 06 — Next" title="Still unsure?" />
             <div className="flex flex-col items-start gap-6">
               <p className="max-w-2xl text-lg text-ink/70">
-                Compare the three tiers per service on the pricing directory,
+                Compare current website stages and other service packages in the pricing directory,
                 check current offers on promotions, or send an enquiry — Mogen
                 replies within one business day.
               </p>

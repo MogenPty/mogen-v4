@@ -1,7 +1,7 @@
 import { ArrowLeft, Check } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -13,13 +13,13 @@ import PromotionEnquiryCta from "@/components/mogen/promotion-enquiry-cta";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import {
   getEffectiveStatus,
-  getFeaturedPromotion,
-  getPromotionBySlug,
   getPromotions,
   needsCadenceSuffix,
   type Promotion,
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
+import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
+import { loadFeaturedPromotion, loadPromotionBySlug, getStaticPromotionSlugs } from "@/lib/catalogue/promotions-server";
 import {
   buildEnquiryHref,
   parseEnquiryAttribution,
@@ -37,12 +37,12 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return getPromotions().map((p) => ({ slug: p.slug }));
+  return getStaticPromotionSlugs().map(slug => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const promo = getPromotionBySlug(slug);
+  const promo = await loadPromotionBySlug(slug);
   if (!promo) return { title: "Promotion not found" };
   const canonical = `${siteConfig.url}/promotions/${promo.slug}`;
   return {
@@ -242,7 +242,7 @@ export default async function PromotionDetailPage({
   searchParams,
 }: Readonly<Props>) {
   const { slug } = await params;
-  const promo = getPromotionBySlug(slug);
+  const promo = await loadPromotionBySlug(slug);
   if (!promo) notFound();
   // Carry allowlisted attribution (utm_*) from the promotion URL into
   // the enquiry CTAs — explicit promotion context always wins.
@@ -253,7 +253,7 @@ export default async function PromotionDetailPage({
   // The promotions routes behave like the homepage: the valid featured
   // promotion (not necessarily this page's promotion) selects the
   // ConversionBar journey.
-  const featuredPromotion = getFeaturedPromotion();
+  const featuredPromotion = await loadFeaturedPromotion();
 
   return (
     <div className="bg-bone">
@@ -300,7 +300,7 @@ export default async function PromotionDetailPage({
               )}
             </div>
             <div className="mt-10 flex flex-wrap gap-4">
-              {status === "expired" ? (
+              {status !== "active" ? (
                 <MagneticButton
                   as="a"
                   href={buildEnquiryHref({ attribution })}
@@ -480,7 +480,9 @@ export default async function PromotionDetailPage({
                 <p className="mt-6 max-w-md text-lg text-bone/70">
                   {status === "expired"
                     ? "This promotion is no longer available, but we can still help — send us your details and we will suggest the closest current option."
-                    : "Send us your details and we will confirm eligibility and next steps within one business day — no obligation."}
+                    : status === "scheduled"
+                      ? "This promotion is not open yet. Contact Mogen about currently available options."
+                      : "Send us your details and we will confirm eligibility and next steps within one business day — no obligation."}
                 </p>
               </div>
               <div className="flex flex-col justify-center gap-4">

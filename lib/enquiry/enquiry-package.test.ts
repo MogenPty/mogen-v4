@@ -27,7 +27,11 @@ describe("package resolves its service (promotion → package → service)", () 
   it.each([
     ["seed", "Web Development"],
     ["sprout", "Web Development"],
+    ["seedling", "Web Development"],
     ["vegetative", "Web Development"],
+    ["budding", "Web Development"],
+    ["flowering", "Web Development"],
+    ["ripening", "Web Development"],
     ["ignition", "SEO"],
     ["scale", "SEO"],
     ["dominance", "SEO"],
@@ -47,11 +51,15 @@ describe("package resolves its service (promotion → package → service)", () 
     expect(details.packageAdjusted).toBe(false);
   });
 
-  it("registers exactly the 12 current packages, each with one service", () => {
+  it("registers exactly the 16 current package identifiers, each with one service", () => {
     expect(PACKAGES.map((p) => p.id)).toEqual([
       "seed",
       "sprout",
+      "seedling",
       "vegetative",
+      "budding",
+      "flowering",
+      "ripening",
       "ignition",
       "scale",
       "dominance",
@@ -221,6 +229,8 @@ describe("package in enquiry submission", () => {
     email: "visitor@example.com",
     phone: "",
     businessName: "",
+    priceOption: "",
+  promotion: "",
     otherServiceDetail: "",
     message: "We need a new website for our business.",
     companyWebsite: "",

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
@@ -79,21 +80,16 @@ export default function RootLayout({
     <html
       lang={siteConfig.lang}
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       data-accent={DEFAULT_ACCENT}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        {/* Apply the persisted accent before first paint (no flash). */}
-        {/** biome-ignore lint/security/noDangerouslySetInnerHtml: Using this to inject an HTML */}
-        <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
+      <body className="min-h-full flex flex-col">
+        {/* App Router injects beforeInteractive scripts into the document head. */}
+        <Script id="mogen-accent-init" strategy="beforeInteractive">{ACCENT_INIT_SCRIPT}</Script>
         {process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID && <RampifyAnalytics />}
         <JSAnalytics />
-        <script
-          defer
-          src="https://app.supermetry.com/js/vymccwn7ggad.js"
-        ></script>
-      </head>
-      <body className="min-h-full flex flex-col">
+        <Script id="supermetry" strategy="afterInteractive" src="https://app.supermetry.com/js/vymccwn7ggad.js" />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

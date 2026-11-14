@@ -1,16 +1,10 @@
 "use client";
 
-import { useTypewriter } from "@/hooks/use-typewriter";
 import { getService } from "@/data/services";
 import type { Promotion } from "@/data/promotions";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { useConversionCta } from "@/lib/conversion/use-conversion-cta";
-import {
-  DEFAULT_HERO_LOCATION,
-  DEFAULT_HERO_SERVICE_SLUG,
-  HERO_LOCATIONS,
-  heroMicrocopy,
-} from "@/lib/hero";
+import { DEFAULT_HERO_SERVICE_SLUG, heroMicrocopy } from "@/lib/hero";
 import DriftingMetrics from "./drifting-metrics";
 import MagneticButton from "./magnet-button";
 
@@ -37,10 +31,6 @@ export default function Hero({
   featuredPromotion,
 }: Readonly<HeroProps>) {
   const service = getService(serviceSlug) ?? getService(DEFAULT_HERO_SERVICE_SLUG)!;
-  // Rotating office line. SSR/no-JS renders the default location
-  // ("Maboloka") — rotation to Soshanguve/Centurion is client-side only.
-  const typedLocation = useTypewriter([...HERO_LOCATIONS]);
-  const location = typedLocation || DEFAULT_HERO_LOCATION;
   // Primary CTA resolves identically to the ConversionBar on this page.
   const cta = useConversionCta({
     defaultServiceSlug: service.slug,
@@ -64,29 +54,18 @@ export default function Hero({
               aria-hidden="true"
             />
             <span className="small-caps text-muted-foreground">
-              Maboloka · South Africa · {service.name}
+              Maboloka · Soshanguve · Centurion
             </span>
           </div>
 
           <h1 className="font-display text-[11vw] leading-[0.95] font-black tracking-tight text-ink lg:text-[5vw]">
-            Expert {service.name}
+            Professional {service.name}
             <br />
-            <span aria-hidden="true">in {location}</span>
-            <span className="sr-only">
-              in {HERO_LOCATIONS.join(", ")}
-            </span>
-            <span
-              className="ml-1 inline-block h-[0.8em] w-[0.08em] translate-y-[0.05em] bg-ink animate-pulse"
-              aria-hidden="true"
-            />
-            <br />
-            <span className="block text-[6vw] lg:text-[2.2vw] font-black text-ink/90 mt-2">
-              that wins customers.
-            </span>
+            <span className="text-catalyst">for South African Businesses.</span>
           </h1>
 
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink/80">
-            {service.tagline}
+            {service.tagline} Serving Maboloka, Soshanguve, Centurion and businesses across South Africa.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">

@@ -3,7 +3,7 @@ import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
 import PageShell from "@/components/mogen/page-shell";
 import PromotionCard from "@/components/mogen/promotion-card";
-import { getFeaturedPromotion, getPublicPromotions } from "@/data/promotions";
+import { loadFeaturedPromotion, loadPublicPromotions } from "@/lib/catalogue/promotions-server";
 import {
   buildEnquiryHref,
   parseEnquiryAttribution,
@@ -27,13 +27,13 @@ export default async function PromotionsIndexPage({
 }: Readonly<{
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }>) {
-  const promotions = getPublicPromotions();
+  const promotions = await loadPublicPromotions();
   // Carry allowlisted attribution (utm_*) from the collection URL into
   // each card's enquiry CTA — explicit promotion context always wins.
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});
   // The promotions routes behave like the homepage: the valid featured
   // promotion selects the ConversionBar journey.
-  const featuredPromotion = getFeaturedPromotion();
+  const featuredPromotion = await loadFeaturedPromotion();
 
   return (
     <PageShell
@@ -52,6 +52,7 @@ export default async function PromotionsIndexPage({
       <BlueprintGrid className="bg-bone pb-24">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
           <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-2">
+            {promotions.length === 0 && <p className="bg-bone p-8 text-ink/70 md:col-span-2">No current promotions. Explore our standard Web Development packages and prices.</p>}
             {promotions.map((p) => (
               <PromotionCard
                 key={p.slug}

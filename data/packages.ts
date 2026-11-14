@@ -5,6 +5,10 @@
  *
  *   promotion → package → service
  *
+ * Web Development scope, prices and publication state live in NeonDB when enabled.
+ * This list remains a backwards-compatible synchronous ID resolver for legacy
+ * contact and promotion code; it is NOT the authority for published offers.
+ *
  * This registry is resolution-only: it maps identifiers so enquiry URLs
  * can carry the minimum context (`package=sprout`,
  * `promotion=mogen-sprout-first-100`) and the application infers the rest.
@@ -28,7 +32,11 @@ export interface ServicePackage {
 export const PACKAGES: ServicePackage[] = [
   { id: "seed", name: "Seed", serviceSlug: "web-development" },
   { id: "sprout", name: "Sprout", serviceSlug: "web-development" },
+  { id: "seedling", name: "Seedling", serviceSlug: "web-development" },
   { id: "vegetative", name: "Vegetative", serviceSlug: "web-development" },
+  { id: "budding", name: "Budding", serviceSlug: "web-development" },
+  { id: "flowering", name: "Flowering", serviceSlug: "web-development" },
+  { id: "ripening", name: "Ripening", serviceSlug: "web-development" },
   { id: "ignition", name: "Ignition", serviceSlug: "seo" },
   { id: "scale", name: "Scale", serviceSlug: "seo" },
   { id: "dominance", name: "Dominance", serviceSlug: "seo" },
