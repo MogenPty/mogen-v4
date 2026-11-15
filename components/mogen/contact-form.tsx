@@ -10,8 +10,16 @@ import { SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
+import { formatPromotionPrice } from "@/data/promotions";
+import {
+  resolvePromotionForOption,
+  type ContactPromotionChoice,
+} from "@/lib/contact/promotion-selection";
 import MagneticButton from "./magnet-button";
 import { trackConversion } from "@/lib/rampify-tracker";
+import MogenSelect from "./mogen-select";
+
+export type { ContactPromotionChoice } from "@/lib/contact/promotion-selection";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const TURNSTILE_ACTION = "contact";
@@ -85,6 +93,7 @@ interface ContactFormProps {
   /** Server-approved public package choices (Neon published rows in catalogue mode). */
   availablePackages?: ServicePackage[];
   availablePriceOptions?: PublicWebPriceChoice[];
+  availablePromotions?: ContactPromotionChoice[];
 }
 
 export default function ContactForm({
@@ -100,6 +109,7 @@ export default function ContactForm({
   initialAttribution,
   availablePackages = PACKAGES,
   availablePriceOptions = [],
+  availablePromotions = [],
 }: Readonly<ContactFormProps> = {}) {
   const resolvedService =
     initialService && CONTACT_SERVICES.includes(initialService)
@@ -135,6 +145,13 @@ export default function ContactForm({
         return order.indexOf(a.billingMode) - order.indexOf(b.billingMode);
       }) : [];
   const selectedOption = packagePriceOptions.find(option => option.id === form.priceOption);
+  const findPromotionForOption = (priceOptionId: string, packageId = form.package) =>
+    resolvePromotionForOption(availablePromotions, form.promotion, packageId, priceOptionId);
+  const selectedPromotion = findPromotionForOption(form.priceOption);
+  const selectedPromotionPrice = selectedPromotion?.pricing.find(line =>
+    line.priceOptionId === form.priceOption && line.appliesTo !== "setup");
+  const selectedPromotionSetup = selectedPromotion?.pricing.find(line =>
+    line.priceOptionId === form.priceOption && line.appliesTo === "setup");
   const paymentLabels = {
     managed_monthly: "Managed Monthly",
     managed_annual: "Managed Annually",
@@ -218,7 +235,12 @@ export default function ContactForm({
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, attribution, turnstileToken }),
+        body: JSON.stringify({
+          ...form,
+          promotion: selectedPromotion?.slug ?? form.promotion,
+          attribution,
+          turnstileToken,
+        }),
       });
       const data = (await res.json()) as {
         ok: boolean;
@@ -318,65 +340,75 @@ export default function ContactForm({
           </span>
           <span className="sr-only"> (required)</span>
         </label>
-        <select
-          id={"service"}
+        <MogenSelect
+          id="service"
           name="service"
           value={form.service}
-          onChange={(e) => {
-            const next = switchEnquiryService(form, e.target.value, packageMemory.current, availablePackages);
+          onChange={(value) => {
+            const next = switchEnquiryService(form, value, packageMemory.current, availablePackages);
             packageMemory.current = next.memory;
-            setForm({ ...next.form, promotion: e.target.value === "Web Development" ? form.promotion : "" });
+            setForm({ ...next.form, promotion: value === "Web Development" ? form.promotion : "" });
           }}
           required
-          aria-required="true"
-          className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark"
-        >
-          <option value="" className="bg-bone text-ink">
-            Select a service
-          </option>
-          {CONTACT_SERVICES.map((s) => (
-            <option key={s} value={s} className="bg-bone text-ink">
-              {s}
-            </option>
-          ))}
-        </select>
+          placeholder="Select a service"
+          tone="mogen"
+          className="mt-2"
+          options={CONTACT_SERVICES.map(service => ({ value: service, label: service }))}
+        />
         {servicePackages.length > 0 && (
           <div className="mt-3">
             <label htmlFor="contact-package" className="small-caps text-ink/60">Package of interest</label>
-            <select
+            <MogenSelect
               id="contact-package"
               name="package"
               value={form.package}
-              onChange={(e) => {
-                const next = switchEnquiryPackage(form, e.target.value, packageMemory.current, availablePackages);
+              onChange={(value) => {
+                const next = switchEnquiryPackage(form, value, packageMemory.current, availablePackages);
                 packageMemory.current = next.memory;
                 setForm({ ...next.form, promotion: "" });
               }}
-              className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark"
-            >
-              <option value="" className="bg-bone text-ink">Not sure yet / request advice</option>
-              {servicePackages.map(pkg => <option key={pkg.id} value={pkg.id} className="bg-bone text-ink">{pkg.name}</option>)}
-            </select>
+              placeholder="Not sure yet / request advice"
+              tone="mogen"
+              className="mt-2"
+              options={servicePackages.map(pkg => ({ value: pkg.id, label: pkg.name }))}
+            />
           </div>
         )}
         {packagePriceOptions.length > 0 && (
           <div className="mt-3">
             <label htmlFor="contact-payment-option" className="small-caps text-ink/60">Payment type</label>
-            <select id="contact-payment-option" name="priceOption" value={selectedOption?.id ?? ""}
-              onChange={event => {
-                const next = switchEnquiryPriceOption(form, event.target.value, packageMemory.current, packagePriceOptions.map(option => option.id));
+            <MogenSelect id="contact-payment-option" name="priceOption" value={selectedOption?.id ?? ""}
+              onChange={value => {
+                const next = switchEnquiryPriceOption(form, value, packageMemory.current, packagePriceOptions.map(option => option.id));
                 packageMemory.current = next.memory;
-                setForm({ ...next.form, promotion: "" });
+                const promotion = findPromotionForOption(value, next.form.package);
+                setForm({ ...next.form, promotion: promotion?.slug ?? "" });
               }}
-              className="mt-2 w-full border border-ink/25 bg-ink/5 px-4 py-3 text-ink scheme-light focus:border-catalyst/60 focus:outline-none dark:scheme-dark">
-              <option value="">Not sure yet / please advise</option>
-              {packagePriceOptions.map(option => (
-                <option key={option.id} value={option.id}>
-                  {paymentLabels[option.billingMode]} — {new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(option.amountCents / 100)}{option.billingMode === "managed_monthly" ? "/month" : option.billingMode === "managed_annual" ? "/year" : " once-off"}
-                </option>
-              ))}
-            </select>
-            {selectedOption?.setupFeeCents !== null && selectedOption?.setupFeeCents !== undefined && selectedOption.setupFeeCents > 0 && (
+              placeholder="Not sure yet / please advise"
+              tone="mogen"
+              className="mt-2"
+              options={packagePriceOptions.map(option => {
+                const promotion = findPromotionForOption(option.id);
+                const promotionPrice = promotion?.pricing.find(line =>
+                  line.priceOptionId === option.id && line.appliesTo !== "setup");
+                const regularPrice = `${new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(option.amountCents / 100)}${option.billingMode === "managed_monthly" ? "/month" : option.billingMode === "managed_annual" ? "/year" : " once-off"}`;
+                const promotionalPrice = promotionPrice?.promotional
+                  ? formatPromotionPrice(promotionPrice.promotional, promotionPrice.cadence)
+                  : undefined;
+                return {
+                  value: option.id,
+                  label: promotionalPrice
+                    ? `${paymentLabels[option.billingMode]} — ${promotionalPrice} promotion (normally ${regularPrice})`
+                    : `${paymentLabels[option.billingMode]} — ${regularPrice}`,
+                };
+              })}
+            />
+            {selectedPromotionSetup?.promotional ? (
+              <p className="mt-1 text-xs text-ink/65">
+                Promotional setup: <span className="font-semibold text-catalyst">{formatPromotionPrice(selectedPromotionSetup.promotional, selectedPromotionSetup.cadence)}</span>{" "}
+                <span>(normally {formatPromotionPrice(selectedPromotionSetup.regular, selectedPromotionSetup.cadence)})</span>
+              </p>
+            ) : selectedOption?.setupFeeCents !== null && selectedOption?.setupFeeCents !== undefined && selectedOption.setupFeeCents > 0 && (
               <p className="mt-1 text-xs text-ink/65">Plus {new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(selectedOption.setupFeeCents / 100)} setup</p>
             )}
           </div>
@@ -402,13 +434,33 @@ export default function ContactForm({
                 <span className="font-semibold text-ink">{selectedOption ? paymentLabels[selectedOption.billingMode] : initialPriceOptionLabel}</span>
               </p>
             )}
-            {initialPromotionName && (!availablePriceOptions.length || form.promotion) && (
-              <p>
-                Promotion:{" "}
-                <span className="font-semibold text-ink">
-                  {initialPromotionName}
-                </span>
-              </p>
+            {(selectedPromotion?.name || (initialPromotionName && (!availablePriceOptions.length || form.promotion))) && (
+              <>
+                <p>
+                  Promotion:{" "}
+                  <span className="font-semibold text-ink">
+                    {selectedPromotion?.name ?? initialPromotionName}
+                  </span>
+                </p>
+                {selectedPromotionPrice?.promotional && (
+                  <p className="mt-1">
+                    Promotion price:{" "}
+                    <span className="font-semibold text-catalyst">
+                      {formatPromotionPrice(selectedPromotionPrice.promotional, selectedPromotionPrice.cadence)}
+                    </span>{" "}
+                    <span>(normally {formatPromotionPrice(selectedPromotionPrice.regular, selectedPromotionPrice.cadence)})</span>
+                  </p>
+                )}
+                {selectedPromotionSetup?.promotional && (
+                  <p className="mt-1">
+                    Promotional setup:{" "}
+                    <span className="font-semibold text-catalyst">
+                      {formatPromotionPrice(selectedPromotionSetup.promotional, selectedPromotionSetup.cadence)}
+                    </span>{" "}
+                    <span>(normally {formatPromotionPrice(selectedPromotionSetup.regular, selectedPromotionSetup.cadence)})</span>
+                  </p>
+                )}
+              </>
             )}
             {initialPackageNotice && (
               <p className="mt-1">{initialPackageNotice}</p>

@@ -9,7 +9,7 @@ import { siteConfig } from "@/data/site";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import type { ServicePackage } from "@/data/packages";
 import type { PublicWebPriceChoice } from "./web-price-options";
-import ContactForm from "@/components/mogen/contact-form";
+import ContactForm, { type ContactPromotionChoice } from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import Nav from "@/components/mogen/nav";
@@ -35,6 +35,7 @@ interface Props {
   initialAttribution?: EnquiryAttribution;
   availablePackages?: ServicePackage[];
   availablePriceOptions?: PublicWebPriceChoice[];
+  availablePromotions?: ContactPromotionChoice[];
 }
 
 export default function Contact({
@@ -51,6 +52,7 @@ export default function Contact({
   initialAttribution,
   availablePackages,
   availablePriceOptions,
+  availablePromotions,
 }: Readonly<Props>) {
   return (
     <div className="bg-bone">
@@ -163,6 +165,7 @@ export default function Contact({
                   initialAttribution={initialAttribution}
                   availablePackages={availablePackages}
                   availablePriceOptions={availablePriceOptions}
+                  availablePromotions={availablePromotions}
                 />
               </div>
             </div>

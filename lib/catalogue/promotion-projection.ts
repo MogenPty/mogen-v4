@@ -16,6 +16,22 @@ const strings = (value: unknown): string[] => Array.isArray(value) ? value.filte
 const rec = (value: unknown): Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const date = (value: Date | null): string | undefined => value?.toISOString().slice(0, 10);
+const percent = (basisPoints: number) => new Intl.NumberFormat("en-ZA", { maximumFractionDigits: 2 }).format(basisPoints / 100);
+
+function discountSummary(target: CampaignTarget): string {
+  return target.discountKind === "percent"
+    ? `${percent(target.discountPercentBps ?? 0)}% discount`
+    : `${zar(target.discountAmountCents ?? 0)} discount`;
+}
+
+function discountNote(target: CampaignTarget, option: WebPriceOption): string {
+  const summary = discountSummary(target);
+  if (target.appliesTo !== "recurring") return `${summary} applies.`;
+  const cycle = option.billingMode === "managed_annual" ? "annual" : "monthly";
+  if (!target.discountedMonths) return `${summary} applies to the ${cycle} subscription.`;
+  const periods = target.discountedMonths === 1 ? "billing period" : "billing periods";
+  return `${summary} applies for ${target.discountedMonths} ${cycle} ${periods}.`;
+}
 
 /** DB targets are the only source for prices and discounts. No client-authored price claims. */
 export function projectPromotion(
@@ -62,14 +78,19 @@ export function projectPromotion(
       option.billingMode === "managed_monthly" ? "/month" :
       option.billingMode === "managed_annual" ? "/year" : "once-off",
     featured: i === 0,
-    note: target.discountedMonths ? `Discount applies for ${target.discountedMonths} monthly billing periods.` : undefined,
+    note: discountNote(target, option),
+    discountSummary: discountSummary(target),
+    priceOptionId: option.id,
+    appliesTo: target.appliesTo,
   }));
   return {
     id: row.id, slug: row.slug, source: "database",
     targetPriceOptionId: primary.option.id,
+    targetPriceOptionIds: [...new Set(selected.map(item => item.option.id))],
     name: row.name, shortDescription: str(content.shortDescription, row.description),
     description: row.description, status,
     startDate: date(row.startsAt), endDate: date(row.endsAt),
+    startsAt: row.startsAt?.toISOString(), endsAt: row.endsAt?.toISOString(),
     isFeatured: row.isFeatured, sortOrder: row.sortOrder,
     pricing, eligibility: [
       ...(strings(content.eligibility).length ? strings(content.eligibility) : row.eligibility ? [row.eligibility] : []),

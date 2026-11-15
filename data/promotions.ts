@@ -53,6 +53,12 @@ export interface PromotionPricePoint {
   featured?: boolean;
   /** Extra clarification shown under the price line. */
   note?: string;
+  /** Plain-language value of the reduction, e.g. "R50 discount" or "10% discount". */
+  discountSummary?: string;
+  /** Database payment option this line applies to. */
+  priceOptionId?: string;
+  /** Which amount on the payment option is discounted. */
+  appliesTo?: "recurring" | "setup" | "project";
 }
 
 /**
@@ -106,6 +112,8 @@ export interface Promotion {
   source?: "database";
   /** Approved published payment option targeted by this promotion. */
   targetPriceOptionId?: string;
+  /** Every approved payment option targeted by a multi-plan promotion. */
+  targetPriceOptionIds?: string[];
   name: string;
   shortDescription: string;
   description: string;
@@ -121,6 +129,9 @@ export interface Promotion {
    */
   startDate?: string;
   endDate?: string;
+  /** Exact database schedule instants retained for audit-sensitive workflows. */
+  startsAt?: string;
+  endsAt?: string;
 
   /** Explicit featuring — never inferred from sortOrder. */
   isFeatured: boolean;
@@ -341,6 +352,7 @@ export function getEffectiveStatus(
     process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
     promotion.relatedService === "web-development" && promotion.source !== "database"
   ) return "expired";
+  if (promotion.source === "database") return promotion.status;
   if (
     promotion.status === "draft" ||
     promotion.status === "archived" ||

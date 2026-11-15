@@ -213,7 +213,8 @@ export default function ServiceDetail({
                 </p>
               </div>
               {webPackages !== null && webPackages !== undefined ? (
-                <WebCataloguePricing packages={webPackages} prices={webPrices} />
+                <WebCataloguePricing packages={webPackages} prices={webPrices} promotions={activePromotions}
+                  recommendedPackageId={service.pricing?.find(tier => tier.featured)?.packageId} />
               ) : service.pricing ? (
                 <ServicePricing pricing={service.pricing} attribution={attribution} />
               ) : null}

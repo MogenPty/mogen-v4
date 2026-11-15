@@ -3,6 +3,7 @@ import {
   buildContactHtml,
   buildContactText,
   contactInputSchema,
+  formatContactTimestamp,
   resolveSubmissionPackage,
 } from "./contact-service";
 
@@ -55,6 +56,33 @@ describe("database catalogue enquiry mail", () => {
     expect(html).toContain("Sprout Launch");
     const withoutApproval = buildContactText(promoted, "2026-11-11T12:00:00.000Z", "Sprout", "Managed Monthly");
     expect(withoutApproval).not.toContain("Promotion:");
+  });
+
+  it("records the approved promotional prices and exact campaign window", () => {
+    const promoted = contactInputSchema.parse({ ...input, promotion: "seedling-launch" });
+    const snapshot = {
+      name: "Seedling Launch",
+      pricing: [
+        { label: "Monthly subscription", regular: "R 449", promotional: "R 400", cadence: "/month", priceOptionId: "seedling-monthly", appliesTo: "recurring" as const },
+        { label: "Setup fee", regular: "R 999", promotional: "R 699", cadence: "once-off", priceOptionId: "seedling-monthly", appliesTo: "setup" as const },
+      ],
+      startsAt: "2026-11-15T08:00:00.000Z",
+      endsAt: "2026-11-15T12:30:00.000Z",
+    };
+    const plain = buildContactText(promoted, "2026-11-15T10:46:54.857Z", "Seedling", "Managed Monthly", undefined, snapshot);
+    const html = buildContactHtml(promoted, "2026-11-15T10:46:54.857Z", "Seedling", "Managed Monthly", undefined, snapshot);
+
+    expect(plain).toContain("Promotion price (Monthly subscription): R 400/month (normally R 449/month)");
+    expect(plain).toContain("Promotional setup: R 699 once-off (normally R 999 once-off)");
+    expect(plain).toContain("Promotion status at submission: Active — server validated");
+    expect(plain).toContain("Promotion ends: 15 Nov 2026, 14:30:00 SAST (UTC+02:00; 2026-11-15T12:30:00.000Z)");
+    expect(html).toContain("R 400/month (normally R 449/month)");
+    expect(html).toContain("R 699 once-off (normally R 999 once-off)");
+  });
+
+  it("renders submission timestamps with local and absolute timezone context", () => {
+    expect(formatContactTimestamp("2026-11-15T10:46:54.857Z"))
+      .toBe("15 Nov 2026, 12:46:54 SAST (UTC+02:00; 2026-11-15T10:46:54.857Z)");
   });
 
 });

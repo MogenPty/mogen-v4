@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import MogenSelect from "@/components/mogen/mogen-select";
+import type { Promotion } from "@/data/promotions";
 import type { BillingMode } from "@/lib/catalogue/commercial";
 
 export interface PublicWebPriceChoice {
@@ -37,11 +39,19 @@ const zar = (amount: number) =>
 export default function WebPriceOptions({
   packageId,
   options,
-}: Readonly<{ packageId: string; options: PublicWebPriceChoice[] }>) {
+  promotions = [],
+  tone = "mogen",
+}: Readonly<{
+  packageId: string;
+  options: PublicWebPriceChoice[];
+  promotions?: Promotion[];
+  tone?: "mogen" | "inverse";
+}>) {
+  const inverse = tone === "inverse";
   const sortedOptions = [...options].sort((a, b) => priority[a.billingMode] - priority[b.billingMode]);
-  const [selectedId, setSelectedId] = useState(sortedOptions[0]?.id ?? "");
-  const selected = sortedOptions.find(option => option.id === selectedId) ?? sortedOptions[0];
-  if (!selected) {
+  const [selectedId, setSelectedId] = useState("");
+  const selected = sortedOptions.find(option => option.id === selectedId);
+  if (!sortedOptions.length) {
     return (
       <Link href={`/contact?service=web-development&package=${encodeURIComponent(packageId)}`}
         className="mt-7 block rounded bg-catalyst px-5 py-3 text-center font-semibold !text-white hover:bg-catalyst-hover hover:!text-white">
@@ -49,37 +59,55 @@ export default function WebPriceOptions({
       </Link>
     );
   }
-  const href = `/contact?service=web-development&package=${encodeURIComponent(packageId)}&priceOption=${encodeURIComponent(selected.id)}`;
+  const selectedPromotion = selected
+    ? promotions.find(promotion => (promotion.targetPriceOptionIds ?? [promotion.targetPriceOptionId])
+      .filter(Boolean).includes(selected.id))
+    : undefined;
+  const promotionLines = selectedPromotion?.pricing.filter(line => line.priceOptionId === selected?.id) ?? [];
+  const mainPromotion = promotionLines.find(line => line.appliesTo !== "setup");
+  const setupPromotion = promotionLines.find(line => line.appliesTo === "setup");
+  const href = selected
+    ? `/contact?service=web-development&package=${encodeURIComponent(packageId)}&priceOption=${encodeURIComponent(selected.id)}${selectedPromotion ? `&promotion=${encodeURIComponent(selectedPromotion.slug)}` : ""}`
+    : "";
   return (
-    <div className="mt-5 flex flex-1 flex-col border-t border-ink/15 pt-5">
-      <label htmlFor={`billing-${packageId}`} className="small-caps text-ink/70">
+    <div className={`mt-5 border-t pt-5 ${inverse ? "border-bone/20" : "border-ink/15"}`}>
+      <label htmlFor={`billing-${packageId}`} className={`small-caps ${inverse ? "text-bone/70" : "text-ink/70"}`}>
         How would you like to pay?
       </label>
-      <select id={`billing-${packageId}`} value={selected.id}
-        onChange={e => setSelectedId(e.target.value)}
-        className="mt-2 w-full rounded border border-ink/30 bg-white px-3 py-2 text-sm text-[#171717]">
-        {sortedOptions.map(option =>
-          <option key={option.id} value={option.id}>{labels[option.billingMode]}</option>
-        )}
-      </select>
-      <div aria-live="polite" className="mt-3 space-y-2">
-        <p className="font-display text-2xl font-black text-ink">
-          {zar(selected.amountCents)}{selected.billingMode === "managed_monthly" ? "/month" : selected.billingMode === "managed_annual" ? "/year" : " once-off"}
-        </p>
-        {selected.setupFeeCents !== null && selected.setupFeeCents > 0 &&
-          <p className="text-sm text-ink/70">One-time setup fee: {zar(selected.setupFeeCents)}</p>}
-        {selected.minimumMonths !== null && selected.minimumMonths > 0 &&
-          <p className="text-sm text-ink/70">Minimum term: {selected.minimumMonths} months</p>}
-        {selected.depositPercent !== null && selected.depositPercent > 0 &&
-          <p className="text-sm text-ink/70">Deposit: {selected.depositPercent}%</p>}
-        {selected.billingMode === "managed_annual" && selected.initialHostingMonths !== null &&
-          <p className="text-sm text-ink/70">Initial hosting: {selected.initialHostingMonths} months</p>}
-        <p className="text-sm text-ink/70">{descriptions[selected.billingMode]}</p>
-        <p className="text-xs text-ink/60">{selected.handoverPolicy}</p>
-      </div>
-      <Link href={href} className="mt-auto block rounded bg-catalyst px-5 py-3 text-center font-semibold !text-white hover:bg-catalyst-hover hover:!text-white">
-        Enquire about {labels[selected.billingMode]}
-      </Link>
+      <MogenSelect id={`billing-${packageId}`} value={selectedId} onChange={setSelectedId}
+        placeholder="Choose a payment option" tone={tone} className="mt-2"
+        options={sortedOptions.map(option => ({
+          value: option.id,
+          label: `${labels[option.billingMode]} — ${zar(option.amountCents)}${option.billingMode === "managed_monthly" ? "/month" : option.billingMode === "managed_annual" ? "/year" : " once-off"}`,
+        }))} />
+      {selected ? (
+        <div aria-live="polite" className={`mt-4 space-y-2 rounded-lg p-4 ${inverse ? "bg-bone/5" : "bg-ink/5"}`}>
+          {selectedPromotion && <p className="small-caps text-catalyst">{selectedPromotion.name}</p>}
+          <p className={`font-display text-2xl font-black ${inverse ? "text-bone" : "text-ink"}`}>
+            {mainPromotion?.promotional ? <><span className={`mr-2 text-base font-semibold line-through ${inverse ? "text-bone/45" : "text-ink/45"}`}>{mainPromotion.regular}</span>{mainPromotion.promotional}</> : zar(selected.amountCents)}
+            {selected.billingMode === "managed_monthly" ? "/month" : selected.billingMode === "managed_annual" ? "/year" : " once-off"}
+          </p>
+          {mainPromotion?.note && <p className={`text-sm ${inverse ? "text-bone/70" : "text-ink/70"}`}>{mainPromotion.note}</p>}
+          {selected.setupFeeCents !== null && selected.setupFeeCents > 0 && (
+            <div className={`text-sm ${inverse ? "text-bone/70" : "text-ink/70"}`}>
+              <p>One-time setup fee: {setupPromotion?.promotional
+                ? <><span className="mr-2 line-through">{setupPromotion.regular}</span><strong className="text-catalyst">{setupPromotion.promotional}</strong></>
+                : zar(selected.setupFeeCents)}</p>
+              {setupPromotion?.note && <p className="mt-1">{setupPromotion.note}</p>}
+            </div>
+          )}
+          {selected.minimumMonths !== null && selected.minimumMonths > 0 && <p className={`text-sm ${inverse ? "text-bone/70" : "text-ink/70"}`}>Minimum term: {selected.minimumMonths} months</p>}
+          {selected.depositPercent !== null && selected.depositPercent > 0 && <p className={`text-sm ${inverse ? "text-bone/70" : "text-ink/70"}`}>Deposit: {selected.depositPercent}%</p>}
+          {selected.billingMode === "managed_annual" && selected.initialHostingMonths !== null && <p className={`text-sm ${inverse ? "text-bone/70" : "text-ink/70"}`}>Initial hosting: {selected.initialHostingMonths} months</p>}
+          <p className={`text-sm ${inverse ? "text-bone/70" : "text-ink/70"}`}>{descriptions[selected.billingMode]}</p>
+          <p className={`text-xs ${inverse ? "text-bone/60" : "text-ink/60"}`}>{selected.handoverPolicy}</p>
+          <Link href={href} className="mt-3 block rounded bg-catalyst px-5 py-3 text-center font-semibold !text-white hover:bg-catalyst-hover hover:!text-white">
+            Enquire about {labels[selected.billingMode]}
+          </Link>
+        </div>
+      ) : (
+        <p className={`mt-3 text-sm ${inverse ? "text-bone/60" : "text-ink/60"}`}>Select a payment option to see its price, terms and enquiry button.</p>
+      )}
     </div>
   );
 }

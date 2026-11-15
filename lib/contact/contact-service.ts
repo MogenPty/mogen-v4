@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getPackage } from "@/data/packages";
+import { formatPromotionPrice, type PromotionPricePoint } from "@/data/promotions";
 import { SERVICES } from "@/data/services";
 import type { MailProvider } from "@/lib/mail/mail-provider";
 import type { MailResult, MailMessage as Message } from "@/lib/mail/mail-types";
@@ -91,6 +92,50 @@ export interface ContactMailConfig {
   to: string | string[];
 }
 
+export interface ApprovedPromotionSnapshot {
+  name: string;
+  pricing: PromotionPricePoint[];
+  startsAt?: string;
+  endsAt?: string;
+}
+
+const BUSINESS_TIME_ZONE = "Africa/Johannesburg";
+
+export function formatContactTimestamp(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-ZA", {
+      timeZone: BUSINESS_TIME_ZONE,
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(date).map(part => [part.type, part.value]),
+  );
+  return `${parts.day} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}:${parts.second} SAST (UTC+02:00; ${date.toISOString()})`;
+}
+
+function promotionSnapshotEntries(snapshot?: ApprovedPromotionSnapshot): { label: string; value: string }[] {
+  if (!snapshot) return [];
+  const prices = snapshot.pricing.flatMap(line => {
+    if (!line.promotional) return [];
+    const label = line.appliesTo === "setup" ? "Promotional setup" : `Promotion price (${line.label})`;
+    const promotional = formatPromotionPrice(line.promotional, line.cadence);
+    const regular = formatPromotionPrice(line.regular, line.cadence);
+    return [{ label, value: `${promotional} (normally ${regular})${line.note ? ` — ${line.note}` : ""}` }];
+  });
+  return [
+    ...prices,
+    { label: "Promotion status at submission", value: "Active — server validated" },
+    ...(snapshot.startsAt ? [{ label: "Promotion starts", value: formatContactTimestamp(snapshot.startsAt) }] : []),
+    ...(snapshot.endsAt ? [{ label: "Promotion ends", value: formatContactTimestamp(snapshot.endsAt) }] : []),
+  ];
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -163,12 +208,15 @@ export function buildContactText(
   approvedPackageName?: string,
   approvedPriceOptionLabel?: string,
   approvedPromotionName?: string,
+  approvedPromotion?: ApprovedPromotionSnapshot,
 ): string {
   const attribution = attributionEntries(input).map(
     ({ label, value }) => `${label}: ${value}`,
   );
   const packageId = resolveSubmissionPackage(input);
   const packageName = packageId ? (approvedPackageName ?? getPackage(packageId)?.name ?? packageId) : "";
+  const promotionName = approvedPromotion?.name ?? approvedPromotionName;
+  const promotionSnapshot = promotionSnapshotEntries(approvedPromotion);
   const lines = [
     "New enquiry from mogen.co.za/contact",
     "",
@@ -179,11 +227,12 @@ export function buildContactText(
     `Service: ${input.service}`,
     ...(packageName ? [`Package: ${packageName}`] : []),
     ...(approvedPriceOptionLabel ? [`Payment option: ${approvedPriceOptionLabel}`] : []),
-    ...(approvedPromotionName ? [`Promotion: ${approvedPromotionName}`] : []),
+    ...(promotionName ? [`Promotion: ${promotionName}`] : []),
+    ...promotionSnapshot.map(({ label, value }) => `${label}: ${value}`),
     ...(input.service === "Other" && input.otherServiceDetail
       ? [`Service detail: ${input.otherServiceDetail}`]
       : []),
-    `Submitted: ${submittedAt}`,
+    `Submitted: ${formatContactTimestamp(submittedAt)}`,
     ...(attribution.length > 0 ? ["", "Attribution:", ...attribution] : []),
     "",
     "Message:",
@@ -198,11 +247,16 @@ export function buildContactHtml(
   approvedPackageName?: string,
   approvedPriceOptionLabel?: string,
   approvedPromotionName?: string,
+  approvedPromotion?: ApprovedPromotionSnapshot,
 ): string {
   const row = (label: string, value: string) =>
     `<tr><td style="padding:4px 12px 4px 0;color:#666">${escapeHtml(label)}</td><td style="padding:4px 0">${escapeHtml(value)}</td></tr>`;
   const packageId = resolveSubmissionPackage(input);
   const packageName = packageId ? (approvedPackageName ?? getPackage(packageId)?.name ?? packageId) : "";
+  const promotionName = approvedPromotion?.name ?? approvedPromotionName;
+  const promotionRows = promotionSnapshotEntries(approvedPromotion)
+    .map(({ label, value }) => row(label, value))
+    .join("");
   const optional = [
     input.phone ? row("Phone", input.phone) : "",
     input.businessName ? row("Business", input.businessName) : "",
@@ -211,12 +265,13 @@ export function buildContactHtml(
       : "",
     packageName ? row("Package", packageName) : "",
     approvedPriceOptionLabel ? row("Payment option", approvedPriceOptionLabel) : "",
-    approvedPromotionName ? row("Promotion", approvedPromotionName) : "",
+    promotionName ? row("Promotion", promotionName) : "",
+    promotionRows,
   ].join("");
   const attributionRows = attributionEntries(input)
     .map(({ label, value }) => row(label, value))
     .join("");
-  return `<div style="font-family:sans-serif;max-width:600px"><h2>New Mogen enquiry</h2><table><tbody>${row("Name", input.name)}${row("Email", input.email)}${optional}${row("Service", input.service)}${row("Submitted", submittedAt)}${attributionRows}</tbody></table><p style="color:#666">Message</p><p>${escapeHtml(input.message).replaceAll("\n", "<br>")}</p></div>`;
+  return `<div style="font-family:sans-serif;max-width:600px"><h2>New Mogen enquiry</h2><table><tbody>${row("Name", input.name)}${row("Email", input.email)}${optional}${row("Service", input.service)}${row("Submitted", formatContactTimestamp(submittedAt))}${attributionRows}</tbody></table><p style="color:#666">Message</p><p>${escapeHtml(input.message).replaceAll("\n", "<br>")}</p></div>`;
 }
 
 export function buildContactMessage(
@@ -226,13 +281,14 @@ export function buildContactMessage(
   approvedPackageName?: string,
   approvedPriceOptionLabel?: string,
   approvedPromotionName?: string,
+  approvedPromotion?: ApprovedPromotionSnapshot,
 ): Message {
   return {
     from: config.from,
     to: config.to,
     subject: buildContactSubject(input),
-    text: buildContactText(input, submittedAt, approvedPackageName, approvedPriceOptionLabel, approvedPromotionName),
-    html: buildContactHtml(input, submittedAt, approvedPackageName, approvedPriceOptionLabel, approvedPromotionName),
+    text: buildContactText(input, submittedAt, approvedPackageName, approvedPriceOptionLabel, approvedPromotionName, approvedPromotion),
+    html: buildContactHtml(input, submittedAt, approvedPackageName, approvedPriceOptionLabel, approvedPromotionName, approvedPromotion),
     replyTo: sanitizeHeader(input.email),
   };
 }
@@ -252,7 +308,7 @@ export async function submitContact(
   rawInput: unknown,
   provider: MailProvider,
   config: ContactMailConfig,
-  opts: { submittedAt?: string; approvedPackageName?: string; approvedPriceOptionLabel?: string; approvedPromotionName?: string } = {},
+  opts: { submittedAt?: string; approvedPackageName?: string; approvedPriceOptionLabel?: string; approvedPromotionName?: string; approvedPromotion?: ApprovedPromotionSnapshot } = {},
 ): Promise<ContactSubmissionResult> {
   const parsed = contactInputSchema.safeParse(rawInput);
   if (!parsed.success) {
@@ -289,6 +345,7 @@ export async function submitContact(
     opts.approvedPackageName,
     opts.approvedPriceOptionLabel,
     opts.approvedPromotionName,
+    opts.approvedPromotion,
   );
 
   const result: MailResult = await provider.send(message);

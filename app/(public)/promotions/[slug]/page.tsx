@@ -18,6 +18,7 @@ import {
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
 import { loadFeaturedPromotion, loadPromotionBySlug } from "@/lib/catalogue/promotions-server";
+import { formatPromotionInstant } from "@/lib/catalogue/promotion-display";
 import {
   buildEnquiryHref,
   parseEnquiryAttribution,
@@ -86,6 +87,13 @@ function formatDate(iso: string): string {
   return `${d} ${months[m - 1]} ${y}`;
 }
 
+function formatPromotionBoundary(promo: Promotion, boundary: "start" | "end"): string | undefined {
+  const instant = boundary === "start" ? promo.startsAt : promo.endsAt;
+  if (instant) return formatPromotionInstant(instant);
+  const date = boundary === "start" ? promo.startDate : promo.endDate;
+  return date ? formatDate(date) : undefined;
+}
+
 function PromotionJsonLd({ promo }: Readonly<{ promo: Promotion }>) {
   const organizationId = `${siteConfig.url}/#organization`;
   const websiteId = `${siteConfig.url}/#website`;
@@ -141,13 +149,16 @@ function PromotionJsonLd({ promo }: Readonly<{ promo: Promotion }>) {
   );
 }
 
-function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {  const status = getEffectiveStatus(promo);
+function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {
+  const status = getEffectiveStatus(promo);
+  const startLabel = formatPromotionBoundary(promo, "start");
+  const endLabel = formatPromotionBoundary(promo, "end");
   if (status === "expired") {
     return (
       <div className="border-y-2 border-catalyst bg-ink px-6 py-4 text-center">
         <p className="small-caps text-bone">
           Promotion ended
-          {promo.endDate && ` — ran through ${formatDate(promo.endDate)}`}
+          {endLabel && ` — ran through ${endLabel}`}
         </p>
         <p className="mt-1 text-sm text-bone/60">
           Details below remain for reference. This offer is no longer available.
@@ -160,7 +171,7 @@ function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {  const status
       <div className="border-y border-ink/15 bg-secondary px-6 py-4 text-center">
         <p className="small-caps text-ink">
           Coming soon
-          {promo.startDate && ` — starts ${formatDate(promo.startDate)}`}
+          {startLabel && ` — starts ${startLabel}`}
         </p>
         {promo.maximumCustomers && (
           <p className="mt-1 text-sm text-ink/60">
@@ -177,6 +188,17 @@ function PricingSection({
   promo,
   numbering = 1,
 }: Readonly<{ promo: Promotion; numbering?: number }>) {
+  const groups = promo.pricing.reduce<Array<{ id: string; title: string; lines: Promotion["pricing"] }>>((result, line) => {
+    const id = line.priceOptionId ?? line.label;
+    const existing = result.find(group => group.id === id);
+    if (existing) {
+      existing.lines.push(line);
+      if (existing.title === "Setup fee" && line.appliesTo !== "setup") existing.title = line.label;
+    } else {
+      result.push({ id, title: line.label, lines: [line] });
+    }
+    return result;
+  }, []);
   return (
     <BlueprintGrid className="bg-bone py-20">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -185,34 +207,30 @@ function PricingSection({
           title="Pricing"
         />
         <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-3">
-          {promo.pricing.map((p) => (
-            <div key={p.label} className="bg-bone p-8">
-              <h3 className="small-caps text-ink/50">{p.label}</h3>
-              <div className="mt-4 flex flex-wrap items-baseline gap-x-3">
-                {p.promotional ? (
-                  <>
-                    <span className="font-display text-4xl font-black text-catalyst">
-                      {p.promotional}
-                    </span>
-                    <span className="text-xl text-ink/40 line-through">
-                      {p.regular}
-                    </span>
-                  </>
-                ) : (
-                  <span className="font-display text-4xl font-black text-ink">
-                    {p.regular}
-                  </span>
-                )}
-                {needsCadenceSuffix(
-                  p.promotional ?? p.regular,
-                  p.cadence,
-                ) && (
-                  <span className="text-sm font-semibold text-ink/50">
-                    {p.cadence}
-                  </span>
-                )}
+          {groups.map((group) => (
+            <div key={group.id} className="bg-bone p-8">
+              <h3 className="small-caps text-ink/50">{group.title}</h3>
+              <div className="mt-5 space-y-6">
+                {group.lines.sort((left, right) => Number(left.appliesTo === "setup") - Number(right.appliesTo === "setup")).map((p) => (
+                  <div key={`${p.label}-${p.appliesTo ?? "price"}`}>
+                    {group.lines.length > 1 && <p className="mb-2 text-xs font-bold uppercase tracking-widest text-ink/45">{p.label}</p>}
+                    <div className="flex flex-wrap items-baseline gap-x-3">
+                      {p.promotional ? (
+                        <>
+                          <span className="font-display text-4xl font-black text-catalyst">{p.promotional}</span>
+                          <span className="text-xl text-ink/40 line-through">{p.regular}</span>
+                        </>
+                      ) : (
+                        <span className="font-display text-4xl font-black text-ink">{p.regular}</span>
+                      )}
+                      {needsCadenceSuffix(p.promotional ?? p.regular, p.cadence) && (
+                        <span className="text-sm font-semibold text-ink/50">{p.cadence}</span>
+                      )}
+                    </div>
+                    {p.note && <p className="mt-3 text-sm text-ink/60">{p.note}</p>}
+                  </div>
+                ))}
               </div>
-              {p.note && <p className="mt-3 text-sm text-ink/60">{p.note}</p>}
             </div>
           ))}
         </div>
@@ -244,6 +262,8 @@ export default async function PromotionDetailPage({
 
   let numbering = 1;
   const status = getEffectiveStatus(promo);
+  const startLabel = formatPromotionBoundary(promo, "start");
+  const endLabel = formatPromotionBoundary(promo, "end");
   // The promotions routes behave like the homepage: the valid featured
   // promotion (not necessarily this page's promotion) selects the
   // ConversionBar journey.
@@ -285,10 +305,10 @@ export default async function PromotionDetailPage({
               {promo.description}
             </p>
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink/50">
-              {promo.startDate && (
-                <span>Starts {formatDate(promo.startDate)}</span>
+              {startLabel && (
+                <span>Starts {startLabel}</span>
               )}
-              {promo.endDate && <span>Ends {formatDate(promo.endDate)}</span>}
+              {endLabel && <span>Ends {endLabel}</span>}
               {promo.maximumCustomers && (
                 <span>First {promo.maximumCustomers} eligible customers</span>
               )}
@@ -535,7 +555,7 @@ export default async function PromotionDetailPage({
         <>
           Starts{" "}
           <span className="text-catalyst">
-            {promo.startDate && formatDate(promo.startDate)}.
+            {startLabel}.
           </span>
         </>
       );

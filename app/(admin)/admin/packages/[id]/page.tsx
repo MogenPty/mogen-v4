@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { requireCatalogueAdmin } from "@/lib/admin/access";
 import { updatePackageAction, updatePriceAction, createPriceAction } from "@/lib/admin/catalogue-actions";
 import { getCatalogueDb } from "@/db/client";
-import { webPackages, webPackagePrices } from "@/db/schema";
+import { webPackages, webPackagePrices, webPromotions, webPromotionPrices } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 const input = adminFieldClass;
@@ -20,7 +20,16 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
   const db = getCatalogueDb();
   const [pkg] = await db.select().from(webPackages).where(eq(webPackages.id, id)).limit(1);
   if (!pkg) notFound();
-  const prices = await db.select().from(webPackagePrices).where(eq(webPackagePrices.packageId, id));
+  const [prices, promotionTargets, promotions] = await Promise.all([
+    db.select().from(webPackagePrices).where(eq(webPackagePrices.packageId, id)),
+    db.select().from(webPromotionPrices),
+    db.select().from(webPromotions),
+  ]);
+  const priceIds = new Set(prices.map(price => price.id));
+  const linkedPromotionIds = new Set(promotionTargets
+    .filter(target => priceIds.has(target.packagePriceId))
+    .map(target => target.promotionId));
+  const linkedPromotions = promotions.filter(promotion => linkedPromotionIds.has(promotion.id));
   const { saved } = await searchParams;
   return (
     <main className="min-h-screen bg-bone px-6 py-14 text-ink lg:px-10">
@@ -61,6 +70,27 @@ export default async function EditPackagePage({ params, searchParams }: Readonly
         </form>
         <h2 className="mt-12 font-display text-3xl font-black">Payment choices</h2>
         <p className="mt-2 text-muted-foreground">Amounts are in South African rand. Only publish a price after checking package eligibility and contract terms.</p>
+        <section className={`${adminCardClass} mt-6 p-6`} aria-labelledby="linked-promotions-heading">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 id="linked-promotions-heading" className="font-display text-xl font-bold">Linked promotions</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {linkedPromotions.length ? `${linkedPromotions.length} promotion${linkedPromotions.length === 1 ? "" : "s"} available for this package.` : "No promotion currently targets this package."}
+              </p>
+            </div>
+            <Link href="/admin/promotions" className="font-semibold text-catalyst underline">Manage promotions</Link>
+          </div>
+          {linkedPromotions.length > 0 && (
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {linkedPromotions.map(promotion => (
+                <li key={promotion.id} className="rounded-lg border border-border bg-muted/30 p-4">
+                  <Link href={`/admin/promotions/${promotion.id}`} className="font-bold text-catalyst hover:underline">{promotion.name}</Link>
+                  <p className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">{promotion.status}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
         <form action={createPriceAction} className={`mt-6 flex flex-wrap items-end gap-4 ${adminCardClass} p-6`}>
           <input type="hidden" name="packageId" value={pkg.id} />
           <div className="min-w-56 flex-1">
