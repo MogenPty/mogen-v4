@@ -1,7 +1,7 @@
 import { ArrowLeft, Check } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -13,13 +13,11 @@ import PromotionEnquiryCta from "@/components/mogen/promotion-enquiry-cta";
 import ServiceFAQ from "@/components/mogen/service-faq";
 import {
   getEffectiveStatus,
-  getPromotions,
   needsCadenceSuffix,
   type Promotion,
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
-import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
-import { loadFeaturedPromotion, loadPromotionBySlug, getStaticPromotionSlugs } from "@/lib/catalogue/promotions-server";
+import { loadFeaturedPromotion, loadPromotionBySlug } from "@/lib/catalogue/promotions-server";
 import {
   buildEnquiryHref,
   parseEnquiryAttribution,
@@ -27,17 +25,13 @@ import {
 } from "@/lib/enquiry/enquiry";
 import { formatNumber } from "@/lib/utils";
 
-// Date transitions (start/end) and the fallback-featuring env flag take
-// effect without a redeploy: pages regenerate at most hourly.
-export const revalidate = 3600;
+// Database promotions can be created after deployment, and attribution comes
+// from request-specific search parameters. Render each slug at request time.
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}
-
-export function generateStaticParams() {
-  return getStaticPromotionSlugs().map(slug => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
