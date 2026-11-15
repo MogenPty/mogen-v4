@@ -10,18 +10,16 @@ import { SERVICES } from "@/data/services";
 import { siteConfig } from "@/data/site";
 import { CONTACT_SERVICES } from "@/lib/contact/contact-service";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
-import { formatPromotionPrice, type PromotionPricePoint } from "@/data/promotions";
+import { formatPromotionPrice } from "@/data/promotions";
+import {
+  resolvePromotionForOption,
+  type ContactPromotionChoice,
+} from "@/lib/contact/promotion-selection";
 import MagneticButton from "./magnet-button";
 import { trackConversion } from "@/lib/rampify-tracker";
 import MogenSelect from "./mogen-select";
 
-export interface ContactPromotionChoice {
-  slug: string;
-  name: string;
-  relatedPackage?: string;
-  targetPriceOptionIds?: string[];
-  pricing: PromotionPricePoint[];
-}
+export type { ContactPromotionChoice } from "@/lib/contact/promotion-selection";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const TURNSTILE_ACTION = "contact";
@@ -147,16 +145,8 @@ export default function ContactForm({
         return order.indexOf(a.billingMode) - order.indexOf(b.billingMode);
       }) : [];
   const selectedOption = packagePriceOptions.find(option => option.id === form.priceOption);
-  const promotionMatchesOption = (
-    promotion: ContactPromotionChoice,
-    priceOptionId: string,
-    packageId = form.package,
-  ) => promotion.relatedPackage === packageId &&
-    (promotion.targetPriceOptionIds ?? []).includes(priceOptionId);
   const findPromotionForOption = (priceOptionId: string, packageId = form.package) =>
-    availablePromotions.find(promotion =>
-      promotion.slug === form.promotion && promotionMatchesOption(promotion, priceOptionId, packageId)) ??
-    availablePromotions.find(promotion => promotionMatchesOption(promotion, priceOptionId, packageId));
+    resolvePromotionForOption(availablePromotions, form.promotion, packageId, priceOptionId);
   const selectedPromotion = findPromotionForOption(form.priceOption);
   const selectedPromotionPrice = selectedPromotion?.pricing.find(line =>
     line.priceOptionId === form.priceOption && line.appliesTo !== "setup");
@@ -444,7 +434,7 @@ export default function ContactForm({
                 <span className="font-semibold text-ink">{selectedOption ? paymentLabels[selectedOption.billingMode] : initialPriceOptionLabel}</span>
               </p>
             )}
-            {(selectedPromotion?.name || initialPromotionName) && (!availablePriceOptions.length || form.promotion) && (
+            {(selectedPromotion?.name || (initialPromotionName && (!availablePriceOptions.length || form.promotion))) && (
               <>
                 <p>
                   Promotion:{" "}

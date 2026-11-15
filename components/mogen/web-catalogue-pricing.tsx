@@ -13,7 +13,9 @@ export default function WebCataloguePricing({ packages, prices = [], promotions 
   const websites = packages.filter((item) => item.websiteIncluded).sort((left, right) => {
     const leftPromotion = promotionFor(left.id);
     const rightPromotion = promotionFor(right.id);
-    if (leftPromotion?.isFeatured !== rightPromotion?.isFeatured) return leftPromotion?.isFeatured ? -1 : 1;
+    const leftFeatured = Boolean(leftPromotion?.isFeatured);
+    const rightFeatured = Boolean(rightPromotion?.isFeatured);
+    if (leftFeatured !== rightFeatured) return leftFeatured ? -1 : 1;
     if (Boolean(leftPromotion) !== Boolean(rightPromotion)) return leftPromotion ? -1 : 1;
     if (leftPromotion && rightPromotion && leftPromotion.sortOrder !== rightPromotion.sortOrder)
       return leftPromotion.sortOrder - rightPromotion.sortOrder;

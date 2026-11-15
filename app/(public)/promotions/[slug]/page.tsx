@@ -18,6 +18,7 @@ import {
 } from "@/data/promotions";
 import { siteConfig } from "@/data/site";
 import { loadFeaturedPromotion, loadPromotionBySlug } from "@/lib/catalogue/promotions-server";
+import { formatPromotionInstant } from "@/lib/catalogue/promotion-display";
 import {
   buildEnquiryHref,
   parseEnquiryAttribution,
@@ -86,6 +87,13 @@ function formatDate(iso: string): string {
   return `${d} ${months[m - 1]} ${y}`;
 }
 
+function formatPromotionBoundary(promo: Promotion, boundary: "start" | "end"): string | undefined {
+  const instant = boundary === "start" ? promo.startsAt : promo.endsAt;
+  if (instant) return formatPromotionInstant(instant);
+  const date = boundary === "start" ? promo.startDate : promo.endDate;
+  return date ? formatDate(date) : undefined;
+}
+
 function PromotionJsonLd({ promo }: Readonly<{ promo: Promotion }>) {
   const organizationId = `${siteConfig.url}/#organization`;
   const websiteId = `${siteConfig.url}/#website`;
@@ -141,13 +149,16 @@ function PromotionJsonLd({ promo }: Readonly<{ promo: Promotion }>) {
   );
 }
 
-function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {  const status = getEffectiveStatus(promo);
+function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {
+  const status = getEffectiveStatus(promo);
+  const startLabel = formatPromotionBoundary(promo, "start");
+  const endLabel = formatPromotionBoundary(promo, "end");
   if (status === "expired") {
     return (
       <div className="border-y-2 border-catalyst bg-ink px-6 py-4 text-center">
         <p className="small-caps text-bone">
           Promotion ended
-          {promo.endDate && ` — ran through ${formatDate(promo.endDate)}`}
+          {endLabel && ` — ran through ${endLabel}`}
         </p>
         <p className="mt-1 text-sm text-bone/60">
           Details below remain for reference. This offer is no longer available.
@@ -160,7 +171,7 @@ function StatusBanner({ promo }: Readonly<{ promo: Promotion }>) {  const status
       <div className="border-y border-ink/15 bg-secondary px-6 py-4 text-center">
         <p className="small-caps text-ink">
           Coming soon
-          {promo.startDate && ` — starts ${formatDate(promo.startDate)}`}
+          {startLabel && ` — starts ${startLabel}`}
         </p>
         {promo.maximumCustomers && (
           <p className="mt-1 text-sm text-ink/60">
@@ -251,6 +262,8 @@ export default async function PromotionDetailPage({
 
   let numbering = 1;
   const status = getEffectiveStatus(promo);
+  const startLabel = formatPromotionBoundary(promo, "start");
+  const endLabel = formatPromotionBoundary(promo, "end");
   // The promotions routes behave like the homepage: the valid featured
   // promotion (not necessarily this page's promotion) selects the
   // ConversionBar journey.
@@ -292,10 +305,10 @@ export default async function PromotionDetailPage({
               {promo.description}
             </p>
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink/50">
-              {promo.startDate && (
-                <span>Starts {formatDate(promo.startDate)}</span>
+              {startLabel && (
+                <span>Starts {startLabel}</span>
               )}
-              {promo.endDate && <span>Ends {formatDate(promo.endDate)}</span>}
+              {endLabel && <span>Ends {endLabel}</span>}
               {promo.maximumCustomers && (
                 <span>First {promo.maximumCustomers} eligible customers</span>
               )}
@@ -542,7 +555,7 @@ export default async function PromotionDetailPage({
         <>
           Starts{" "}
           <span className="text-catalyst">
-            {promo.startDate && formatDate(promo.startDate)}.
+            {startLabel}.
           </span>
         </>
       );
