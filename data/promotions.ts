@@ -352,6 +352,7 @@ export function getEffectiveStatus(
     process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database" &&
     promotion.relatedService === "web-development" && promotion.source !== "database"
   ) return "expired";
+  if (promotion.source === "database") return promotion.status;
   if (
     promotion.status === "draft" ||
     promotion.status === "archived" ||

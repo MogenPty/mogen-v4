@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getEffectiveStatus } from "@/data/promotions";
 import { projectPromotion, type CampaignRow, type CampaignTarget } from "./promotion-projection";
 import type { WebPriceOption } from "./commercial";
 
@@ -98,6 +99,17 @@ describe("Neon promotion presentation safety", () => {
   it("respects the campaign schedule", () => {
     expect(projectPromotion({ ...campaign, startsAt: new Date("2026-12-01T00:00:00Z"), endsAt: null }, [discount], [price], now)?.status).toBe("scheduled");
     expect(projectPromotion({ ...campaign, endsAt: new Date("2026-11-10T00:00:00Z") }, [discount], [price], now)?.status).toBe("expired");
+  });
+  it("keeps a same-day future SAST start scheduled until its exact instant", () => {
+    const startsAt = new Date("2026-11-11T22:00:00.000Z");
+    const beforeStart = projectPromotion({ ...campaign, startsAt, endsAt: null }, [discount], [price], new Date("2026-11-11T12:00:00.000Z"));
+    const atStart = projectPromotion({ ...campaign, startsAt, endsAt: null }, [discount], [price], startsAt);
+
+    expect(beforeStart?.startDate).toBe("2026-11-11");
+    expect(beforeStart?.startsAt).toBe("2026-11-11T22:00:00.000Z");
+    expect(beforeStart?.status).toBe("scheduled");
+    expect(beforeStart && getEffectiveStatus(beforeStart, "2026-11-11")).toBe("scheduled");
+    expect(atStart?.status).toBe("active");
   });
   it("preserves and enforces an exact mid-day expiry instant", () => {
     const endsAt = new Date("2026-11-11T12:30:00.000Z");

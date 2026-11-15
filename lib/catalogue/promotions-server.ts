@@ -9,7 +9,6 @@ import {
   getPromotionBySlug,
   getPromotions,
   getPublicPromotions,
-  getEffectiveStatus,
   orderPublicPromotions,
   type Promotion,
 } from "@/data/promotions";
@@ -36,7 +35,7 @@ export async function loadPublicPromotions(): Promise<Promotion[]> {
 }
 export async function loadActivePromotions(): Promise<Promotion[]> {
   if (!databaseCatalogueEnabled()) return getActivePromotions();
-  return orderPublicPromotions((await databasePromotions()).filter(p => getEffectiveStatus(p) === "active"));
+  return orderPublicPromotions((await databasePromotions()).filter(p => p.status === "active"));
 }
 export async function loadFeaturedPromotion(): Promise<Promotion | undefined> {
   if (!databaseCatalogueEnabled()) return getFeaturedPromotion();
