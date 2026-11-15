@@ -240,7 +240,12 @@ export default function ContactForm({
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, attribution, turnstileToken }),
+        body: JSON.stringify({
+          ...form,
+          promotion: selectedPromotion?.slug ?? form.promotion,
+          attribution,
+          turnstileToken,
+        }),
       });
       const data = (await res.json()) as {
         ok: boolean;
