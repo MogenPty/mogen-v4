@@ -147,12 +147,17 @@ export default function ContactForm({
         return order.indexOf(a.billingMode) - order.indexOf(b.billingMode);
       }) : [];
   const selectedOption = packagePriceOptions.find(option => option.id === form.priceOption);
-  const promotionMatchesSelection = (promotion: ContactPromotionChoice) =>
-    promotion.relatedPackage === form.package &&
-    (promotion.targetPriceOptionIds ?? []).includes(form.priceOption);
-  const selectedPromotion = availablePromotions.find(promotion =>
-    promotion.slug === form.promotion && promotionMatchesSelection(promotion)) ??
-    availablePromotions.find(promotionMatchesSelection);
+  const promotionMatchesOption = (
+    promotion: ContactPromotionChoice,
+    priceOptionId: string,
+    packageId = form.package,
+  ) => promotion.relatedPackage === packageId &&
+    (promotion.targetPriceOptionIds ?? []).includes(priceOptionId);
+  const findPromotionForOption = (priceOptionId: string, packageId = form.package) =>
+    availablePromotions.find(promotion =>
+      promotion.slug === form.promotion && promotionMatchesOption(promotion, priceOptionId, packageId)) ??
+    availablePromotions.find(promotion => promotionMatchesOption(promotion, priceOptionId, packageId));
+  const selectedPromotion = findPromotionForOption(form.priceOption);
   const selectedPromotionPrice = selectedPromotion?.pricing.find(line =>
     line.priceOptionId === form.priceOption && line.appliesTo !== "setup");
   const selectedPromotionSetup = selectedPromotion?.pricing.find(line =>
@@ -386,17 +391,14 @@ export default function ContactForm({
               onChange={value => {
                 const next = switchEnquiryPriceOption(form, value, packageMemory.current, packagePriceOptions.map(option => option.id));
                 packageMemory.current = next.memory;
-                const promotion = availablePromotions.find(item =>
-                  item.relatedPackage === next.form.package && (item.targetPriceOptionIds ?? []).includes(value));
+                const promotion = findPromotionForOption(value, next.form.package);
                 setForm({ ...next.form, promotion: promotion?.slug ?? "" });
               }}
               placeholder="Not sure yet / please advise"
               tone="mogen"
               className="mt-2"
               options={packagePriceOptions.map(option => {
-                const promotion = availablePromotions.find(item =>
-                  item.relatedPackage === form.package &&
-                  (item.targetPriceOptionIds ?? []).includes(option.id));
+                const promotion = findPromotionForOption(option.id);
                 const promotionPrice = promotion?.pricing.find(line =>
                   line.priceOptionId === option.id && line.appliesTo !== "setup");
                 const regularPrice = `${new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(option.amountCents / 100)}${option.billingMode === "managed_monthly" ? "/month" : option.billingMode === "managed_annual" ? "/year" : " once-off"}`;

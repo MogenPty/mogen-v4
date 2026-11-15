@@ -34,6 +34,10 @@ test("carries promotional amounts into the contact payment summary", () => {
   expect(pageSource).toContain("pricing: promotion.pricing");
   expect(formSource).toContain("selectedPromotionPrice");
   expect(formSource).toContain("selectedPromotionSetup");
+  expect(formSource).toContain("const findPromotionForOption");
+  expect(formSource).toContain("promotion.slug === form.promotion");
+  expect(formSource).toContain("findPromotionForOption(value, next.form.package)");
+  expect(formSource).toContain("findPromotionForOption(option.id)");
   expect(formSource).toContain("Promotion price:");
   expect(formSource).toContain("Promotional setup:");
   expect(formSource).toContain("promotion (normally");
