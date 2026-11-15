@@ -39,40 +39,58 @@ export function PromotionStatusBadge({
 function PriceSummary({ promotion }: { promotion: Promotion }) {
   const lines = promotion.pricing.filter((p) => p.promotional);
   const shown = lines.length > 0 ? lines : promotion.pricing.slice(0, 1);
+  const groups = shown.reduce<Array<{ id: string; lines: Promotion["pricing"] }>>((result, line, index) => {
+    const id = line.priceOptionId ?? `${line.label}-${index}`;
+    const existing = result.find(group => group.id === id);
+    if (existing) existing.lines.push(line);
+    else result.push({ id, lines: [line] });
+    return result;
+  }, []);
   return (
-    <div className="mt-6 space-y-2">
-      {shown.map((p) => (
-        <div key={p.label} className="flex flex-wrap items-baseline gap-x-3">
-          <span className="small-caps text-ink/50 group-hover:text-bone/50">{p.label}</span>
-          {p.promotional ? (
-            <>
-              <span className="font-display text-3xl font-black text-catalyst">
-                {p.promotional}
-                {needsCadenceSuffix(p.promotional, p.cadence) && (
-                  <span className="text-base font-bold text-ink/50 group-hover:text-bone/50">
-                    {" "}
-                    {p.cadence}
+    <div className="mt-6 space-y-3">
+      {groups.map((group, index) => {
+        const primary = group.lines.find(line => line.appliesTo !== "setup" && line.label.toLowerCase() !== "setup fee");
+        const setupLines = group.lines.filter(line => line !== primary);
+        return <div
+          key={group.id}
+          className={cn(
+            "space-y-1.5",
+            index > 0 && "border-t border-ink/15 pt-3 group-hover:border-bone/15",
+          )}
+        >
+          {primary && (
+            <div className="flex flex-wrap items-baseline gap-x-3">
+              <span className="small-caps text-ink/50 group-hover:text-bone/50">{primary.label}</span>
+              {primary.promotional ? (
+                <>
+                  <span className="font-display text-3xl font-black text-catalyst">
+                    {primary.promotional}
+                    {needsCadenceSuffix(primary.promotional, primary.cadence) && (
+                      <span className="text-base font-bold text-ink/50 group-hover:text-bone/50"> {primary.cadence}</span>
+                    )}
                   </span>
-                )}
-              </span>
-              <span className="text-lg text-ink/40 line-through group-hover:text-bone/40">
-                {" "}
-                {p.regular}
-              </span>
-            </>
-          ) : (
-            <span className="font-display text-3xl font-black text-ink group-hover:text-bone">
-              {p.regular}
-              {needsCadenceSuffix(p.regular, p.cadence) && (
-                <span className="text-base font-bold text-ink/50 group-hover:text-bone/50">
-                  {" "}
-                  {p.cadence}
+                  <span className="text-lg text-ink/40 line-through group-hover:text-bone/40">{primary.regular}</span>
+                </>
+              ) : (
+                <span className="font-display text-3xl font-black text-ink group-hover:text-bone">
+                  {primary.regular}
+                  {needsCadenceSuffix(primary.regular, primary.cadence) && (
+                    <span className="text-base font-bold text-ink/50 group-hover:text-bone/50"> {primary.cadence}</span>
+                  )}
                 </span>
               )}
-            </span>
+            </div>
           )}
+          {setupLines.map(line => (
+            <p key={`${line.label}-${line.appliesTo ?? "setup"}`} className="flex flex-wrap items-baseline gap-x-2 text-sm text-ink/60 group-hover:text-bone/60">
+              <span className="small-caps">{line.label}</span>
+              <strong className="text-base text-catalyst">{line.promotional ?? line.regular}</strong>
+              {needsCadenceSuffix(line.promotional ?? line.regular, line.cadence) && <span className="font-semibold">{line.cadence}</span>}
+              {line.promotional && <span className="line-through opacity-70">{line.regular}</span>}
+            </p>
+          ))}
         </div>
-      ))}
+      })}
     </div>
   );
 }

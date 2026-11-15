@@ -3,12 +3,12 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { databaseCatalogueEnabled } from "@/lib/catalogue/server";
 import { loadPromotionBySlug } from "@/lib/catalogue/promotions-server";
-import { getEffectiveStatus } from "@/data/promotions";
 import { getPublishedWebPackage, getPublishedWebPriceOption } from "@/db/catalogue";
 import { isPublicWebPrice, type WebPriceOption } from "@/lib/catalogue/commercial";
 import {
   getContactMailConfig,
   submitContact,
+  type ApprovedPromotionSnapshot,
 } from "@/lib/contact/contact-service";
 import type { MailProvider } from "@/lib/mail/mail-provider";
 import { getMailProvider } from "@/lib/mail/provider-factory";
@@ -65,6 +65,7 @@ function isRateLimited(ip: string): boolean {
 }
 
 export async function POST(req: Request) {
+  const submittedAt = new Date();
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (isRateLimited(ip)) {
@@ -112,6 +113,7 @@ export async function POST(req: Request) {
   let approvedPackageName: string | undefined;
   let approvedPriceOptionLabel: string | undefined;
   let approvedPromotionName: string | undefined;
+  let approvedPromotion: ApprovedPromotionSnapshot | undefined;
   // In catalogue mode, package IDs must resolve to a published Neon record.
   // Do not trust a package ID supplied by the browser or a stale promotion.
   if (databaseCatalogueEnabled() && typeof body === "object" && body !== null) {
@@ -153,17 +155,25 @@ export async function POST(req: Request) {
     }
     const promotionSlug = typeof submitted.promotion === "string" ? submitted.promotion.trim() : "";
     if (promotionSlug) {
-      const campaign = await loadPromotionBySlug(promotionSlug);
-      if (!campaign || getEffectiveStatus(campaign) !== "active" ||
+      const campaign = await loadPromotionBySlug(promotionSlug, submittedAt);
+      const promotionOptionIds = campaign?.targetPriceOptionIds ??
+        (campaign?.targetPriceOptionId ? [campaign.targetPriceOptionId] : []);
+      if (!campaign || campaign.status !== "active" ||
           submitted.service !== "Web Development" ||
           submitted.package !== campaign.relatedPackage ||
-          submitted.priceOption !== campaign.targetPriceOptionId) {
+          !promotionOptionIds.includes(String(submitted.priceOption ?? ""))) {
         return NextResponse.json(
           { ok: false, error: "This promotion is unavailable for the selected package and payment option. Please choose an available offer." },
           { status: 400 },
         );
       }
       approvedPromotionName = campaign.name;
+      approvedPromotion = {
+        name: campaign.name,
+        pricing: campaign.pricing.filter(line => line.priceOptionId === submitted.priceOption),
+        startsAt: campaign.startsAt,
+        endsAt: campaign.endsAt,
+      };
     }
   }
 
@@ -183,9 +193,11 @@ export async function POST(req: Request) {
   }
 
   const result = await submitContact(body, provider, getContactMailConfig(), {
+    submittedAt: submittedAt.toISOString(),
     approvedPackageName,
     approvedPriceOptionLabel,
     approvedPromotionName,
+    approvedPromotion,
   });
   if (!result.ok) {
     const status = result.fieldErrors ? 400 : 502;

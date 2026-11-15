@@ -177,6 +177,17 @@ function PricingSection({
   promo,
   numbering = 1,
 }: Readonly<{ promo: Promotion; numbering?: number }>) {
+  const groups = promo.pricing.reduce<Array<{ id: string; title: string; lines: Promotion["pricing"] }>>((result, line) => {
+    const id = line.priceOptionId ?? line.label;
+    const existing = result.find(group => group.id === id);
+    if (existing) {
+      existing.lines.push(line);
+      if (existing.title === "Setup fee" && line.appliesTo !== "setup") existing.title = line.label;
+    } else {
+      result.push({ id, title: line.label, lines: [line] });
+    }
+    return result;
+  }, []);
   return (
     <BlueprintGrid className="bg-bone py-20">
       <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
@@ -185,34 +196,30 @@ function PricingSection({
           title="Pricing"
         />
         <div className="grid grid-cols-1 gap-px bg-ink/10 md:grid-cols-3">
-          {promo.pricing.map((p) => (
-            <div key={p.label} className="bg-bone p-8">
-              <h3 className="small-caps text-ink/50">{p.label}</h3>
-              <div className="mt-4 flex flex-wrap items-baseline gap-x-3">
-                {p.promotional ? (
-                  <>
-                    <span className="font-display text-4xl font-black text-catalyst">
-                      {p.promotional}
-                    </span>
-                    <span className="text-xl text-ink/40 line-through">
-                      {p.regular}
-                    </span>
-                  </>
-                ) : (
-                  <span className="font-display text-4xl font-black text-ink">
-                    {p.regular}
-                  </span>
-                )}
-                {needsCadenceSuffix(
-                  p.promotional ?? p.regular,
-                  p.cadence,
-                ) && (
-                  <span className="text-sm font-semibold text-ink/50">
-                    {p.cadence}
-                  </span>
-                )}
+          {groups.map((group) => (
+            <div key={group.id} className="bg-bone p-8">
+              <h3 className="small-caps text-ink/50">{group.title}</h3>
+              <div className="mt-5 space-y-6">
+                {group.lines.sort((left, right) => Number(left.appliesTo === "setup") - Number(right.appliesTo === "setup")).map((p) => (
+                  <div key={`${p.label}-${p.appliesTo ?? "price"}`}>
+                    {group.lines.length > 1 && <p className="mb-2 text-xs font-bold uppercase tracking-widest text-ink/45">{p.label}</p>}
+                    <div className="flex flex-wrap items-baseline gap-x-3">
+                      {p.promotional ? (
+                        <>
+                          <span className="font-display text-4xl font-black text-catalyst">{p.promotional}</span>
+                          <span className="text-xl text-ink/40 line-through">{p.regular}</span>
+                        </>
+                      ) : (
+                        <span className="font-display text-4xl font-black text-ink">{p.regular}</span>
+                      )}
+                      {needsCadenceSuffix(p.promotional ?? p.regular, p.cadence) && (
+                        <span className="text-sm font-semibold text-ink/50">{p.cadence}</span>
+                      )}
+                    </div>
+                    {p.note && <p className="mt-3 text-sm text-ink/60">{p.note}</p>}
+                  </div>
+                ))}
               </div>
-              {p.note && <p className="mt-3 text-sm text-ink/60">{p.note}</p>}
             </div>
           ))}
         </div>

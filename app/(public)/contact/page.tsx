@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Contact from "@/components/mogen/contact";
 import { databaseCatalogueEnabled, loadPublicWebPriceOptions } from "@/lib/catalogue/server";
-import { loadPromotionBySlug } from "@/lib/catalogue/promotions-server";
+import { loadActivePromotions } from "@/lib/catalogue/promotions-server";
 import { getEffectiveStatus } from "@/data/promotions";
 import { PACKAGES } from "@/data/packages";
 import { getPublishedWebPackages } from "@/db/catalogue";
@@ -91,7 +91,11 @@ export default async function ContactPage({
   const catalogueEnabled = databaseCatalogueEnabled();
   // In database mode, Web Development choices come from published Neon rows.
   // Other service packages continue to use the backwards-compatible registry.
-  const [publishedWebPackages, publishedPriceRows] = await Promise.all([catalogueEnabled ? getPublishedWebPackages() : Promise.resolve([]), loadPublicWebPriceOptions()]);
+  const [publishedWebPackages, publishedPriceRows, activePromotions] = await Promise.all([
+    catalogueEnabled ? getPublishedWebPackages() : Promise.resolve([]),
+    loadPublicWebPriceOptions(),
+    catalogueEnabled ? loadActivePromotions() : Promise.resolve([]),
+  ]);
   const priceOptions = (publishedPriceRows ?? []).filter(option => option.amountCents !== null).map(option => ({ id: option.id, packageId: option.packageId, billingMode: option.billingMode, amountCents: option.amountCents as number, setupFeeCents: option.setupFeeCents, minimumMonths: option.minimumMonths, depositPercent: option.depositPercent, initialHostingMonths: option.initialHostingMonths, handoverPolicy: option.handoverPolicy }));
   const availablePackages = catalogueEnabled
     ? [
@@ -103,7 +107,7 @@ export default async function ContactPage({
     : PACKAGES;
 
   const campaignSlug = typeof resolvedSearchParams.promotion === "string" ? resolvedSearchParams.promotion : "";
-  const candidateCampaign = catalogueEnabled && campaignSlug ? await loadPromotionBySlug(campaignSlug) : undefined;
+  const candidateCampaign = activePromotions.find(promotion => promotion.slug === campaignSlug);
   const liveCampaign = candidateCampaign && getEffectiveStatus(candidateCampaign) === "active"
     ? candidateCampaign : undefined;
   // A DB promotion's server-validated parent choice wins only when there is
@@ -111,7 +115,9 @@ export default async function ContactPage({
   const campaignMatches = liveCampaign &&
     (!context.package || context.package === liveCampaign.relatedPackage) &&
     (typeof resolvedSearchParams.priceOption !== "string" ||
-      resolvedSearchParams.priceOption === liveCampaign.targetPriceOptionId);
+      (liveCampaign.targetPriceOptionIds ?? [liveCampaign.targetPriceOptionId])
+        .filter((value): value is string => Boolean(value))
+        .includes(resolvedSearchParams.priceOption));
   const approvedCampaign = campaignMatches ? liveCampaign : undefined;
   const requestedPackageId = approvedCampaign?.relatedPackage ?? context.package;
   const dbPackage = catalogueEnabled && requestedPackageId
@@ -160,6 +166,13 @@ export default async function ContactPage({
         initialAttribution={details.attribution}
         availablePackages={availablePackages}
         availablePriceOptions={priceOptions}
+        availablePromotions={activePromotions.map(promotion => ({
+          slug: promotion.slug,
+          name: promotion.name,
+          relatedPackage: promotion.relatedPackage,
+          targetPriceOptionIds: promotion.targetPriceOptionIds ?? (promotion.targetPriceOptionId ? [promotion.targetPriceOptionId] : []),
+          pricing: promotion.pricing,
+        }))}
       />
     </>
   );

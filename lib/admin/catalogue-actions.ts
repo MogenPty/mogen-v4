@@ -8,6 +8,7 @@ import { getCatalogueDb } from "@/db/client";
 import { webPackages, webPackagePrices, webPromotions, webPromotionPrices } from "@/db/schema";
 import { requireCatalogueAdmin } from "./access";
 import { isPublicWebPrice, validPromotionTarget, applyDiscountCents, type WebPriceOption, type WebPromotionTarget } from "@/lib/catalogue/commercial";
+import { projectPromotion } from "@/lib/catalogue/promotion-projection";
 
 const id = z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const text = z.string().trim().max(3000);
@@ -153,107 +154,178 @@ export async function createPromotionAction(data: FormData) {
     presentation: {}, updatedAt: new Date(),
   });
   refresh();
-  redirect(`/admin/promotions/${slug}`);
+  redirect(`/admin/promotions/${slug}?created=1`);
 }
 
-export async function updatePromotionAction(data: FormData) {
-  await requireCatalogueAdmin();
-  const campaignId = id.parse(field(data, "id"));
-  const name = z.string().trim().min(3).max(160).parse(field(data, "name"));
-  const description = text.parse(field(data, "description"));
-  const shortDescription = z.string().trim().max(300).parse(field(data, "shortDescription"));
-  const ctaLabel = z.string().trim().max(100).parse(field(data, "ctaLabel"));
-  const terms = list(field(data, "terms"));
-  const eligibility = list(field(data, "eligibility"));
-  const included = list(field(data, "included"));
-  const location = z.enum(["", "maboloka", "soshanguve", "centurion"]).parse(field(data, "locationSlug"));
-  const sortOrder = z.coerce.number().int().min(0).max(9999).parse(field(data, "sortOrder"));
-  const maxCustomers = field(data, "maximumCustomers").trim()
-    ? z.coerce.number().int().positive().parse(field(data, "maximumCustomers")) : null;
-  const startsAt = validDate(field(data, "startsAt"));
-  const endsAt = validDate(field(data, "endsAt"));
-  if (startsAt && endsAt && startsAt >= endsAt) throw new Error("End must be later than start.");
-  const db = getCatalogueDb();
-  const [existing] = await db.select().from(webPromotions).where(eq(webPromotions.id, campaignId)).limit(1);
-  if (!existing) throw new Error("Promotion not found.");
-  if (existing.status === "active") throw new Error("Expire the active promotion before editing its marketing content.");
-  const presentation = {
-    ...((existing.presentation && typeof existing.presentation === "object" && !Array.isArray(existing.presentation))
-      ? existing.presentation as Record<string, unknown> : {}),
-    shortDescription, ctaLabel, terms, eligibility, included,
-  };
-  await db.update(webPromotions).set({
-    name, description, eligibility: eligibility.join("; "), locationSlug: location || null,
-    maximumCustomers: maxCustomers, isFeatured: boolean(data, "isFeatured"),
-    sortOrder, startsAt, endsAt, presentation, updatedAt: new Date(),
-  }).where(eq(webPromotions.id, campaignId));
-  refresh();
-  redirect(`/admin/promotions/${campaignId}?saved=1`);
+const promotionWizardSteps = ["details", "pricing", "terms", "publication"] as const;
+export type PromotionWizardStep = typeof promotionWizardSteps[number];
+export type PromotionWizardState = {
+  status: "idle" | "success" | "error";
+  step?: PromotionWizardStep;
+  message?: string;
+};
+
+function promotionPresentation(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown> : {};
 }
 
-/** A promotion target is one billing option and one discount. Save in draft before publishing. */
-export async function savePromotionTargetAction(data: FormData) {
-  await requireCatalogueAdmin();
-  const campaignId = id.parse(field(data, "promotionId"));
-  const optionId = id.parse(field(data, "packagePriceId"));
-  const appliesTo = z.enum(["recurring", "setup", "project"]).parse(field(data, "appliesTo"));
-  const kind = z.enum(["fixed", "percent"]).parse(field(data, "discountKind"));
-  const rawDiscount = money.parse(field(data, "discountValue"));
-  const months = field(data, "discountedMonths").trim()
-    ? z.coerce.number().int().positive().parse(field(data, "discountedMonths")) : null;
+function actionError(error: unknown): string {
+  if (error instanceof z.ZodError) return error.issues[0]?.message ?? "Check the required fields.";
+  return error instanceof Error ? error.message : "The promotion could not be saved.";
+}
+
+async function requireEditablePromotion(campaignId: string) {
   const db = getCatalogueDb();
   const [campaign] = await db.select().from(webPromotions).where(eq(webPromotions.id, campaignId)).limit(1);
-  const [option] = await db.select().from(webPackagePrices).where(eq(webPackagePrices.id, optionId)).limit(1);
-  if (!campaign || !option) throw new Error("Campaign or option not found.");
-  if (!["draft", "scheduled", "expired"].includes(campaign.status))
-    throw new Error("Expire the active promotion before changing its discount.");
-  const [pkg] = await db.select().from(webPackages).where(eq(webPackages.id, option.packageId)).limit(1);
-  if (!pkg || !isPublicWebPrice(option as WebPriceOption, new Set(pkg.status === "published" ? [pkg.id] : [])))
-    throw new Error("Only currently public, approved prices can be discounted.");
-  if (kind === "percent" && rawDiscount > 10000) throw new Error("Percentage cannot exceed 100%.");
-  const target: WebPromotionTarget = {
-    promotionId: campaignId, packagePriceId: optionId, appliesTo, discountKind: kind,
-    discountAmountCents: kind === "fixed" ? rawDiscount : null,
-    discountPercentBps: kind === "percent" ? rawDiscount : null,
-    discountedMonths: months,
-  };
-  const billingMode = z.enum(["managed_monthly", "managed_annual", "once_off", "self_hosted"]).parse(option.billingMode);
-  if (!validPromotionTarget(target, billingMode)) throw new Error("Discount does not apply to this payment mode.");
-  const base = appliesTo === "setup" ? option.setupFeeCents : option.amountCents;
-  if (base === null || applyDiscountCents(base, target) === base)
-    throw new Error("The discount must reduce a nonzero price.");
-  // Single-target campaign for now: prevents ambiguity in CTA option routing.
-  await db.delete(webPromotionPrices).where(eq(webPromotionPrices.promotionId, campaignId));
-  await db.insert(webPromotionPrices).values(target);
-  refresh();
-  redirect(`/admin/promotions/${campaignId}?saved=1`);
+  if (!campaign) throw new Error("Promotion not found.");
+  return { db, campaign };
+}
+
+/** Persist one wizard step so later steps never validate against unsaved fields. */
+export async function savePromotionWizardStepAction(
+  _previous: PromotionWizardState,
+  data: FormData,
+): Promise<PromotionWizardState> {
+  await requireCatalogueAdmin();
+  const step = z.enum(promotionWizardSteps).parse(field(data, "step"));
+  try {
+    const campaignId = id.parse(field(data, "id"));
+    const { db, campaign } = await requireEditablePromotion(campaignId);
+    const now = new Date();
+
+    if (step === "details") {
+      if (campaign.status === "active") throw new Error("Expire or unpublish the active promotion before changing its content.");
+      const name = z.string().trim().min(3).max(160).parse(field(data, "name"));
+      const description = z.string().trim().min(1, "Add the full promotion description.").max(3000).parse(field(data, "description"));
+      const shortDescription = z.string().trim().min(1, "Add a short description.").max(300).parse(field(data, "shortDescription"));
+      const ctaLabel = z.string().trim().min(1, "Add a CTA label.").max(100).parse(field(data, "ctaLabel"));
+      const location = z.enum(["", "maboloka", "soshanguve", "centurion"]).parse(field(data, "locationSlug"));
+      const sortOrder = z.coerce.number().int().min(0).max(9999).parse(field(data, "sortOrder"));
+      const maximumCustomers = field(data, "maximumCustomers").trim()
+        ? z.coerce.number().int().positive().parse(field(data, "maximumCustomers")) : null;
+      await db.update(webPromotions).set({
+        name, description, locationSlug: location || null, maximumCustomers, sortOrder,
+        presentation: { ...promotionPresentation(campaign.presentation), shortDescription, ctaLabel },
+        updatedAt: now,
+      }).where(eq(webPromotions.id, campaignId));
+    }
+
+    if (step === "pricing") {
+      if (campaign.status === "active") throw new Error("Expire or unpublish the active promotion before changing its discount.");
+      const packageId = id.parse(field(data, "pricingPackageId"));
+      const targetInput = z.array(z.object({
+        packagePriceId: id,
+        appliesTo: z.enum(["recurring", "setup", "project"]),
+        discountKind: z.enum(["fixed", "percent"]),
+        discountValue: z.string().trim().min(1),
+        discountedMonths: z.string(),
+      })).min(1, "Add at least one plan or setup-fee discount.").parse(JSON.parse(field(data, "targets")));
+      const uniqueTargets = new Set(targetInput.map(item => `${item.packagePriceId}:${item.appliesTo}`));
+      if (uniqueTargets.size !== targetInput.length) throw new Error("Each plan price can only have one discount of each type.");
+      const [options, packages] = await Promise.all([
+        db.select().from(webPackagePrices),
+        db.select().from(webPackages).where(eq(webPackages.status, "published")),
+      ]);
+      const pkg = packages.find(item => item.id === packageId);
+      if (!pkg) throw new Error("Choose a published package.");
+      const publishedPackageIds = new Set(packages.map(item => item.id));
+      const targets = targetInput.map(input => {
+        const option = options.find(item => item.id === input.packagePriceId);
+        if (!option || option.packageId !== packageId || !isPublicWebPrice(option as WebPriceOption, publishedPackageIds))
+          throw new Error("Every selected payment plan must be a public price for the chosen package.");
+        const humanDiscount = z.coerce.number().finite().positive("Enter a discount greater than zero.").parse(input.discountValue);
+        if (input.discountKind === "percent" && humanDiscount > 100) throw new Error("Percentage discounts cannot exceed 100%.");
+        const rawDiscount = Math.round(humanDiscount * 100);
+        const discountedMonths = input.discountedMonths.trim()
+          ? z.coerce.number().int().positive().parse(input.discountedMonths) : null;
+        const target: WebPromotionTarget = {
+          promotionId: campaignId,
+          packagePriceId: option.id,
+          appliesTo: input.appliesTo,
+          discountKind: input.discountKind,
+          discountAmountCents: input.discountKind === "fixed" ? rawDiscount : null,
+          discountPercentBps: input.discountKind === "percent" ? rawDiscount : null,
+          discountedMonths,
+        };
+        const billingMode = z.enum(["managed_monthly", "managed_annual", "once_off", "self_hosted"]).parse(option.billingMode);
+        if (!validPromotionTarget(target, billingMode))
+          throw new Error(`${pkg.name}'s ${billingMode.replaceAll("_", " ")} plan cannot use a ${input.appliesTo} discount.`);
+        const base = input.appliesTo === "setup" ? option.setupFeeCents : option.amountCents;
+        if (base === null || base === 0) {
+          const mainPrice = new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 })
+            .format((option.amountCents ?? 0) / 100);
+          throw new Error(`${pkg.name}'s ${billingMode.replaceAll("_", " ")} plan has no ${input.appliesTo === "setup" ? "setup fee" : "price"} to discount. Its main price is ${mainPrice}.`);
+        }
+        if (applyDiscountCents(base, target) === base)
+          throw new Error(`The ${input.appliesTo} discount is too small to reduce this price.`);
+        return target;
+      });
+      await db.batch([
+        db.delete(webPromotionPrices).where(eq(webPromotionPrices.promotionId, campaignId)),
+        db.insert(webPromotionPrices).values(targets),
+      ]);
+    }
+
+    if (step === "terms") {
+      if (campaign.status === "active") throw new Error("Expire or unpublish the active promotion before changing its terms.");
+      const terms = list(field(data, "terms"));
+      if (!terms.length) throw new Error("Add at least one promotion term.");
+      const eligibility = list(field(data, "eligibility"));
+      const included = list(field(data, "included"));
+      await db.update(webPromotions).set({
+        eligibility: eligibility.join("; "),
+        presentation: { ...promotionPresentation(campaign.presentation), terms, eligibility, included },
+        updatedAt: now,
+      }).where(eq(webPromotions.id, campaignId));
+    }
+
+    if (step === "publication") {
+      const status = z.enum(campaignStatuses).parse(field(data, "status"));
+      const startsAt = validDate(field(data, "startsAt"));
+      const endsAt = validDate(field(data, "endsAt"));
+      if (startsAt && endsAt && startsAt >= endsAt) throw new Error("End must be later than start.");
+      const isFeatured = status === "expired" || status === "archived" ? false : boolean(data, "isFeatured");
+      if (status === "active" || status === "scheduled") {
+        if (status === "scheduled" && (!startsAt || startsAt <= now))
+          throw new Error("Scheduled promotions must have a future start date.");
+        if (status === "active" && startsAt && startsAt > now)
+          throw new Error("Active promotions cannot have a future start date. Choose Scheduled instead.");
+        const [targets, packages, options] = await Promise.all([
+          db.select().from(webPromotionPrices).where(eq(webPromotionPrices.promotionId, campaignId)),
+          db.select().from(webPackages).where(eq(webPackages.status, "published")),
+          db.select().from(webPackagePrices).where(eq(webPackagePrices.status, "published")),
+        ]);
+        const publicPackageIds = new Set(packages.map(item => item.id));
+        const publicOptions = options.filter(item => isPublicWebPrice(item as WebPriceOption, publicPackageIds)) as WebPriceOption[];
+        const validated = projectPromotion(
+          { ...campaign, status, startsAt, endsAt, isFeatured },
+          targets as WebPromotionTarget[], publicOptions, now,
+        );
+        if (!validated || validated.status === "expired")
+          throw new Error("Promotion cannot be published. Complete the details, pricing, terms and schedule steps first.");
+      }
+      await db.update(webPromotions).set({ status, startsAt, endsAt, isFeatured, updatedAt: now })
+        .where(eq(webPromotions.id, campaignId));
+    }
+
+    refresh();
+    return { status: "success", step, message: "Changes saved." };
+  } catch (error) {
+    return { status: "error", step, message: actionError(error) };
+  }
 }
 
 export async function setPromotionStatusAction(data: FormData) {
   await requireCatalogueAdmin();
   const campaignId = id.parse(field(data, "id"));
-  const next = z.enum(campaignStatuses).parse(field(data, "status"));
+  z.literal("expired").parse(field(data, "status"));
   const db = getCatalogueDb();
   const [campaign] = await db.select().from(webPromotions).where(eq(webPromotions.id, campaignId)).limit(1);
   if (!campaign) throw new Error("Promotion not found.");
-  if (next === "active" || next === "scheduled") {
-    const [targets, packages, options] = await Promise.all([
-      db.select().from(webPromotionPrices).where(eq(webPromotionPrices.promotionId, campaignId)),
-      db.select().from(webPackages).where(eq(webPackages.status, "published")),
-      db.select().from(webPackagePrices).where(eq(webPackagePrices.status, "published")),
-    ]);
-    const { projectPromotion } = await import("@/lib/catalogue/promotion-projection");
-    const validated = projectPromotion(
-      { ...campaign, status: next },
-      targets as WebPromotionTarget[], options.filter(option => isPublicWebPrice(option as WebPriceOption, new Set(packages.map(p => p.id)))) as WebPriceOption[],
-    );
-    if (!validated || validated.status === "expired") throw new Error("Campaign cannot be published: check approved content, terms, price target and schedule.");
-    if (next === "scheduled" && (!campaign.startsAt || campaign.startsAt <= new Date()))
-      throw new Error("Scheduled campaigns must have a future start date.");
-  }
   await db.update(webPromotions).set({
-    status: next,
-    isFeatured: next === "active" ? campaign.isFeatured : false,
+    status: "expired",
+    isFeatured: false,
     updatedAt: new Date(),
   }).where(eq(webPromotions.id, campaignId));
   refresh();
