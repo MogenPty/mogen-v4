@@ -1,4 +1,5 @@
-import { bigint, boolean, integer, jsonb, pgTable, text, timestamp, uuid, uniqueIndex, index, primaryKey } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { bigint, boolean, check, integer, jsonb, pgTable, text, timestamp, uuid, uniqueIndex, index, primaryKey } from "drizzle-orm/pg-core";
 
 /** Product scope and display content; never store currency values as floats. */
 export const webPackages = pgTable("web_packages", {
@@ -144,4 +145,158 @@ export const privateDocumentAccessLog = pgTable("private_document_access_log", {
   occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
 }, t => [
   index("private_doc_log_doc_idx").on(t.documentId, t.occurredAt),
+]);
+
+/**
+ * Server-side redirects. Paths use one of three canonical match forms:
+ * exact, a terminal `:segment`, or a terminal `:path*` catch-all.
+ */
+export const redirectRules = pgTable("redirect_rules", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sourcePath: text("source_path").notNull(),
+  destinationPath: text("destination_path").notNull(),
+  matchType: text("match_type").notNull().default("exact"),
+  statusCode: integer("status_code").notNull().default(308),
+  isActive: boolean("is_active").notNull().default(true),
+  isAutomatic: boolean("is_automatic").notNull().default(false),
+  preserveQuery: boolean("preserve_query").notNull().default(true),
+  entityType: text("entity_type"),
+  entityId: text("entity_id"),
+  description: text("description").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdBy: text("created_by").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  hitCount: bigint("hit_count", { mode: "number" }).notNull().default(0),
+  lastHitAt: timestamp("last_hit_at", { withTimezone: true }),
+}, t => [
+  uniqueIndex("redirect_rules_active_source_unique").on(t.sourcePath).where(sql`${t.isActive} = true`),
+  index("redirect_rules_lookup_idx").on(t.isActive, t.sourcePath, t.expiresAt),
+  index("redirect_rules_entity_idx").on(t.entityType, t.entityId),
+  index("redirect_rules_updated_idx").on(t.updatedAt),
+  check("redirect_rules_status_code_check", sql`${t.statusCode} in (301, 302, 307, 308)`),
+  check("redirect_rules_match_type_check", sql`${t.matchType} in ('exact', 'segment', 'splat')`),
+  check("redirect_rules_source_shape_check", sql`
+    ${t.sourcePath} like '/%'
+    and ${t.sourcePath} not like '//%'
+    and position('?' in ${t.sourcePath}) = 0
+    and position('#' in ${t.sourcePath}) = 0
+    and (
+      (${t.matchType} = 'exact' and position(':' in ${t.sourcePath}) = 0 and position('*' in ${t.sourcePath}) = 0)
+      or (${t.matchType} = 'segment' and ${t.sourcePath} ~ '/:segment$')
+      or (${t.matchType} = 'splat' and ${t.sourcePath} ~ '/:path\\*$')
+    )
+  `),
+  check("redirect_rules_destination_shape_check", sql`
+    ${t.destinationPath} like '/%'
+    and ${t.destinationPath} not like '//%'
+    and position('?' in ${t.destinationPath}) = 0
+    and position('#' in ${t.destinationPath}) = 0
+  `),
+  check("redirect_rules_entity_check", sql`
+    (${t.isAutomatic} = false)
+    or (${t.entityType} is not null and ${t.entityId} is not null)
+  `),
+  check("redirect_rules_exact_loop_check", sql`
+    ${t.matchType} <> 'exact' or ${t.sourcePath} <> ${t.destinationPath}
+  `),
+]);
+
+/** Explicit 410 responses are separate from redirect rules. */
+export const goneResourceRules = pgTable("gone_resource_rules", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sourcePath: text("source_path").notNull(),
+  matchType: text("match_type").notNull().default("exact"),
+  isActive: boolean("is_active").notNull().default(true),
+  description: text("description").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdBy: text("created_by").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  hitCount: bigint("hit_count", { mode: "number" }).notNull().default(0),
+  lastHitAt: timestamp("last_hit_at", { withTimezone: true }),
+}, t => [
+  uniqueIndex("gone_rules_active_source_unique").on(t.sourcePath).where(sql`${t.isActive} = true`),
+  index("gone_rules_lookup_idx").on(t.isActive, t.sourcePath, t.expiresAt),
+  check("gone_rules_match_type_check", sql`${t.matchType} in ('exact', 'segment', 'splat')`),
+  check("gone_rules_source_shape_check", sql`
+    ${t.sourcePath} like '/%'
+    and ${t.sourcePath} not like '//%'
+    and position('?' in ${t.sourcePath}) = 0
+    and position('#' in ${t.sourcePath}) = 0
+    and (
+      (${t.matchType} = 'exact' and position(':' in ${t.sourcePath}) = 0 and position('*' in ${t.sourcePath}) = 0)
+      or (${t.matchType} = 'segment' and ${t.sourcePath} ~ '/:segment$')
+      or (${t.matchType} = 'splat' and ${t.sourcePath} ~ '/:path\\*$')
+    )
+  `),
+]);
+
+/** Immutable mutation history. Snapshots survive deletion of the live rule. */
+export const redirectHistory = pgTable("redirect_history", {
+  id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+  redirectId: uuid("redirect_id").references(() => redirectRules.id, { onDelete: "set null" }),
+  goneRuleId: uuid("gone_rule_id").references(() => goneResourceRules.id, { onDelete: "set null" }),
+  action: text("action").notNull(),
+  actor: text("actor").notNull(),
+  before: jsonb("before_state").$type<Record<string, unknown>>(),
+  after: jsonb("after_state").$type<Record<string, unknown>>(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [
+  index("redirect_history_redirect_idx").on(t.redirectId, t.createdAt),
+  index("redirect_history_gone_idx").on(t.goneRuleId, t.createdAt),
+  index("redirect_history_created_idx").on(t.createdAt),
+  check("redirect_history_action_check", sql`${t.action} in ('create', 'update', 'enable', 'disable', 'delete', 'import', 'automatic')`),
+]);
+
+/** Single generation value used by warm Proxy instances to refresh snapshots. */
+export const redirectCacheState = pgTable("redirect_cache_state", {
+  key: text("key").primaryKey(),
+  generation: bigint("generation", { mode: "number" }).notNull().default(1),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Privacy-safe aggregate of public paths that produced a 404. */
+export const notFoundPaths = pgTable("not_found_paths", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  requestedPath: text("requested_path").notNull(),
+  firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  hitCount: bigint("hit_count", { mode: "number" }).notNull().default(1),
+  referrer: text("referrer"),
+  userAgentClass: text("user_agent_class").notNull().default("unknown"),
+  resolutionStatus: text("resolution_status").notNull().default("open"),
+  resolutionRedirectId: uuid("resolution_redirect_id").references(() => redirectRules.id, { onDelete: "set null" }),
+  retainUntil: timestamp("retain_until", { withTimezone: true }).notNull(),
+}, t => [
+  uniqueIndex("not_found_paths_requested_unique").on(t.requestedPath),
+  index("not_found_paths_open_hits_idx").on(t.resolutionStatus, t.hitCount, t.lastSeenAt),
+  index("not_found_paths_retention_idx").on(t.retainUntil),
+  check("not_found_paths_status_check", sql`${t.resolutionStatus} in ('open', 'redirected', 'gone', 'ignored')`),
+  check("not_found_paths_ua_check", sql`${t.userAgentClass} in ('browser', 'search', 'ai', 'social', 'automation', 'unknown')`),
+]);
+
+export const searchConsoleImports = pgTable("search_console_imports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  filename: text("filename").notNull(),
+  importedBy: text("imported_by").notNull(),
+  rowCount: integer("row_count").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [
+  check("search_console_imports_row_count_check", sql`${t.rowCount} >= 0`),
+]);
+
+export const searchConsoleImportRows = pgTable("search_console_import_rows", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  importId: uuid("import_id").notNull().references(() => searchConsoleImports.id, { onDelete: "cascade" }),
+  sourcePath: text("source_path").notNull(),
+  status: text("status").notNull().default("pending"),
+  suggestedDestination: text("suggested_destination"),
+  suggestionReason: text("suggestion_reason"),
+  createdRedirectId: uuid("created_redirect_id").references(() => redirectRules.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [
+  uniqueIndex("search_console_rows_import_source_unique").on(t.importId, t.sourcePath),
+  index("search_console_rows_status_idx").on(t.importId, t.status),
+  check("search_console_rows_status_check", sql`${t.status} in ('pending', 'approved', 'skipped', 'created')`),
 ]);
