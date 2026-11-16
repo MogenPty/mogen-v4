@@ -41,6 +41,7 @@ export default async function EditPromotionPage({ params, searchParams }: Readon
     discountedMonths: item.discountedMonths === null ? "" : String(item.discountedMonths),
   }));
   const initialValues: PromotionEditorValues = {
+    slug: campaign.slug ?? campaign.id,
     name: campaign.name,
     sortOrder: String(campaign.sortOrder),
     description: campaign.description,

@@ -64,8 +64,8 @@ describe("locations — index route", () => {
 });
 
 describe("locations — sitemap and URLs", () => {
-  it("includes the directory and preserves existing location URLs", () => {
-    const urls = sitemap().map((e) => e.url);
+  it("includes the directory and preserves existing location URLs", async () => {
+    const urls = (await sitemap()).map((e) => e.url);
     const base = getSiteUrl();
     expect(urls).toContain(`${base}/locations`);
     expect(urls).toContain(`${base}/locations/maboloka`);
@@ -78,10 +78,10 @@ describe("locations — sitemap and URLs", () => {
     expect(route).toContain("notFound()");
   });
 
-  it("lists only entries backed by the data source", () => {
+  it("lists only entries backed by the data source", async () => {
     // Every /locations/* sitemap entry resolves through getLocationDetail.
     const base = getSiteUrl();
-    const locationUrls = sitemap()
+    const locationUrls = (await sitemap())
       .map((e) => e.url)
       .filter((url) => url.startsWith(`${base}/locations/`));
     expect(locationUrls.length).toBeGreaterThan(0);

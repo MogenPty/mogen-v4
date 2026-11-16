@@ -127,8 +127,8 @@ describe("offices — Soshanguve reinstated as a full-service office", () => {
 });
 
 describe("offices — discovery", () => {
-  it("keeps every office in the sitemap, footer and directory", () => {
-    const urls = sitemap().map((e) => e.url);
+  it("keeps every office in the sitemap, footer and directory", async () => {
+    const urls = (await sitemap()).map((e) => e.url);
     const base = getSiteUrl();
     for (const slug of ["maboloka", "soshanguve", "centurion"]) {
       expect(urls).toContain(`${base}/locations/${slug}`);

@@ -63,8 +63,8 @@ describe("faq — directory route", () => {
     expect(readSource("app/pricing/page.tsx")).toContain('href="/faq"');
   });
 
-  it("is discoverable via sitemap and footer", () => {
-    const urls = sitemap().map((e) => e.url);
+  it("is discoverable via sitemap and footer", async () => {
+    const urls = (await sitemap()).map((e) => e.url);
     expect(urls).toContain(`${getSiteUrl()}/faq`);
     expect(readSource("components/mogen/footer.tsx")).toContain('"/faq"');
     expect(readSource("components/mogen/nav.tsx")).toContain('"/faq"');

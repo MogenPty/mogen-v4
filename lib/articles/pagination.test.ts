@@ -116,11 +116,11 @@ describe("pagination — only published articles paginate", () => {
     }
   });
 
-  it("paginates the canonical published list (index and sitemap agree)", () => {
+  it("paginates the canonical published list (index and sitemap agree)", async () => {
     const loaderUrls = new Set(
       getAllArticles().map((a) => `${getSiteUrl()}/articles/${a.slug}`),
     );
-    const sitemapArticleUrls = sitemap()
+    const sitemapArticleUrls = (await sitemap())
       .map((e) => e.url)
       .filter(
         (url) =>
@@ -131,8 +131,8 @@ describe("pagination — only published articles paginate", () => {
     expect(new Set(sitemapArticleUrls)).toEqual(loaderUrls);
   });
 
-  it("never puts pagination or tag URLs into the sitemap", () => {
-    for (const entry of sitemap()) {
+  it("never puts pagination or tag URLs into the sitemap", async () => {
+    for (const entry of await sitemap()) {
       expect(entry.url).not.toContain("?page=");
       expect(entry.url).not.toContain("/articles/tag/");
     }
