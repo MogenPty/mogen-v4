@@ -8,6 +8,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
 import JSAnalytics from "@/components/mogen/js-analytics";
 import RampifyAnalytics from "@/components/mogen/rampify-analytics";
+import SupermetryAnalytics from "@/components/mogen/supermetry-analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { siteConfig } from "@/data/site";
 import { ACCENT_INIT_SCRIPT, DEFAULT_ACCENT } from "@/lib/accent";
@@ -89,7 +90,7 @@ export default function RootLayout({
         <Script id="mogen-accent-init" strategy="beforeInteractive">{ACCENT_INIT_SCRIPT}</Script>
         {process.env.NEXT_PUBLIC_RAMPIFY_TRACKER_ID && <RampifyAnalytics />}
         <JSAnalytics />
-        <Script id="supermetry" strategy="afterInteractive" src="https://app.supermetry.com/js/vymccwn7ggad.js" />
+        <SupermetryAnalytics />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

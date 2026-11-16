@@ -241,18 +241,18 @@ export default function Footer({
             © {new Date().getFullYear()} Mogen. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <a
+            <Link
               href="/privacy-policy"
               className="small-caps text-foreground/60 hover:text-catalyst"
             >
               Privacy
-            </a>
-            <a
+            </Link>
+            <Link
               href="/terms-of-service"
               className="small-caps text-foreground/60 hover:text-catalyst"
             >
               Terms
-            </a>
+            </Link>
             <Link
               href={cta.href}
               className="small-caps text-catalyst"
