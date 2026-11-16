@@ -46,7 +46,7 @@ function OrangeSwatch() {
   );
 }
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ className }: Readonly<{ className?: string }>) {
   const { theme, setTheme } = useTheme();
   // Avoids the `setState` in `useEffect` hydration anti-pattern.
   // `useSyncExternalStore` returns `false` on the server and `true` after hydration,
@@ -89,7 +89,7 @@ export default function ThemeToggle() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-9 items-center justify-center border border-ink/15 text-ink transition-colors hover:border-catalyst hover:text-catalyst"
+        className={cn("flex h-9 w-9 items-center justify-center border border-ink/15 text-ink transition-colors hover:border-catalyst hover:text-catalyst", className)}
         aria-label="Change appearance"
         aria-expanded={open}
       >

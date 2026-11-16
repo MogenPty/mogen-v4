@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import BlogPostBlock from "@/components/mogen/blog-post-block";
 import { getArticleBySlug, getArticleSlugs } from "@/lib/articles/loader";
 import { articleJsonLd, articleMetadata } from "@/lib/articles/metadata";
+import { scheduleNotFound } from "@/lib/redirects/not-found";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -50,7 +51,10 @@ export default async function BlogPost({ params }: Readonly<Props>) {
   // Unknown article slugs return the project 404 (with 404 status) rather
   // than a 200 "not found" panel — see Task 8 §14.
   const article = slug ? getArticleBySlug(slug) : undefined;
-  if (!slug || !article || article.draft) notFound();
+  if (!slug || !article || article.draft) {
+    await scheduleNotFound(`/articles/${slug}`);
+    notFound();
+  }
 
   const { default: Content } = await import(`@/articles/${slug}.mdx`);
 

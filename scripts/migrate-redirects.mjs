@@ -35,10 +35,15 @@ async function inspect() {
   const [ruleCount] = redirectTableExists
     ? await sql`SELECT count(*)::integer AS count FROM public.redirect_rules`
     : [{ count: 0 }];
+  const notFoundTableExists = tables.some(row => row.table_name === "not_found_paths");
+  const [notFoundCount] = notFoundTableExists
+    ? await sql`SELECT count(*)::integer AS count FROM public.not_found_paths`
+    : [{ count: 0 }];
 
   console.log(`Verified target: ${database.target} (${database.host})`);
   console.log(`Redirect tables: ${tables.length}/${tableNames.length}`);
   console.log(`Redirect rules: ${ruleCount?.count ?? 0}`);
+  console.log(`Tracked 404 paths: ${notFoundCount?.count ?? 0}`);
   console.table(tables);
   return { tableCount: tables.length, ruleCount: ruleCount?.count ?? 0 };
 }
@@ -71,4 +76,3 @@ if (verified.tableCount !== tableNames.length || verified.ruleCount < 11) {
   throw new Error(`[migration] Redirect schema verification failed: ${verified.tableCount}/${tableNames.length} tables, ${verified.ruleCount}/11 seed rules.`);
 }
 console.log("Redirect management migration committed and verified.");
-

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { scheduleNotFound } from "@/lib/redirects/not-found";
 import ArticleCard from "@/components/mogen/article-card";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import PageShell from "@/components/mogen/page-shell";
@@ -79,7 +80,10 @@ export default async function TagArchivePage({ params, searchParams }: Props) {
   const archive = publishedArchives().get(slug);
   // Unknown tags (or tags with no eligible published articles) 404 —
   // never a misleading empty archive.
-  if (!archive || archive.articles.length === 0) notFound();
+  if (!archive || archive.articles.length === 0) {
+    await scheduleNotFound(`/articles/tag/${tag}`);
+    notFound();
+  }
 
   const query = await searchParams;
   const requestedPage = parsePageParam(firstParam(query.page));
@@ -87,7 +91,10 @@ export default async function TagArchivePage({ params, searchParams }: Props) {
   const pageSize = getArticlesPageSize();
   const totalPages = Math.ceil(totalItems / pageSize);
   const currentPage = Math.min(Math.max(1, requestedPage), totalPages);
-  if (requestedPage !== currentPage) notFound();
+  if (requestedPage !== currentPage) {
+    await scheduleNotFound(`/articles/tag/${tag}`);
+    notFound();
+  }
   const basePath = tagArchivePath(slug);
   const items = archive.articles.slice(
     (currentPage - 1) * pageSize,

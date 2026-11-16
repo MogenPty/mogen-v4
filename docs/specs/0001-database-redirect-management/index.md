@@ -1,6 +1,6 @@
 # Database redirect management
 
-**Status**: In Progress
+**Status**: Implemented — production migration and preview rollout pending
 
 ## Summary
 
@@ -63,7 +63,7 @@ The root `proxy.ts` composes redirect resolution with Rampify tracking. A genera
 | Manage rule | Actor and timestamps | Verified Better Auth session and database clock |
 | Manage rule | Audit before and after state | Row read in the same transaction and validated mutation input |
 | Change promotion slug | Old and new canonical paths | Stored promotion slug and validated action input |
-| Record missing path | Path, referrer origin and path, user agent class | Query free request headers and server classifier |
+| Record missing path | Path, referrer origin, user agent class | Query free request headers and server classifier |
 | Import CSV | Normalized source and suggestion | CSV URL pathname, current route inventory, entities, articles, and redirect history |
 | Match pattern | Captured segment or suffix and final destination | A terminal `:segment` or `:path*` source capture substituted into the matching destination token |
 | Render admin shell | Theme mode and accent | Existing `next-themes` state and the site `data-accent` convention |
@@ -72,7 +72,7 @@ The root `proxy.ts` composes redirect resolution with Rampify tracking. A genera
 
 1. Source and destination are normalized absolute paths or use one terminal `:segment` or `:path*` token, not external URLs.
 2. A source cannot equal or resolve through its destination.
-3. A source cannot be an internal endpoint, protected route, static application route, or current canonical entity URL.
+3. A source cannot be an internal endpoint or protected route, and a site-wide catch-all is prohibited.
 4. Automatic rules are associated with an entity and are not silently converted into manual rules.
 5. Rule mutation and audit history are one database transaction.
 6. Promotion mutation and automatic redirect creation are one database transaction.
