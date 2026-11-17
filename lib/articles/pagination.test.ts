@@ -92,15 +92,15 @@ describe("pagination — 12 per page default", () => {
   });
 
   it("returns a predictable 404 for out-of-range pages at the route", () => {
-    const route = readSource("app/articles/page.tsx");
+    const route = readSource("app/(public)/articles/page.tsx");
     expect(route).toContain("notFound()");
     expect(route).toContain("page !== currentPage");
-    const tagRoute = readSource("app/articles/tag/[tag]/page.tsx");
+    const tagRoute = readSource("app/(public)/articles/tag/[tag]/page.tsx");
     expect(tagRoute).toContain("notFound()");
   });
 
   it("keeps page 1 canonical at /articles", () => {
-    const route = readSource("app/articles/page.tsx");
+    const route = readSource("app/(public)/articles/page.tsx");
     expect(route).toContain("/articles?page=");
     expect(readSource("data/blog.ts")).toContain("basePath");
   });
@@ -116,11 +116,11 @@ describe("pagination — only published articles paginate", () => {
     }
   });
 
-  it("paginates the canonical published list (index and sitemap agree)", () => {
+  it("paginates the canonical published list (index and sitemap agree)", async () => {
     const loaderUrls = new Set(
       getAllArticles().map((a) => `${getSiteUrl()}/articles/${a.slug}`),
     );
-    const sitemapArticleUrls = sitemap()
+    const sitemapArticleUrls = (await sitemap())
       .map((e) => e.url)
       .filter(
         (url) =>
@@ -131,8 +131,8 @@ describe("pagination — only published articles paginate", () => {
     expect(new Set(sitemapArticleUrls)).toEqual(loaderUrls);
   });
 
-  it("never puts pagination or tag URLs into the sitemap", () => {
-    for (const entry of sitemap()) {
+  it("never puts pagination or tag URLs into the sitemap", async () => {
+    for (const entry of await sitemap()) {
       expect(entry.url).not.toContain("?page=");
       expect(entry.url).not.toContain("/articles/tag/");
     }

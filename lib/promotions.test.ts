@@ -13,7 +13,7 @@ import {
 const ENV_FLAG = "MOGEN_ALLOW_FALLBACK_FEATURING";
 const BEFORE_SPROUT = "2026-09-28";
 const SPROUT_LIVE = "2026-10-15";
-const AFTER_SEED = "2026-11-01";
+const AFTER_SEED = "2027-01-01";
 
 function makePromo(overrides: Partial<Promotion> & { slug: string }): Promotion {
   return {
@@ -44,10 +44,10 @@ describe("getEffectiveStatus", () => {
     expect(getEffectiveStatus(sprout, SPROUT_LIVE)).toBe("active");
   });
 
-  it("keeps Seed active through 30 Oct 2026 (inclusive) then expires it", () => {
+  it("keeps Seed active through 31 Dec 2026 (inclusive) then expires it", () => {
     const seed = getPromotionBySlug("mogen-seed-r99")!;
-    expect(getEffectiveStatus(seed, "2026-10-30")).toBe("active");
-    expect(getEffectiveStatus(seed, "2026-10-31")).toBe("expired");
+    expect(getEffectiveStatus(seed, "2026-12-31")).toBe("active");
+    expect(getEffectiveStatus(seed, "2027-01-01")).toBe("expired");
     expect(getEffectiveStatus(seed, AFTER_SEED)).toBe("expired");
   });
 
@@ -82,9 +82,9 @@ describe("promotion data", () => {
     expect(sprout?.maximumCustomers).toBe(100);
   });
 
-  it("keeps Seed at R199 → R99 ending 30 Oct 2026", () => {
+  it("keeps Seed at R199 → R99 ending 31 Dec 2026", () => {
     const seed = getPromotionBySlug("mogen-seed-r99");
-    expect(seed?.endDate).toBe("2026-10-30");
+    expect(seed?.endDate).toBe("2026-12-31");
     expect(seed?.pricing[0].regular).toBe("R199");
     expect(seed?.pricing[0].promotional).toBe("R99");
   });
@@ -175,7 +175,7 @@ describe("orderPublicPromotions", () => {
     expect(slugs).toEqual(["feat", "act-a", "act-b", "sched", "exp"]);
   });
 
-  it("derives ordering from dates: Seed listed expired after 30 Oct", () => {
+  it("derives ordering from dates: Seed listed expired after 31 Dec", () => {
     const slugs = getPublicPromotions(AFTER_SEED).map((p) => p.slug);
     expect(slugs[0]).toBe("mogen-sprout-first-100");
     expect(slugs).toContain("mogen-seed-r99");

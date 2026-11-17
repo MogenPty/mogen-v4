@@ -46,7 +46,15 @@ function OrangeSwatch() {
   );
 }
 
-export default function ThemeToggle() {
+export default function ThemeToggle({
+  className,
+  menuPlacement = "down",
+  menuAlign = "right",
+}: Readonly<{
+  className?: string;
+  menuPlacement?: "up" | "down";
+  menuAlign?: "left" | "right";
+}>) {
   const { theme, setTheme } = useTheme();
   // Avoids the `setState` in `useEffect` hydration anti-pattern.
   // `useSyncExternalStore` returns `false` on the server and `true` after hydration,
@@ -89,14 +97,18 @@ export default function ThemeToggle() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-9 items-center justify-center border border-ink/15 text-ink transition-colors hover:border-catalyst hover:text-catalyst"
+        className={cn("flex h-9 w-9 items-center justify-center border border-ink/15 text-ink transition-colors hover:border-catalyst hover:text-catalyst", className)}
         aria-label="Change appearance"
         aria-expanded={open}
       >
         <CurrentIcon className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 min-w-40 border border-ink/10 bg-bone shadow-xl">
+        <div className={cn(
+          "absolute z-50 min-w-40 border border-ink/10 bg-bone shadow-xl",
+          menuPlacement === "up" ? "bottom-full mb-2" : "top-full mt-2",
+          menuAlign === "left" ? "left-0" : "right-0",
+        )}>
           {OPTIONS.map((o) => {
             const Icon = o.icon;
             const active = mounted && theme === o.value;

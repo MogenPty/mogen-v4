@@ -29,7 +29,7 @@ import {
  */
 
 const BEFORE_SPROUT = "2026-09-28";
-const AFTER_SEED = "2026-11-01";
+const AFTER_SEED = "2027-01-01";
 
 /** What a wired promotion enquiry CTA must produce (promotion-only URL). */
 function promotionCtaHref(slug: string) {
@@ -109,7 +109,7 @@ describe("promotion CTA enquiry routing (Task 03)", () => {
     expect(sproutParams.get("promotion")).toBe("mogen-sprout-first-100");
     expect(sproutParams.has("service")).toBe(false);
 
-    // Seed after 30 Oct 2026 is expired → generic Contact, no promotion context.
+    // Seed after 31 Dec 2026 is expired → generic Contact, no promotion context.
     const seed = getPromotionBySlug("mogen-seed-r99")!;
     expect(isPromotionExpired(seed, AFTER_SEED)).toBe(true);
     expect(buildEnquiryHref({})).toBe("/contact");

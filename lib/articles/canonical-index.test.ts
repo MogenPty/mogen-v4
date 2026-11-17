@@ -75,8 +75,8 @@ describe("articles — canonical discovery (fs vs generated index)", () => {
 });
 
 describe("articles — sitemap agreement", () => {
-  it("contains the known article URL with lastModified from frontmatter", () => {
-    const entries = sitemap();
+  it("contains the known article URL with lastModified from frontmatter", async () => {
+    const entries = await sitemap();
     const known = getArticleBySlug(KNOWN_SLUG, { source: "generated" });
     expect(known).toBeDefined();
     const expected = `${getSiteUrl()}/articles/${KNOWN_SLUG}`;
@@ -88,13 +88,13 @@ describe("articles — sitemap agreement", () => {
     );
   });
 
-  it("article URL set matches the canonical loader (index and sitemap agree)", () => {
+  it("article URL set matches the canonical loader (index and sitemap agree)", async () => {
     const loaderUrls = new Set(
       getAllArticles({ source: "generated" }).map(
         (a) => `${getSiteUrl()}/articles/${a.slug}`,
       ),
     );
-    const sitemapArticleUrls = sitemap()
+    const sitemapArticleUrls = (await sitemap())
       .map((e) => e.url)
       .filter(
         (url) =>
@@ -105,8 +105,8 @@ describe("articles — sitemap agreement", () => {
     expect(sitemapArticleUrls.length).toBeGreaterThan(0);
   });
 
-  it("never emits pagination URLs into the sitemap", () => {
-    for (const entry of sitemap()) {
+  it("never emits pagination URLs into the sitemap", async () => {
+    for (const entry of await sitemap()) {
       expect(entry.url).not.toContain("?page=");
     }
   });

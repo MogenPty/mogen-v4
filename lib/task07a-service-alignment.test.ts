@@ -126,8 +126,8 @@ describe("task 7A — obsolete generic pricing removed", () => {
   it("keeps no Ignite/Grow/Dominate bundle references in app or components", () => {
     for (const file of [
       "app/page.tsx",
-      "app/pricing/page.tsx",
-      "app/services/page.tsx",
+      "app/(public)/pricing/page.tsx",
+      "app/(public)/services/page.tsx",
       "components/mogen/services.tsx",
       "components/mogen/service-detail.tsx",
       "components/mogen/service-pricing.tsx",

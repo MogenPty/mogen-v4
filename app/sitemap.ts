@@ -8,7 +8,7 @@ import { getAllArticles } from "@/lib/articles/loader";
 // article bundle itself refreshes at build time — see docs/articles.md).
 export const revalidate = 3600;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
   const now = new Date();
 
@@ -54,7 +54,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }),
   );
 
-  const promotionEntries: MetadataRoute.Sitemap = getPublicPromotions().map((p) => ({
+  // Keep the fallback import test/build-safe; the server-only database module is
+  // loaded only when the production catalogue is explicitly enabled.
+  const promotions = process.env.MOGEN_WEB_CATALOGUE_SOURCE === "database"
+    ? await import("@/lib/catalogue/promotions-server").then(module => module.loadPublicPromotions())
+    : getPublicPromotions();
+  const promotionEntries: MetadataRoute.Sitemap = promotions.map((p) => ({
     url: `${base}/promotions/${p.slug}`,
     lastModified: now,
     changeFrequency: "weekly" as const,

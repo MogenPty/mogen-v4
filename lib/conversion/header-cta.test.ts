@@ -73,7 +73,7 @@ describe("header CTA — shared resolution with the Conversion Bar", () => {
       "serviceSlug={serviceSlug}",
     );
     // Promotion detail: the featured promotion applies on all surfaces.
-    const promoDetail = readSource("app/promotions/[slug]/page.tsx");
+    const promoDetail = readSource("app/(public)/promotions/[slug]/page.tsx");
     expect(promoDetail).toContain("featuredPromotion={featuredPromotion}");
   });
 

@@ -9,19 +9,19 @@ function readSource(relativePath: string): string {
 
 describe("task 8A — /blog migrates to /articles", () => {
   it("provides /articles listing and detail routes", () => {
-    expect(readSource("app/articles/page.tsx")).toContain('path: "/articles"');
+    expect(readSource("app/(public)/articles/page.tsx")).toContain('path: "/articles"');
     // Listing copy lives in the metadata registry (SEO remediation) so
     // regression tests assert the served values, not source snippets.
-    expect(readSource("app/articles/page.tsx")).toContain(
+    expect(readSource("app/(public)/articles/page.tsx")).toContain(
       'STATIC_META["/articles"]',
     );
     expect(readSource("lib/seo/metadata-registry.ts")).toContain(
       "Practical Growth Advice",
     );
-    expect(readSource("app/articles/[slug]/page.tsx")).toContain(
+    expect(readSource("app/(public)/articles/[slug]/page.tsx")).toContain(
       "generateMetadata",
     );
-    expect(readSource("app/articles/[slug]/page.tsx")).toContain("notFound()");
+    expect(readSource("app/(public)/articles/[slug]/page.tsx")).toContain("notFound()");
   });
 
   it("permanently redirects /blog and /blog/:slug generically", () => {
@@ -60,7 +60,7 @@ describe("task 8A — /blog migrates to /articles", () => {
     expect(helper).not.toContain('"/blog"');
     expect(helper).not.toContain("/blog/");
     expect(helper).toContain('"Articles"');
-    const detail = readSource("app/articles/[slug]/page.tsx");
+    const detail = readSource("app/(public)/articles/[slug]/page.tsx");
     expect(detail).toContain("articleMetadata");
     expect(detail).not.toContain("/blog/${slug}");
     expect(detail).not.toContain('"/blog"');
@@ -75,7 +75,7 @@ describe("task 8A — /blog migrates to /articles", () => {
       "components/mogen/blog-block.tsx",
       "components/mogen/blog-post-block.tsx",
       "components/mogen/article-not-found.tsx",
-      "app/about/page.tsx",
+      "app/(public)/about/page.tsx",
     ]) {
       const source = readSource(file);
       expect(source).not.toContain('"/blog"');

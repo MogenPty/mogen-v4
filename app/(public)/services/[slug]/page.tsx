@@ -8,6 +8,7 @@ import { getRelatedArticlesForService } from "@/lib/articles/related";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { pageMetadata } from "@/lib/seo";
 import { loadPublishedWebCatalogue, loadPublicWebPriceOptions } from "@/lib/catalogue/server";
+import { scheduleNotFound } from "@/lib/redirects/not-found";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -106,7 +107,10 @@ export default async function ServiceDetailPage({
   const { slug } = await params;
   // Invalid service slugs return the project 404 (with 404 status) rather
   // than a 200 "not found" panel — see Task 8 §14.
-  if (!getService(slug)) notFound();
+  if (!getService(slug)) {
+    await scheduleNotFound(`/services/${slug}`);
+    notFound();
+  }
   // Carry allowlisted attribution (utm_*) from the service page URL into
   // enquiry CTAs — explicit service context always wins (see lib/enquiry).
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});

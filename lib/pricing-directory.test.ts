@@ -10,7 +10,7 @@ function readSource(relativePath: string): string {
 
 describe("pricing — directory stays a navigator (no duplicated tables)", () => {
   it("links every service to its authoritative pricing anchor", () => {
-    const page = readSource("app/pricing/page.tsx");
+    const page = readSource("app/(public)/pricing/page.tsx");
     // Links render from SERVICES via template hrefs — one pricing anchor
     // and one overview link per service.
     expect(page).toContain("SERVICES.map");
@@ -20,7 +20,7 @@ describe("pricing — directory stays a navigator (no duplicated tables)", () =>
   });
 
   it("duplicates no package content or prices", () => {
-    const page = readSource("app/pricing/page.tsx");
+    const page = readSource("app/(public)/pricing/page.tsx");
     expect(page).not.toContain("ServicePricing");
     for (const price of [
       "R199",
@@ -39,7 +39,7 @@ describe("pricing — directory stays a navigator (no duplicated tables)", () =>
   });
 
   it("keeps canonical metadata and cross-links to FAQ", () => {
-    const page = readSource("app/pricing/page.tsx");
+    const page = readSource("app/(public)/pricing/page.tsx");
     expect(page).toContain('path: "/pricing"');
     expect(page).toContain("pageMetadata");
     // Pricing copy lives in the metadata registry (SEO remediation).

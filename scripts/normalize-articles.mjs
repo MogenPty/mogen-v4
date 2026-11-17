@@ -198,7 +198,6 @@ for (const f of files) {
   const tagsBlockRe = /^tags:\n((?:[ \t]*- .*\n?)+)/m;
   const tm = fm.match(tagsBlockRe);
   if (tm) {
-    const indent = (tm[1].match(/^([ \t]*)- /m) || [])[1] || "  ";
     const newItems = tm[1].replace(/^([ \t]*- )(.*)$/gm, (line, prefix, value) => {
       let v = value.trim();
       const quoted = /^["'](.*)["']$/.exec(v);

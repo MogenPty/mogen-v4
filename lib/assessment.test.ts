@@ -24,8 +24,8 @@ describe("assessment — questionnaire lives on the Web Development page", () =>
   });
 
   it("feeds the service-page questionnaire with active promotions", () => {
-    const page = readSource("app/services/[slug]/page.tsx");
-    expect(page).toContain("getActivePromotions");
+    const page = readSource("app/(public)/services/[slug]/page.tsx");
+    expect(page).toContain("loadActivePromotions");
     expect(page).toContain("activePromotions={activePromotions}");
   });
 

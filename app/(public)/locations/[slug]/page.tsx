@@ -5,6 +5,7 @@ import { loadLocationWebOffer, loadPublicWebPriceOptions } from "@/lib/catalogue
 import { getLocationDetail, LOCATION_SLUGS } from "@/data/locations";
 import { siteConfig } from "@/data/site";
 import { pageMetadata } from "@/lib/seo";
+import { scheduleNotFound } from "@/lib/redirects/not-found";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -99,7 +100,10 @@ export default async function LocationPage({ params }: Readonly<Props>) {
   // Detail pages exist only for slugs in LOCATION_DETAILS (the three
   // offices) — any other slug returns the project 404 (with 404 status)
   // rather than a 200 panel.
-  if (!getLocationDetail(slug)) notFound();
+  if (!getLocationDetail(slug)) {
+    await scheduleNotFound(`/locations/${slug}`);
+    notFound();
+  }
   const [webOffer, priceRows] = await Promise.all([loadLocationWebOffer(slug), loadPublicWebPriceOptions()]);
   const webPrices = (priceRows ?? []).filter(p => p.amountCents !== null).map(p => ({
     id: p.id, packageId: p.packageId, billingMode: p.billingMode,

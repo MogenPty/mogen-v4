@@ -56,7 +56,7 @@ export default function PageShell({
   barVariant = "conversion",
 }: Readonly<Props>) {
   return (
-    <div id={"top"} className="bg-bone">
+    <div id="top" className="bg-bone">
       <Nav
         serviceSlug={serviceSlug}
         defaultServiceSlug={defaultServiceSlug}

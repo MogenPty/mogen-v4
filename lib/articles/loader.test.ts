@@ -208,7 +208,7 @@ describe("articles — routing contract", () => {
   });
 
   it("wires the detail route to static params + notFound", () => {
-    const route = readSource("app/articles/[slug]/page.tsx");
+    const route = readSource("app/(public)/articles/[slug]/page.tsx");
     expect(route).toContain("generateStaticParams");
     expect(route).toContain("notFound()");
     expect(route).toContain("dynamicParams");

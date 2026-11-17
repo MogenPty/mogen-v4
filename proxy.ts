@@ -22,6 +22,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { waitUntil } from '@vercel/functions';
+import { resolveRoute } from '@/lib/redirects/engine';
+import { recordRouteHit } from '@/lib/redirects/repository';
+import { responseForRouteResolution } from '@/lib/redirects/response';
+import { getRouteSnapshot } from '@/lib/redirects/runtime';
 
 const COLLECT_URL = process.env.RAMPIFY_API_URL ?? 'https://www.rampify.dev/api/collect';
 
@@ -62,6 +66,7 @@ const ASSET_EXTS = new Set([
   'txt', 'xml', 'json', 'webmanifest', 'pdf',
 ]);
 const SKIP_PREFIXES = ['/_next/', '/_vercel/', '/api/', '/.well-known/'];
+const REDIRECT_SKIP_PREFIXES = ['/_next', '/_vercel', '/api', '/.well-known', '/admin', '/auth'];
 // AI-readable site maps + crawler directives we deliberately track despite the
 // .txt/.xml extension, so you can see when LLMs and crawlers fetch them.
 const AGENT_FILE_RE = /^\/(?:llms(?:-full)?\.txt|robots\.txt|sitemap[\w.-]*\.xml)$/i;
@@ -75,6 +80,10 @@ function shouldSkipPath(pathname: string): boolean {
     if (ASSET_EXTS.has(ext)) return true;
   }
   return false;
+}
+
+function shouldSkipRedirectResolution(pathname: string): boolean {
+  return REDIRECT_SKIP_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 /**
@@ -137,8 +146,27 @@ function trackPageview(request: NextRequest): void {
 // Next.js 16 expects this file at the project root as `proxy.ts` with the
 // exported function named `proxy` (verified against Next.js 16.3.3 —
 // `middleware` as the export name is rejected at build time).
-export function proxy(request: NextRequest): NextResponse {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   trackPageview(request);
+
+  if (!shouldSkipRedirectResolution(request.nextUrl.pathname)) {
+    const snapshot = await getRouteSnapshot(refresh => waitUntil(refresh));
+    if (snapshot) {
+      const resolution = resolveRoute(request.nextUrl.pathname, snapshot);
+      const response = responseForRouteResolution(request, resolution);
+      if (response && resolution.kind !== 'none') {
+        waitUntil(recordRouteHit(resolution.kind, resolution.ruleId).catch(error => {
+          console.warn('[redirects] hit update failed:', error instanceof Error ? error.message : error);
+        }));
+        return response;
+      }
+    }
+  }
+  if (request.nextUrl.pathname !== '/' && request.nextUrl.pathname.endsWith('/')) {
+    const location = request.nextUrl.clone();
+    location.pathname = location.pathname.replace(/\/+$/, '') || '/';
+    return NextResponse.redirect(location, 308);
+  }
   return NextResponse.next();
 }
 
@@ -151,6 +179,6 @@ export const config = {
   // and crawler directives (llms.txt, robots.txt, sitemap.xml) reach the
   // function; shouldSkipPath still skips every other .txt/.xml asset.
   matcher: [
-    '/((?!_next/|_vercel/|api/|.*\\.(?:css|js|mjs|map|png|jpg|jpeg|gif|svg|ico|webp|avif|woff|woff2|ttf|otf|eot|json|webmanifest|pdf)$).*)',
+    '/((?!_next/|_vercel/|api/).*)',
   ],
 };

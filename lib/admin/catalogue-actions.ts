@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getCatalogueDb } from "@/db/client";
 import { webPackages, webPackagePrices, webPromotions, webPromotionPrices } from "@/db/schema";
@@ -25,13 +25,15 @@ function validDate(input: string) {
   if (input && (!value || Number.isNaN(value.getTime()))) throw new Error("Enter a valid date/time.");
   return value;
 }
-function refresh() {
+function refresh(changedPromotionPaths: string[] = []) {
   revalidatePath("/");
   revalidatePath("/pricing");
   revalidatePath("/services/web-development");
   revalidatePath("/locations/[slug]", "page");
   revalidatePath("/promotions");
   revalidatePath("/promotions/[slug]", "page");
+  revalidatePath("/sitemap.xml");
+  for (const path of changedPromotionPaths) revalidatePath(path);
   revalidatePath("/admin/packages");
   revalidatePath("/admin/promotions");
 }
@@ -187,7 +189,7 @@ export async function savePromotionWizardStepAction(
   _previous: PromotionWizardState,
   data: FormData,
 ): Promise<PromotionWizardState> {
-  await requireCatalogueAdmin();
+  const actor = await requireCatalogueAdmin();
   const step = z.enum(promotionWizardSteps).parse(field(data, "step"));
   try {
     const campaignId = id.parse(field(data, "id"));
@@ -197,6 +199,7 @@ export async function savePromotionWizardStepAction(
     if (step === "details") {
       if (campaign.status === "active") throw new Error("Expire or unpublish the active promotion before changing its content.");
       const name = z.string().trim().min(3).max(160).parse(field(data, "name"));
+      const slug = id.parse(field(data, "slug"));
       const description = z.string().trim().min(1, "Add the full promotion description.").max(3000).parse(field(data, "description"));
       const shortDescription = z.string().trim().min(1, "Add a short description.").max(300).parse(field(data, "shortDescription"));
       const ctaLabel = z.string().trim().min(1, "Add a CTA label.").max(100).parse(field(data, "ctaLabel"));
@@ -204,11 +207,124 @@ export async function savePromotionWizardStepAction(
       const sortOrder = z.coerce.number().int().min(0).max(9999).parse(field(data, "sortOrder"));
       const maximumCustomers = field(data, "maximumCustomers").trim()
         ? z.coerce.number().int().positive().parse(field(data, "maximumCustomers")) : null;
-      await db.update(webPromotions).set({
-        name, description, locationSlug: location || null, maximumCustomers, sortOrder,
-        presentation: { ...promotionPresentation(campaign.presentation), shortDescription, ctaLabel },
-        updatedAt: now,
-      }).where(eq(webPromotions.id, campaignId));
+      const oldPath = campaign.slug ? `/promotions/${campaign.slug}` : null;
+      const newPath = `/promotions/${slug}`;
+      const presentation = JSON.stringify({
+        ...promotionPresentation(campaign.presentation), shortDescription, ctaLabel,
+      });
+
+      // Neon HTTP batch statements share one transaction. Acquire the route
+      // lock in its own statement so the mutation receives a fresh READ COMMITTED
+      // snapshot after any prior lock owner commits.
+      const [, result] = await db.batch([
+        db.execute(sql`select pg_advisory_xact_lock(hashtextextended('mogen:route-rule-writes', 0))`),
+        db.execute<{ slug: string }>(sql`
+        with updated as (
+          update web_promotions as promotion
+          set slug = ${slug}, name = ${name}, description = ${description},
+              location_slug = ${location || null}, maximum_customers = ${maximumCustomers},
+              sort_order = ${sortOrder}, presentation = ${presentation}::jsonb,
+              updated_at = ${now}
+          where promotion.id = ${campaignId}
+            and promotion.slug is not distinct from ${campaign.slug}
+            and not exists (
+              select 1 from web_promotions other
+              where other.slug = ${slug} and other.id <> ${campaignId}
+            )
+            and not exists (
+              select 1 from redirect_rules rule
+              where rule.is_active = true
+                and (rule.expires_at is null or rule.expires_at > ${now})
+                and (
+                  (rule.match_type = 'exact' and rule.source_path = ${newPath})
+                  or (
+                    rule.match_type = 'segment'
+                    and starts_with(${newPath}::text, left(rule.source_path, -9) || '/')
+                    and position('/' in substring(${newPath}::text from char_length(left(rule.source_path, -9)) + 2)) = 0
+                  )
+                  or (
+                    rule.match_type = 'splat'
+                    and (
+                      ${newPath}::text = left(rule.source_path, -7)
+                      or starts_with(${newPath}::text, left(rule.source_path, -7) || '/')
+                    )
+                  )
+                )
+                and ${slug}::text is distinct from ${campaign.slug}::text
+            )
+            and not exists (
+              select 1 from gone_resource_rules gone
+              where gone.is_active = true
+                and (gone.expires_at is null or gone.expires_at > ${now})
+                and (
+                  (gone.match_type = 'exact' and gone.source_path = ${newPath})
+                  or (
+                    gone.match_type = 'segment'
+                    and starts_with(${newPath}::text, left(gone.source_path, -9) || '/')
+                    and position('/' in substring(${newPath}::text from char_length(left(gone.source_path, -9)) + 2)) = 0
+                  )
+                  or (
+                    gone.match_type = 'splat'
+                    and (
+                      ${newPath}::text = left(gone.source_path, -7)
+                      or starts_with(${newPath}::text, left(gone.source_path, -7) || '/')
+                    )
+                  )
+                )
+                and ${slug}::text is distinct from ${campaign.slug}::text
+            )
+          returning promotion.id, promotion.slug
+        ), historical as materialized (
+          select rule.id, rule.source_path, rule.destination_path
+          from redirect_rules rule, updated
+          where rule.entity_type = 'promotion'
+            and rule.entity_id = ${campaignId}
+            and rule.destination_path <> ${newPath}
+            and rule.source_path <> ${newPath}
+          for update
+        ), retargeted as (
+          update redirect_rules as rule
+          set destination_path = ${newPath}, updated_at = ${now}
+          from historical, updated
+          where rule.id = historical.id
+          returning rule.id
+        ), retarget_history as (
+          insert into redirect_history (redirect_id, action, actor, before_state, after_state)
+          select historical.id, 'automatic', ${actor},
+            jsonb_build_object('sourcePath', historical.source_path, 'destinationPath', historical.destination_path),
+            jsonb_build_object('sourcePath', historical.source_path, 'destinationPath', ${newPath}::text)
+          from historical join retargeted on retargeted.id = historical.id
+        ), new_redirect as (
+          insert into redirect_rules (
+            source_path, destination_path, match_type, status_code, is_active,
+            is_automatic, preserve_query, entity_type, entity_id, description,
+            created_by, created_at, updated_at
+          )
+          select ${oldPath}, ${newPath}, 'exact', 308, true, true, true,
+            'promotion', ${campaignId}, 'Automatic redirect after promotion slug change',
+            ${actor}, ${now}, ${now}
+          from updated
+          where ${campaign.slug}::text is not null and ${campaign.slug}::text <> ${slug}::text
+          returning id, source_path, destination_path
+        ), new_history as (
+          insert into redirect_history (redirect_id, action, actor, after_state)
+          select id, 'automatic', ${actor},
+            jsonb_build_object('sourcePath', source_path, 'destinationPath', destination_path,
+              'statusCode', 308, 'entityType', 'promotion', 'entityId', ${campaignId}::text)
+          from new_redirect
+        ), invalidated as (
+          insert into redirect_cache_state (key, generation, updated_at)
+          select 'redirects', 1, ${now} from new_redirect
+          on conflict (key) do update
+            set generation = redirect_cache_state.generation + 1, updated_at = excluded.updated_at
+        )
+        select slug from updated
+      `),
+      ]);
+      if (result.rows.length !== 1) {
+        throw new Error("The slug is already in use, reserved by a redirect, or the promotion changed in another session. Refresh and try again.");
+      }
+      refresh(campaign.slug === slug ? [] : [oldPath, newPath].filter((path): path is string => Boolean(path)));
     }
 
     if (step === "pricing") {
@@ -309,7 +425,7 @@ export async function savePromotionWizardStepAction(
         .where(eq(webPromotions.id, campaignId));
     }
 
-    refresh();
+    if (step !== "details") refresh();
     return { status: "success", step, message: "Changes saved." };
   } catch (error) {
     return { status: "error", step, message: actionError(error) };

@@ -20,6 +20,7 @@ export type PromotionTargetDraft = {
 };
 
 export type PromotionEditorValues = {
+  slug: string;
   name: string;
   sortOrder: string;
   description: string;
@@ -147,7 +148,7 @@ function DiscountTargetEditor({
 }
 
 const stepFields: Record<PromotionWizardStep, Array<keyof PromotionEditorValues>> = {
-  details: ["name", "sortOrder", "description", "shortDescription", "ctaLabel", "locationSlug", "maximumCustomers"],
+  details: ["slug", "name", "sortOrder", "description", "shortDescription", "ctaLabel", "locationSlug", "maximumCustomers"],
   pricing: ["pricingPackageId", "targets"],
   terms: ["terms", "eligibility", "included"],
   publication: ["startsAt", "endsAt", "isFeatured", "status"],
@@ -159,6 +160,7 @@ function isStepDirty(step: PromotionWizardStep, values: PromotionEditorValues, c
 
 function validationMessage(step: PromotionWizardStep, values: PromotionEditorValues): string | null {
   if (step === "details") {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(values.slug)) return "Use a lowercase URL slug with words separated by hyphens.";
     if (values.name.trim().length < 3) return "Enter a campaign name of at least three characters.";
     if (!values.description.trim()) return "Add the full promotion description.";
     if (!values.shortDescription.trim()) return "Add the short description used on promotion cards.";
@@ -394,6 +396,9 @@ export default function PromotionEditorWizard({
                 <p className="mt-2 text-muted-foreground">Define what customers see and who the offer is for.</p></div>
               <div><label htmlFor="promotion-name" className={adminLabelClass}>Name</label>
                 <input id="promotion-name" name="name" value={values.name} onChange={event => update("name", event.target.value)} className={adminFieldClass} /></div>
+              <div><label htmlFor="promotion-slug" className={adminLabelClass}>Public URL slug</label>
+                <input id="promotion-slug" name="slug" value={values.slug} onChange={event => update("slug", event.target.value)} className={adminFieldClass} aria-describedby="promotion-slug-help" />
+                <p id="promotion-slug-help" className="mt-2 text-xs text-muted-foreground">Changing this creates a permanent redirect from the previous URL.</p></div>
               <div><label htmlFor="promotion-order" className={adminLabelClass}>Display order</label>
                 <input id="promotion-order" name="sortOrder" type="number" min="0" value={values.sortOrder} onChange={event => update("sortOrder", event.target.value)} className={adminFieldClass} /></div>
               <div className="sm:col-span-2"><label htmlFor="promotion-description" className={adminLabelClass}>Description</label>

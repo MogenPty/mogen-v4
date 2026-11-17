@@ -206,7 +206,7 @@ describe("articles listing — pagination URLs", () => {
   });
 
   it("wires the listing page to ?page= (first page stays /articles)", () => {
-    const listing = readSource("app/articles/page.tsx");
+    const listing = readSource("app/(public)/articles/page.tsx");
     expect(listing).toContain("searchParams");
     expect(listing).toContain("parsePageParam");
     // Both paginated listings render through the shared component so
@@ -216,7 +216,7 @@ describe("articles listing — pagination URLs", () => {
     expect(block).toContain("PaginationNav");
     expect(block).toContain("buildArticlesPageUrl");
     expect(block).toContain('navAriaLabel="Articles pagination"');
-    const tagPage = readSource("app/articles/tag/[tag]/page.tsx");
+    const tagPage = readSource("app/(public)/articles/tag/[tag]/page.tsx");
     expect(tagPage).toContain("PaginationNav");
     const nav = readSource("components/mogen/pagination-nav.tsx");
     expect(nav).toContain('aria-label={navAriaLabel}');
@@ -230,7 +230,7 @@ describe("articles listing — no developer post count", () => {
     expect(block).not.toContain("Posts:");
     expect(block).not.toContain("POSTS.length");
     expect(block).not.toContain("{posts.length}");
-    const listing = readSource("app/articles/page.tsx");
+    const listing = readSource("app/(public)/articles/page.tsx");
     expect(listing).not.toContain("Posts:");
   });
 });
@@ -255,7 +255,7 @@ describe("articles listing — zero/one-page edge cases", () => {
 
 describe("articles listing — SEO invariants", () => {
   it("keeps /articles canonical for page 1 and distinct canonicals beyond", () => {
-    const listing = readSource("app/articles/page.tsx");
+    const listing = readSource("app/(public)/articles/page.tsx");
     expect(listing).toContain("generateMetadata");
     expect(listing).toContain("/articles?page=");
   });

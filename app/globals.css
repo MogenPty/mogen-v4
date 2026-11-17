@@ -23,6 +23,14 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
 
   /* Mogen brand tokens */
   --color-bone: hsl(var(--bone));
@@ -85,6 +93,14 @@
   --border: 240 5% 86%;
   --input: 240 5% 86%;
   --ring: var(--accent-green);
+  --sidebar: 60 10% 95%;
+  --sidebar-foreground: 240 2% 16%;
+  --sidebar-primary: var(--accent-green);
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 60 8% 89%;
+  --sidebar-accent-foreground: 240 2% 10%;
+  --sidebar-border: 240 5% 84%;
+  --sidebar-ring: var(--accent-green);
   --radius: 0.25rem;
 
   /* Mogen brand tokens */
@@ -144,6 +160,14 @@
     --border: 240 5% 20%;
     --input: 240 5% 20%;
     --ring: var(--accent-green);
+    --sidebar: 240 5% 7%;
+    --sidebar-foreground: 60 8% 94%;
+    --sidebar-primary: var(--accent-green);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 15%;
+    --sidebar-accent-foreground: 60 8% 94%;
+    --sidebar-border: 240 5% 19%;
+    --sidebar-ring: var(--accent-green);
 
     /* Mogen brand tokens — dark: bone↔ink invert, catalyst follows accent */
     --bone: 240 5% 11%;

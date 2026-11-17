@@ -209,11 +209,11 @@ describe("task 7B — environment-driven public URL", () => {
       "app/robots.ts",
       "app/sitemap.ts",
       "app/layout.tsx",
-      "app/services/[slug]/page.tsx",
+      "app/(public)/services/[slug]/page.tsx",
       // Article URLs/metadata derive from MDX frontmatter via the shared
       // helper, which reads the environment-driven site URL.
       "lib/articles/metadata.ts",
-      "app/promotions/[slug]/page.tsx",
+      "app/(public)/promotions/[slug]/page.tsx",
       "components/mogen/json-ld.tsx",
       "lib/campaign/campaign.ts",
     ]) {
@@ -229,9 +229,9 @@ describe("task 7B — environment-driven public URL", () => {
       "app/sitemap.ts",
       "app/layout.tsx",
       "lib/seo.ts",
-      "app/services/[slug]/page.tsx",
-      "app/articles/[slug]/page.tsx",
-      "app/promotions/[slug]/page.tsx",
+      "app/(public)/services/[slug]/page.tsx",
+      "app/(public)/articles/[slug]/page.tsx",
+      "app/(public)/promotions/[slug]/page.tsx",
       "components/mogen/json-ld.tsx",
       "lib/campaign/campaign.ts",
     ]) {

@@ -123,7 +123,7 @@ describe("articles — scheduled exclusion from public surfaces", () => {
   });
 
   it("gates the detail route (notFound before the MDX body can render)", () => {
-    const route = readSource("app/articles/[slug]/page.tsx");
+    const route = readSource("app/(public)/articles/[slug]/page.tsx");
     expect(route).toContain("getArticleBySlug");
     expect(route).toContain("notFound()");
     // The 404 guard runs before the dynamic MDX import, so a scheduled
@@ -134,7 +134,7 @@ describe("articles — scheduled exclusion from public surfaces", () => {
   });
 
   it("never leaks scheduled titles via route metadata", () => {
-    const route = readSource("app/articles/[slug]/page.tsx");
+    const route = readSource("app/(public)/articles/[slug]/page.tsx");
     // Unknown/unpublished slugs get a generic title — never frontmatter.
     expect(route).toContain("Article not found");
   });

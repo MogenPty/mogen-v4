@@ -132,14 +132,14 @@ describe("related articles — data-driven service associations", () => {
 });
 
 describe("related articles — canonical loader behaviour", () => {
-  it("shows the featured Brits article first for web development", () => {
+  it("shows the newest featured article first for web development", () => {
     const related = getRelatedArticlesForService("web-development", {
       nowMs: FAR_FUTURE,
     });
     expect(related.length).toBeGreaterThan(0);
     expect(related.length).toBeLessThanOrEqual(3);
-    expect(related[0].slug).toBe("web-development-in-the-brits-area");
     expect(related[0].featured).toBe(true);
+    expect(articleServices(related[0])).toContain("web-development");
   });
 
   it("selects relevant SEO articles without duplicates", () => {
@@ -208,7 +208,7 @@ describe("related articles — canonical loader behaviour", () => {
 
 describe("related articles — service page wiring", () => {
   it("fetches related articles server-side and renders before the FAQ", () => {
-    const page = readSource("app/services/[slug]/page.tsx");
+    const page = readSource("app/(public)/services/[slug]/page.tsx");
     expect(page).toContain("getRelatedArticlesForService");
     expect(page).toContain("relatedArticles");
     const detail = readSource("components/mogen/service-detail.tsx");

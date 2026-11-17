@@ -5,6 +5,7 @@ import { getArticles, parsePageParam } from "@/data/blog";
 import { getSiteUrl, siteConfig } from "@/data/site";
 import { pageMetadata } from "@/lib/seo";
 import { STATIC_META } from "@/lib/seo/metadata-registry";
+import { scheduleNotFound } from "@/lib/redirects/not-found";
 
 interface ArticlesSearchParams {
   page?: string | string[];
@@ -48,7 +49,10 @@ export default async function Articles({ searchParams }: Props) {
   // silently clamped duplicate of the last page). Invalid values
   // (?page=abc, 0, -3) already normalise to 1 via parsePageParam.
   const { currentPage, totalPages } = getArticles({ page });
-  if (totalPages > 0 && page !== currentPage) notFound();
+  if (totalPages > 0 && page !== currentPage) {
+    await scheduleNotFound("/articles");
+    notFound();
+  }
   const preservedParams: Record<string, string | string[] | undefined> = {
     ...params,
   };

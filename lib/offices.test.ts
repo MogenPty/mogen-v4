@@ -127,8 +127,8 @@ describe("offices — Soshanguve reinstated as a full-service office", () => {
 });
 
 describe("offices — discovery", () => {
-  it("keeps every office in the sitemap, footer and directory", () => {
-    const urls = sitemap().map((e) => e.url);
+  it("keeps every office in the sitemap, footer and directory", async () => {
+    const urls = (await sitemap()).map((e) => e.url);
     const base = getSiteUrl();
     for (const slug of ["maboloka", "soshanguve", "centurion"]) {
       expect(urls).toContain(`${base}/locations/${slug}`);
@@ -136,7 +136,7 @@ describe("offices — discovery", () => {
         `/locations/${slug}`,
       );
     }
-    expect(readSource("app/locations/page.tsx")).toContain("LOCATION_SLUGS");
+    expect(readSource("app/(public)/locations/page.tsx")).toContain("LOCATION_SLUGS");
   });
 
   it("links all three offices from the contact page", () => {

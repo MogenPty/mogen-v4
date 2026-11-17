@@ -2,6 +2,7 @@ import { ArrowLeft, Check } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { scheduleNotFound } from "@/lib/redirects/not-found";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
@@ -255,7 +256,10 @@ export default async function PromotionDetailPage({
 }: Readonly<Props>) {
   const { slug } = await params;
   const promo = await loadPromotionBySlug(slug);
-  if (!promo) notFound();
+  if (!promo) {
+    await scheduleNotFound(`/promotions/${slug}`);
+    notFound();
+  }
   // Carry allowlisted attribution (utm_*) from the promotion URL into
   // the enquiry CTAs — explicit promotion context always wins.
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});
