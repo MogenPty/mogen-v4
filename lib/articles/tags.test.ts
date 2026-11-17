@@ -98,7 +98,7 @@ describe("tags — archives use the canonical published list", () => {
 
 describe("tags — archive route wiring", () => {
   it("serves /articles/tag/[tag] with 404s for unknown/empty tags", () => {
-    const route = readSource("app/articles/tag/[tag]/page.tsx");
+    const route = readSource("app/(public)/articles/tag/[tag]/page.tsx");
     expect(route).toContain("generateStaticParams");
     expect(route).toContain("notFound()");
     expect(route).toContain("getTagArchives");
@@ -106,7 +106,7 @@ describe("tags — archive route wiring", () => {
   });
 
   it("keeps thin archives out of the index with canonical metadata", () => {
-    const route = readSource("app/articles/tag/[tag]/page.tsx");
+    const route = readSource("app/(public)/articles/tag/[tag]/page.tsx");
     expect(route).toContain("index: false");
     expect(route).toContain("canonical");
     // Archive URLs come from the canonical helper (single source of truth).

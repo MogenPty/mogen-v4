@@ -148,28 +148,28 @@ describe("conversion bar — page journey variant", () => {
   });
 
   it("uses journey mode on informational pages only", () => {
-    expect(readSource("app/about/page.tsx")).toContain(
+    expect(readSource("app/(public)/about/page.tsx")).toContain(
       'barVariant="journey"',
     );
-    expect(readSource("app/privacy-policy/page.tsx")).toContain(
+    expect(readSource("app/(public)/privacy-policy/page.tsx")).toContain(
       'barVariant="journey"',
     );
-    expect(readSource("app/terms-of-service/page.tsx")).toContain(
+    expect(readSource("app/(public)/terms-of-service/page.tsx")).toContain(
       'barVariant="journey"',
     );
-    expect(readSource("app/process/page.tsx")).toContain(
+    expect(readSource("app/(public)/process/page.tsx")).toContain(
       'barVariant="journey"',
     );
-    expect(readSource("app/partners/page.tsx")).toContain(
+    expect(readSource("app/(public)/partners/page.tsx")).toContain(
       'barVariant="journey"',
     );
-    expect(readSource("app/success-stories/page.tsx")).toContain(
+    expect(readSource("app/(public)/success-stories/page.tsx")).toContain(
       'barVariant="journey"',
     );
     expect(
       readSource("components/mogen/resources-block.tsx"),
     ).toContain('barVariant="journey"');
-    expect(readSource("app/pricing/page.tsx")).toContain(
+    expect(readSource("app/(public)/pricing/page.tsx")).toContain(
       'variant="journey"',
     );
   });
@@ -179,10 +179,10 @@ describe("conversion bar — page journey variant", () => {
     // contact, FAQ, articles, locations.
     for (const file of [
       "app/page.tsx",
-      "app/services/page.tsx",
-      "app/faq/page.tsx",
-      "app/locations/page.tsx",
-      "app/contact/page.tsx",
+      "app/(public)/services/page.tsx",
+      "app/(public)/faq/page.tsx",
+      "app/(public)/locations/page.tsx",
+      "app/(public)/contact/page.tsx",
     ]) {
       const source = readSource(file);
       expect(source).not.toContain("journey");

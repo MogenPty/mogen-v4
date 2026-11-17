@@ -11,7 +11,7 @@ function readSource(relativePath: string): string {
 
 describe("faq — directory route", () => {
   it("implements a public /faq directory with canonical metadata", () => {
-    const page = readSource("app/faq/page.tsx");
+    const page = readSource("app/(public)/faq/page.tsx");
     expect(page).toContain('path: "/faq"');
     expect(page).toContain("pageMetadata");
     // FAQ copy lives in the metadata registry (SEO remediation). The
@@ -23,7 +23,7 @@ describe("faq — directory route", () => {
   });
 
   it("renders verified service FAQs (no invented commercial terms)", () => {
-    const page = readSource("app/faq/page.tsx");
+    const page = readSource("app/(public)/faq/page.tsx");
     // Content comes from the existing service data — never duplicated copy.
     expect(page).toContain("SERVICES");
     expect(page).toContain("ServiceFAQ");
@@ -41,16 +41,16 @@ describe("faq — directory route", () => {
   });
 
   it("emits FAQPage structured data", () => {
-    const page = readSource("app/faq/page.tsx");
+    const page = readSource("app/(public)/faq/page.tsx");
     expect(page).toContain("FAQPage");
     expect(page).toContain("mainEntity");
     expect(page).toContain("acceptedAnswer");
   });
 
   it("navigates between the directory and service, pricing and contact pages", () => {
-    const page = readSource("app/faq/page.tsx");
+    const page = readSource("app/(public)/faq/page.tsx");
     // Service links render from SERVICES via template hrefs.
-    expect(page).toContain("SERVICES.map");
+    expect(page).toContain("services.map");
     expect(page).toContain("/services/${service.slug}");
     expect(page).toContain("/services/${service.slug}#pricing");
     expect(page).toContain('href="/pricing"');
@@ -60,7 +60,7 @@ describe("faq — directory route", () => {
     expect(readSource("components/mogen/service-detail.tsx")).toContain(
       'href="/faq"',
     );
-    expect(readSource("app/pricing/page.tsx")).toContain('href="/faq"');
+    expect(readSource("app/(public)/pricing/page.tsx")).toContain('href="/faq"');
   });
 
   it("is discoverable via sitemap and footer", async () => {

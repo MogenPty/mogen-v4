@@ -136,7 +136,7 @@ describe("offices — discovery", () => {
         `/locations/${slug}`,
       );
     }
-    expect(readSource("app/locations/page.tsx")).toContain("LOCATION_SLUGS");
+    expect(readSource("app/(public)/locations/page.tsx")).toContain("LOCATION_SLUGS");
   });
 
   it("links all three offices from the contact page", () => {

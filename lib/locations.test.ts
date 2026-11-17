@@ -21,7 +21,7 @@ describe("locations — data source", () => {
   });
 
   it("reuses existing location data (no duplicated copy)", () => {
-    const page = readSource("app/locations/page.tsx");
+    const page = readSource("app/(public)/locations/page.tsx");
     expect(page).toContain("data/locations");
     expect(page).toContain("LOCATION_SLUGS");
     // LOCATIONS is no longer referenced: non-office areas now live as
@@ -31,7 +31,7 @@ describe("locations — data source", () => {
 
 describe("locations — index route", () => {
   it("implements a public /locations directory with canonical metadata", () => {
-    const page = readSource("app/locations/page.tsx");
+    const page = readSource("app/(public)/locations/page.tsx");
     expect(page).toContain('path: "/locations"');
     expect(page).toContain("pageMetadata");
     // Directory copy lives in the metadata registry (SEO remediation).
@@ -40,13 +40,13 @@ describe("locations — index route", () => {
   });
 
   it("links to the real existing location pages", () => {
-    const page = readSource("app/locations/page.tsx");
+    const page = readSource("app/(public)/locations/page.tsx");
     expect(page).toContain("/locations/${");
     expect(page).toContain("View location");
   });
 
   it("invents no locations, addresses, offices or testimonials", () => {
-    const page = readSource("app/locations/page.tsx");
+    const page = readSource("app/(public)/locations/page.tsx");
     for (const slug of ["maboloka", "soshanguve"]) {
       expect(getLocationDetail(slug)).toBeDefined();
     }
@@ -73,7 +73,7 @@ describe("locations — sitemap and URLs", () => {
   });
 
   it("keeps location detail routes wired to static params + notFound", () => {
-    const route = readSource("app/locations/[slug]/page.tsx");
+    const route = readSource("app/(public)/locations/[slug]/page.tsx");
     expect(route).toContain("generateStaticParams");
     expect(route).toContain("notFound()");
   });

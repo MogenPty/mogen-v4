@@ -92,15 +92,15 @@ describe("pagination — 12 per page default", () => {
   });
 
   it("returns a predictable 404 for out-of-range pages at the route", () => {
-    const route = readSource("app/articles/page.tsx");
+    const route = readSource("app/(public)/articles/page.tsx");
     expect(route).toContain("notFound()");
     expect(route).toContain("page !== currentPage");
-    const tagRoute = readSource("app/articles/tag/[tag]/page.tsx");
+    const tagRoute = readSource("app/(public)/articles/tag/[tag]/page.tsx");
     expect(tagRoute).toContain("notFound()");
   });
 
   it("keeps page 1 canonical at /articles", () => {
-    const route = readSource("app/articles/page.tsx");
+    const route = readSource("app/(public)/articles/page.tsx");
     expect(route).toContain("/articles?page=");
     expect(readSource("data/blog.ts")).toContain("basePath");
   });

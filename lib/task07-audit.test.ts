@@ -19,8 +19,8 @@ function readSource(relativePath: string): string {
  */
 describe("task 07 — public contact email", () => {
   it.each([
-    "app/privacy-policy/page.tsx",
-    "app/terms-of-service/page.tsx",
+    "app/(public)/privacy-policy/page.tsx",
+    "app/(public)/terms-of-service/page.tsx",
     "components/mogen/contact-form.tsx",
     "components/mogen/resources-block.tsx",
   ])("%s uses info@mogen.co.za, not the obsolete hello@ address", (file) => {
@@ -32,17 +32,17 @@ describe("task 07 — public contact email", () => {
 
 describe("task 07 — public branding and service references", () => {
   it("about metadata uses the public brand, not legacy company names", () => {
-    const source = readSource("app/about/page.tsx");
+    const source = readSource("app/(public)/about/page.tsx");
     expect(source).not.toContain("Mogen Pty Ltd (Motsoane Global Enterprise)");
   });
 
   it("service detail title does not reference an obsolete brand service", () => {
-    // Title moved to server metadata in Task 8 (`app/services/[slug]`
+    // Title moved to server metadata in Task 8 (`app/(public)/services/[slug]`
     // generateMetadata); the brand descriptor lives in the site config
     // consumed by the layout default title.
     const source =
       readSource("components/mogen/service-detail.tsx") +
-      readSource("app/services/[slug]/page.tsx") +
+      readSource("app/(public)/services/[slug]/page.tsx") +
       readSource("data/site.ts");
     expect(source).not.toContain("Brand & SEO Agency");
     expect(source).toContain("Digital Services for South African Businesses");

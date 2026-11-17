@@ -71,7 +71,7 @@ describe("article metadata — driven by frontmatter", () => {
     const metadataSource = readSource("lib/articles/metadata.ts");
     expect(metadataSource).not.toContain("www.mogen.co.za");
     expect(metadataSource).toContain("siteConfig");
-    const route = readSource("app/articles/[slug]/page.tsx");
+    const route = readSource("app/(public)/articles/[slug]/page.tsx");
     expect(route).not.toContain("www.mogen.co.za");
   });
 });

@@ -45,9 +45,9 @@ describe("task 8 — environment-driven site URL", () => {
       "lib/seo.ts",
       "app/robots.ts",
       "app/sitemap.ts",
-      "app/services/[slug]/page.tsx",
-      "app/articles/[slug]/page.tsx",
-      "app/promotions/[slug]/page.tsx",
+      "app/(public)/services/[slug]/page.tsx",
+      "app/(public)/articles/[slug]/page.tsx",
+      "app/(public)/promotions/[slug]/page.tsx",
     ]) {
       const source = readSource(file);
       expect(source).not.toContain("https://www.mogen.co.za");
@@ -119,17 +119,17 @@ describe("task 8 — title generation (no Mogen | Mogen)", () => {
     // root layout appends "| Mogen" via its template, so page sources
     // must not repeat the brand suffix themselves.
     for (const [file, snippet] of [
-      ["app/services/page.tsx", 'STATIC_META["/services"]'],
-      ["app/promotions/page.tsx", 'STATIC_META["/promotions"]'],
-      ["app/pricing/page.tsx", 'STATIC_META["/pricing"]'],
-      ["app/articles/page.tsx", 'STATIC_META["/articles"]'],
+      ["app/(public)/services/page.tsx", 'STATIC_META["/services"]'],
+      ["app/(public)/promotions/page.tsx", 'STATIC_META["/promotions"]'],
+      ["app/(public)/pricing/page.tsx", 'STATIC_META["/pricing"]'],
+      ["app/(public)/articles/page.tsx", 'STATIC_META["/articles"]'],
     ] as const) {
       const source = readSource(file);
       expect(source).toContain(snippet);
       expect(source).not.toContain("— Mogen");
       expect(source).not.toContain("| Mogen");
     }
-    const promoMeta = readSource("app/promotions/[slug]/page.tsx");
+    const promoMeta = readSource("app/(public)/promotions/[slug]/page.tsx");
     expect(promoMeta).not.toContain("— Mogen");
     expect(promoMeta).not.toContain("| Mogen");
     // Layout template appends exactly one brand suffix.
@@ -137,10 +137,10 @@ describe("task 8 — title generation (no Mogen | Mogen)", () => {
   });
 
   it("gives service and article pages server-side titles", () => {
-    expect(readSource("app/services/[slug]/page.tsx")).toContain(
+    expect(readSource("app/(public)/services/[slug]/page.tsx")).toContain(
       "generateMetadata",
     );
-    expect(readSource("app/articles/[slug]/page.tsx")).toContain(
+    expect(readSource("app/(public)/articles/[slug]/page.tsx")).toContain(
       "generateMetadata",
     );
     // No client-side document.title overrides remain.
@@ -170,7 +170,7 @@ describe("task 8 — promotion metadata", () => {
   });
 
   it("emits canonical + OG + Twitter for promotion detail pages", () => {
-    const source = readSource("app/promotions/[slug]/page.tsx");
+    const source = readSource("app/(public)/promotions/[slug]/page.tsx");
     expect(source).toContain("alternates");
     expect(source).toContain("canonical");
     expect(source).toContain("openGraph");
@@ -183,7 +183,7 @@ describe("task 8 — article metadata", () => {
   it("emits canonical + article OG + Article JSON-LD per post", () => {
     // The detail route delegates to the shared MDX metadata helper, which
     // builds canonical + article OG + Article JSON-LD from frontmatter.
-    const route = readSource("app/articles/[slug]/page.tsx");
+    const route = readSource("app/(public)/articles/[slug]/page.tsx");
     expect(route).toContain("articleMetadata");
     expect(route).toContain("articleJsonLd");
     const helper = readSource("lib/articles/metadata.ts");
@@ -212,9 +212,9 @@ describe("task 8 — invalid dynamic routes return not-found", () => {
     expect(getPost("nonexistent-article")).toBeUndefined();
     expect(getPromotionBySlug("nonexistent-promotion")).toBeUndefined();
     for (const file of [
-      "app/services/[slug]/page.tsx",
-      "app/articles/[slug]/page.tsx",
-      "app/promotions/[slug]/page.tsx",
+      "app/(public)/services/[slug]/page.tsx",
+      "app/(public)/articles/[slug]/page.tsx",
+      "app/(public)/promotions/[slug]/page.tsx",
     ]) {
       expect(readSource(file)).toContain("notFound()");
     }

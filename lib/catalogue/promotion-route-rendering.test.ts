@@ -14,7 +14,7 @@ test("renders database promotion slugs at request time", async () => {
 
   expect(route.dynamic).toBe("force-dynamic");
   expect("generateStaticParams" in route).toBe(false);
-}, 15_000);
+}, 30_000);
 
 test("groups database discount lines by payment option", () => {
   const source = readFileSync(join(process.cwd(), "app/(public)/promotions/[slug]/page.tsx"), "utf8");

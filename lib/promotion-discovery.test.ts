@@ -10,7 +10,7 @@ import {
 import { buildEnquiryHref } from "@/lib/enquiry/enquiry";
 
 const SPROUT_LIVE = "2026-10-15";
-const AFTER_SEED = "2026-11-01";
+const AFTER_SEED = "2027-01-01";
 
 function readSource(relativePath: string): string {
   return readFileSync(join(process.cwd(), relativePath), "utf8");
@@ -96,7 +96,7 @@ describe("promotion discovery — featured promotion", () => {
   it("homepage omits the featured section when there is no featured promotion", () => {
     const homeSource = readSource("app/page.tsx");
     // Conditional render driven by the central selector result.
-    expect(homeSource).toContain("getFeaturedPromotion()");
+    expect(homeSource).toContain("loadFeaturedPromotion()");
     expect(homeSource).toMatch(/\{promotion && \(/);
     const promotionSource = readSource("components/mogen/promotion.tsx");
     // Component renders nothing (no empty container / broken CTA) when none qualifies.
