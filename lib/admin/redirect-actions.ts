@@ -14,7 +14,6 @@ import {
   redirectRules,
   searchConsoleImportRows,
   searchConsoleImports,
-  webPromotions,
 } from "@/db/schema";
 import { requireCatalogueAdmin } from "./access";
 import { assertNoRedirectChains, type RedirectSnapshotRule } from "@/lib/redirects/engine";
@@ -22,6 +21,7 @@ import { csvRecordLine, importedDescription, parseCsv } from "@/lib/redirects/cs
 import { suggestGscDestination } from "@/lib/redirects/gsc";
 import { normalizeImportedUrl } from "@/lib/redirects/paths";
 import { getAllArticles } from "@/lib/articles/loader";
+import { loadPublicPromotions } from "@/lib/catalogue/promotions-server";
 import { SERVICES } from "@/data/services";
 import { LOCATION_SLUGS } from "@/data/locations";
 import {
@@ -386,14 +386,17 @@ export async function importSearchConsoleCsvAction(data: FormData) {
   }
   if (!paths.size) throw new Error("No unique Mogen URLs were found in the report.");
   const db = getCatalogueDb();
+  const now = new Date();
   const [ruleRows, promotionRows] = await Promise.all([
     db.select({
       sourcePath: redirectRules.sourcePath,
       destinationPath: redirectRules.destinationPath,
       matchType: redirectRules.matchType,
-    }).from(redirectRules)
-      .where(eq(redirectRules.isActive, true)),
-    db.select({ slug: webPromotions.slug }).from(webPromotions),
+    }).from(redirectRules).where(and(
+      eq(redirectRules.isActive, true),
+      or(sql`${redirectRules.expiresAt} is null`, sql`${redirectRules.expiresAt} > ${now}`),
+    )),
+    loadPublicPromotions(),
   ]);
   const existingRedirects = ruleRows.map(rule => ({
     sourcePath: rule.sourcePath,
@@ -402,7 +405,7 @@ export async function importSearchConsoleCsvAction(data: FormData) {
   }));
   const articles = getAllArticles();
   const articleSlugs = new Set(articles.map(article => article.slug));
-  const promotionSlugs = new Set(promotionRows.flatMap(row => row.slug ? [row.slug] : []));
+  const promotionSlugs = new Set(promotionRows.map(row => row.slug));
   const currentPages = new Set([
     "/", "/about", "/services", "/pricing", "/process", "/resources", "/partners",
     "/success-stories", "/articles", "/promotions", "/contact", "/locations", "/faq",
@@ -413,7 +416,6 @@ export async function importSearchConsoleCsvAction(data: FormData) {
     ...LOCATION_SLUGS.map(slug => `/locations/${slug}`),
   ]);
   const importId = randomUUID();
-  const now = new Date();
   const rows = [...paths].map(sourcePath => ({
     id: randomUUID(), importId, sourcePath,
     ...suggestGscDestination(sourcePath, existingRedirects, currentPages, articleSlugs, promotionSlugs),

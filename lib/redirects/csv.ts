@@ -86,11 +86,11 @@ export function parseCsv(input: string): CsvRecord[] {
 }
 
 export function spreadsheetSafeDescription(value: string): string {
-  return /^[=+\-@]/.test(value) ? `'${value}` : value;
+  return /^'*[=+\-@\t\r\n]/.test(value) ? `'${value}` : value;
 }
 
 export function importedDescription(value: string): string {
-  return /^'[=+\-@]/.test(value) ? value.slice(1) : value;
+  return /^'+[=+\-@\t\r\n]/.test(value) ? value.slice(1) : value;
 }
 
 const csvCell = (value: unknown) => {

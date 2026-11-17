@@ -213,20 +213,19 @@ export async function savePromotionWizardStepAction(
         ...promotionPresentation(campaign.presentation), shortDescription, ctaLabel,
       });
 
-      // A single data-modifying CTE makes the entity update, historical retargeting,
-      // new redirect, audit records and cache invalidation all-or-nothing. The
-      // optimistic slug predicate also prevents two editors from losing updates.
-      const result = await db.execute<{ slug: string }>(sql`
-        with route_lock as materialized (
-          select pg_advisory_xact_lock(hashtextextended('mogen:route-rule-writes', 0))
-        ), updated as (
+      // Neon HTTP batch statements share one transaction. Acquire the route
+      // lock in its own statement so the mutation receives a fresh READ COMMITTED
+      // snapshot after any prior lock owner commits.
+      const [, result] = await db.batch([
+        db.execute(sql`select pg_advisory_xact_lock(hashtextextended('mogen:route-rule-writes', 0))`),
+        db.execute<{ slug: string }>(sql`
+        with updated as (
           update web_promotions as promotion
           set slug = ${slug}, name = ${name}, description = ${description},
               location_slug = ${location || null}, maximum_customers = ${maximumCustomers},
               sort_order = ${sortOrder}, presentation = ${presentation}::jsonb,
               updated_at = ${now}
           where promotion.id = ${campaignId}
-            and exists (select 1 from route_lock)
             and promotion.slug is not distinct from ${campaign.slug}
             and not exists (
               select 1 from web_promotions other
@@ -240,14 +239,14 @@ export async function savePromotionWizardStepAction(
                   (rule.match_type = 'exact' and rule.source_path = ${newPath})
                   or (
                     rule.match_type = 'segment'
-                    and ${newPath}::text like left(rule.source_path, -9) || '/%'
+                    and starts_with(${newPath}::text, left(rule.source_path, -9) || '/')
                     and position('/' in substring(${newPath}::text from char_length(left(rule.source_path, -9)) + 2)) = 0
                   )
                   or (
                     rule.match_type = 'splat'
                     and (
                       ${newPath}::text = left(rule.source_path, -7)
-                      or ${newPath}::text like left(rule.source_path, -7) || '/%'
+                      or starts_with(${newPath}::text, left(rule.source_path, -7) || '/')
                     )
                   )
                 )
@@ -261,14 +260,14 @@ export async function savePromotionWizardStepAction(
                   (gone.match_type = 'exact' and gone.source_path = ${newPath})
                   or (
                     gone.match_type = 'segment'
-                    and ${newPath}::text like left(gone.source_path, -9) || '/%'
+                    and starts_with(${newPath}::text, left(gone.source_path, -9) || '/')
                     and position('/' in substring(${newPath}::text from char_length(left(gone.source_path, -9)) + 2)) = 0
                   )
                   or (
                     gone.match_type = 'splat'
                     and (
                       ${newPath}::text = left(gone.source_path, -7)
-                      or ${newPath}::text like left(gone.source_path, -7) || '/%'
+                      or starts_with(${newPath}::text, left(gone.source_path, -7) || '/')
                     )
                   )
                 )
@@ -320,7 +319,8 @@ export async function savePromotionWizardStepAction(
             set generation = redirect_cache_state.generation + 1, updated_at = excluded.updated_at
         )
         select slug from updated
-      `);
+      `),
+      ]);
       if (result.rows.length !== 1) {
         throw new Error("The slug is already in use, reserved by a redirect, or the promotion changed in another session. Refresh and try again.");
       }

@@ -92,6 +92,47 @@ describe("redirect engine", () => {
     expect(await cache.get(10)).toBeNull();
     expect(generationChecks).toBe(1);
   });
+
+  it("shares an in-flight initial load with concurrent requests", async () => {
+    let release!: (value: number) => void;
+    const generation = new Promise<number>(resolve => { release = resolve; });
+    const cache = new RedirectRuleCache({
+      generation: () => generation,
+      snapshot: async currentGeneration => buildRouteSnapshot(currentGeneration, [], []),
+    }, 1_000, 100);
+
+    const first = cache.get(0);
+    const second = cache.get(1);
+    release(1);
+    await expect(first).resolves.toMatchObject({ generation: 1 });
+    await expect(second).resolves.toMatchObject({ generation: 1 });
+  });
+
+  it("does not let a timed-out refresh overwrite a newer snapshot", async () => {
+    let generation = 0;
+    let releaseOld!: (value: ReturnType<typeof buildRouteSnapshot>) => void;
+    const oldSnapshot = new Promise<ReturnType<typeof buildRouteSnapshot>>(resolve => { releaseOld = resolve; });
+    const cache = new RedirectRuleCache({
+      generation: async () => generation,
+      snapshot: async currentGeneration => currentGeneration === 1
+        ? oldSnapshot
+        : buildRouteSnapshot(currentGeneration, [], []),
+    }, 10, 5);
+
+    expect((await cache.get(0))?.generation).toBe(0);
+    generation = 1;
+    let timedOut: Promise<unknown> | undefined;
+    expect((await cache.get(20, pending => { timedOut = pending; }))?.generation).toBe(0);
+    await timedOut;
+    generation = 2;
+    let refreshed: Promise<unknown> | undefined;
+    expect((await cache.get(40, pending => { refreshed = pending; }))?.generation).toBe(0);
+    await refreshed;
+    expect(cache.cached?.generation).toBe(2);
+    releaseOld(buildRouteSnapshot(1, [], []));
+    await Promise.resolve();
+    expect(cache.cached?.generation).toBe(2);
+  });
 });
 
 describe("redirect cache", () => {

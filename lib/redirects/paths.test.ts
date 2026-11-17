@@ -22,6 +22,7 @@ describe("redirect path normalization", () => {
     expect(() => normalizeRequestPath("/a/%2e%2e/b")).toThrow(/dot path/i);
     expect(() => normalizeRequestPath("/bad/%zz")).toThrow(/percent/i);
     expect(() => normalizeRequestPath("/path?token=secret")).toThrow(/query/i);
+    expect(() => normalizeRequestPath(`/${"é".repeat(400)}`)).toThrow(/encoded path/i);
   });
 
   it("canonicalizes one-segment and catch-all patterns", () => {

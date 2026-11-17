@@ -143,7 +143,7 @@ async function inspect() {
     ? await sql`
         SELECT id::text, source_path, destination_path, match_type, status_code
         FROM public.redirect_rules
-        WHERE id::text = ANY(${expectedSeeds.map(seed => seed[0])})
+        WHERE is_active = true AND source_path = ANY(${expectedSeeds.map(seed => seed[1])})
       `
     : [];
 
@@ -154,10 +154,10 @@ async function inspect() {
   const constraintNames = new Set(constraints.map(row => row.name));
   const indexNames = new Set(indexes.map(row => row.name));
   const triggerNames = new Set(triggers.map(row => row.name));
-  const seedById = new Map(seedRows.map(row => [row.id, row]));
-  const invalidSeeds = expectedSeeds.filter(([id, sourcePath, destinationPath, matchType, statusCode]) => {
-    const row = seedById.get(id);
-    return !row || row.source_path !== sourcePath || row.destination_path !== destinationPath ||
+  const seedBySource = new Map(seedRows.map(row => [row.source_path, row]));
+  const invalidSeeds = expectedSeeds.filter(([, sourcePath, destinationPath, matchType, statusCode]) => {
+    const row = seedBySource.get(sourcePath);
+    return !row || row.destination_path !== destinationPath ||
       row.match_type !== matchType || row.status_code !== statusCode;
   }).map(seed => seed[0]);
   const missingConstraints = requiredConstraints.filter(name => !constraintNames.has(name));

@@ -9,6 +9,7 @@ export class RedirectRuleCache {
   private current: RouteSnapshot | null = null;
   private lastCheckedAt = Number.NEGATIVE_INFINITY;
   private pending: Promise<RouteSnapshot | null> | null = null;
+  private attempt = 0;
 
   constructor(
     private readonly loader: RedirectCacheLoader,
@@ -28,16 +29,23 @@ export class RedirectRuleCache {
     now = Date.now(),
     scheduleBackground?: (refresh: Promise<unknown>) => void,
   ): Promise<RouteSnapshot | null> {
-    if (now - this.lastCheckedAt < this.checkIntervalMs) return this.current;
+    if (now - this.lastCheckedAt < this.checkIntervalMs) {
+      return this.current ?? this.pending;
+    }
     if (!this.pending) {
       this.lastCheckedAt = now;
+      const attempt = ++this.attempt;
       let timeout: ReturnType<typeof setTimeout> | undefined;
       const refresh = Promise.race([
-        this.refresh(),
+        this.load(),
         new Promise<RouteSnapshot | null>((_, reject) => {
           timeout = setTimeout(() => reject(new Error("Redirect cache refresh timed out.")), this.refreshTimeoutMs);
         }),
-      ]).catch(error => {
+      ]).then(snapshot => {
+        if (snapshot && this.attempt === attempt) this.current = snapshot;
+        return this.current;
+      }).catch(error => {
+        if (this.attempt === attempt) this.attempt += 1;
         console.warn("[redirects] cache refresh failed; using the last valid snapshot", error instanceof Error ? error.message : error);
         return this.current;
       }).finally(() => {
@@ -53,11 +61,9 @@ export class RedirectRuleCache {
     return this.pending;
   }
 
-  private async refresh(): Promise<RouteSnapshot | null> {
+  private async load(): Promise<RouteSnapshot | null> {
     const generation = await this.loader.generation();
-    if (!this.current || this.current.generation !== generation) {
-      this.current = await this.loader.snapshot(generation);
-    }
-    return this.current;
+    if (this.current?.generation === generation) return this.current;
+    return this.loader.snapshot(generation);
   }
 }

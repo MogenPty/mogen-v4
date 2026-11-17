@@ -26,5 +26,7 @@ describe("redirect CSV", () => {
   it("protects spreadsheet formulas without changing imported descriptions", () => {
     expect(spreadsheetSafeDescription("=HYPERLINK(\"bad\")")).toBe("'=HYPERLINK(\"bad\")");
     expect(importedDescription("'=HYPERLINK(\"bad\")")).toBe("=HYPERLINK(\"bad\")");
+    expect(importedDescription(spreadsheetSafeDescription("'=literal"))).toBe("'=literal");
+    expect(importedDescription(spreadsheetSafeDescription("\t=literal"))).toBe("\t=literal");
   });
 });

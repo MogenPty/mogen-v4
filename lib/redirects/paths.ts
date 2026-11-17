@@ -46,6 +46,7 @@ function normalizePlainPath(value: string): string {
   if (value.length > MAX_PATH_LENGTH) throw new Error(`Path cannot exceed ${MAX_PATH_LENGTH} characters.`);
 
   const normalized = normalizePercentEncoding(encodeUnsafePathCharacters(value)).replace(/\/{2,}/g, "/");
+  if (normalized.length > MAX_PATH_LENGTH) throw new Error(`Encoded path cannot exceed ${MAX_PATH_LENGTH} characters.`);
   const segments = normalized.split("/");
   if (segments.some(segment => segment === "." || segment === "..")) {
     throw new Error("Dot path segments are not allowed.");

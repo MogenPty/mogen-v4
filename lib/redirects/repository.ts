@@ -19,13 +19,11 @@ function sampledHitCount(kind: "redirect" | "gone", id: string, now: number): nu
     return null;
   }
   const count = 1 + (sample?.suppressed ?? 0);
-  hitSamples.set(key, { nextWriteAt: now + HIT_WRITE_INTERVAL_MS, suppressed: 0 });
-  if (hitSamples.size > MAX_HIT_SAMPLE_KEYS) {
-    for (const [sampleKey, value] of hitSamples) {
-      if (value.nextWriteAt <= now) hitSamples.delete(sampleKey);
-      if (hitSamples.size <= MAX_HIT_SAMPLE_KEYS * 0.8) break;
-    }
+  if (!sample && hitSamples.size >= MAX_HIT_SAMPLE_KEYS) {
+    const oldestKey = hitSamples.keys().next().value;
+    if (oldestKey) hitSamples.delete(oldestKey);
   }
+  hitSamples.set(key, { nextWriteAt: now + HIT_WRITE_INTERVAL_MS, suppressed: 0 });
   return count;
 }
 
