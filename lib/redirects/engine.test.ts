@@ -48,6 +48,13 @@ describe("redirect engine", () => {
     expect(resolveRoute("/old/deep/a/b", snapshot)).toMatchObject({ ruleId: "splat-long" });
   });
 
+  it("applies specificity across redirect and gone rules", () => {
+    const snapshot = buildRouteSnapshot(1, [
+      rule({ id: "redirect-splat", sourcePath: "/old/:path*", destinationPath: "/new/:path*", matchType: "splat" }),
+    ], [{ id: "gone-exact", sourcePath: "/old/retired", matchType: "exact", expiresAt: null }]);
+    expect(resolveRoute("/old/retired", snapshot)).toEqual({ kind: "gone", ruleId: "gone-exact" });
+  });
+
   it("returns 410 rules and ignores expired redirects", () => {
     const snapshot = buildRouteSnapshot(1, [rule({ expiresAt: new Date("2026-01-01") })], [{
       id: "gone-1", sourcePath: "/gone", matchType: "exact", expiresAt: null,
@@ -62,9 +69,28 @@ describe("redirect engine", () => {
       rule(),
       rule({ id: "rule-2", sourcePath: "/new", destinationPath: "/final" }),
     ])).toThrow(/chain/i);
+    expect(() => assertNoRedirectChains([
+      rule({ sourcePath: "/legacy/:path*", destinationPath: "/articles/:path*", matchType: "splat" }),
+      rule({ id: "rule-2", sourcePath: "/articles/:segment", destinationPath: "/final/:segment", matchType: "segment" }),
+    ])).toThrow(/chain/i);
     expect(() => buildRouteSnapshot(1, [rule()], [{
       id: "gone-1", sourcePath: "/old", matchType: "exact", expiresAt: null,
     }])).toThrow(/conflicting/i);
+  });
+
+  it("bounds an initial refresh and throttles repeated failures", async () => {
+    let generationChecks = 0;
+    const cache = new RedirectRuleCache({
+      generation: async () => {
+        generationChecks += 1;
+        return await new Promise<number>(() => {});
+      },
+      snapshot: async () => buildRouteSnapshot(1, [], []),
+    }, 1_000, 5);
+
+    expect(await cache.get(0)).toBeNull();
+    expect(await cache.get(10)).toBeNull();
+    expect(generationChecks).toBe(1);
   });
 });
 
@@ -88,7 +114,10 @@ describe("redirect cache", () => {
     expect((await cache.get(5))?.generation).toBe(1);
     expect(loads).toBe(1);
     generation = 2;
-    expect((await cache.get(20))?.generation).toBe(2);
+    let refresh: Promise<unknown> | undefined;
+    expect((await cache.get(20, pending => { refresh = pending; }))?.generation).toBe(1);
+    await refresh;
+    expect((await cache.get(21))?.generation).toBe(2);
     fail = true;
     expect((await cache.get(40))?.generation).toBe(2);
   });

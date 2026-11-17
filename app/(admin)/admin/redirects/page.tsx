@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { desc } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { ArrowRight, Download, History, Route, ShieldCheck } from "lucide-react";
 import AdminCard, {
   adminFieldClass,
@@ -23,30 +23,52 @@ import { normalizeRequestPath } from "@/lib/redirects/paths";
 
 export const dynamic = "force-dynamic";
 
+const REDIRECT_PAGE_SIZE = 50;
+const GONE_PAGE_SIZE = 20;
+
+function pageNumber(value: string | undefined) {
+  const parsed = Number.parseInt(value ?? "1", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
 const formatDate = (value: Date | null) => value
   ? new Intl.DateTimeFormat("en-ZA", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Johannesburg" }).format(value)
   : "Never";
 
 export default async function RedirectManagerPage({ searchParams }: Readonly<{
-  searchParams: Promise<{ q?: string; state?: string; kind?: string; testPath?: string; sourcePath?: string; destinationPath?: string; notFoundId?: string; gscRowId?: string }>;
+  searchParams: Promise<{ q?: string; state?: string; kind?: string; page?: string; gonePage?: string; testPath?: string; sourcePath?: string; destinationPath?: string; notFoundId?: string; gscRowId?: string }>;
 }>) {
   await requireCatalogueAdmin();
   const filters = await searchParams;
   const db = getCatalogueDb();
-  const [redirectRows, goneRows, historyRows] = await Promise.all([
-    db.select().from(redirectRules).orderBy(desc(redirectRules.updatedAt)).limit(500),
-    db.select().from(goneResourceRules).orderBy(desc(goneResourceRules.updatedAt)).limit(200),
+  const query = filters.q?.trim() ?? "";
+  const page = pageNumber(filters.page);
+  const gonePage = pageNumber(filters.gonePage);
+  const redirectWhere = and(
+    query ? or(
+      ilike(redirectRules.sourcePath, `%${query}%`),
+      ilike(redirectRules.destinationPath, `%${query}%`),
+      ilike(redirectRules.description, `%${query}%`),
+    ) : undefined,
+    filters.state === "active" ? eq(redirectRules.isActive, true) : undefined,
+    filters.state === "disabled" ? eq(redirectRules.isActive, false) : undefined,
+    filters.kind === "automatic" ? eq(redirectRules.isAutomatic, true) : undefined,
+    filters.kind === "manual" ? eq(redirectRules.isAutomatic, false) : undefined,
+  );
+  const [redirectRows, goneRows, historyRows, redirectTotals, filteredTotals, goneTotals] = await Promise.all([
+    db.select().from(redirectRules).where(redirectWhere).orderBy(desc(redirectRules.updatedAt)).limit(REDIRECT_PAGE_SIZE).offset((page - 1) * REDIRECT_PAGE_SIZE),
+    db.select().from(goneResourceRules).orderBy(desc(goneResourceRules.updatedAt)).limit(GONE_PAGE_SIZE).offset((gonePage - 1) * GONE_PAGE_SIZE),
     db.select().from(redirectHistory).orderBy(desc(redirectHistory.createdAt)).limit(20),
+    db.select({ total: count(), active: sql<number>`count(*) filter (where ${redirectRules.isActive} = true)::integer`, hits: sql<number>`coalesce(sum(${redirectRules.hitCount}), 0)::bigint` }).from(redirectRules),
+    db.select({ total: count() }).from(redirectRules).where(redirectWhere),
+    db.select({ total: count(), active: sql<number>`count(*) filter (where ${goneResourceRules.isActive} = true)::integer` }).from(goneResourceRules),
   ]);
-  const query = filters.q?.trim().toLowerCase() ?? "";
-  const rows = redirectRows.filter(rule => {
-    const matchesQuery = !query || `${rule.sourcePath} ${rule.destinationPath} ${rule.description}`.toLowerCase().includes(query);
-    const matchesState = !filters.state || filters.state === "all" ||
-      (filters.state === "active" ? rule.isActive : !rule.isActive);
-    const matchesKind = !filters.kind || filters.kind === "all" ||
-      (filters.kind === "automatic" ? rule.isAutomatic : !rule.isAutomatic);
-    return matchesQuery && matchesState && matchesKind;
-  });
+  const rows = redirectRows;
+  const redirectTotal = redirectTotals[0]?.total ?? 0;
+  const filteredTotal = filteredTotals[0]?.total ?? 0;
+  const goneTotal = goneTotals[0]?.total ?? 0;
+  const redirectPages = Math.max(1, Math.ceil(filteredTotal / REDIRECT_PAGE_SIZE));
+  const gonePages = Math.max(1, Math.ceil(goneTotal / GONE_PAGE_SIZE));
 
   let testResult: string | null = null;
   if (filters.testPath) {
@@ -62,8 +84,8 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
     }
   }
 
-  const activeCount = redirectRows.filter(rule => rule.isActive).length;
-  const totalHits = redirectRows.reduce((sum, rule) => sum + rule.hitCount, 0);
+  const activeCount = redirectTotals[0]?.active ?? 0;
+  const totalHits = Number(redirectTotals[0]?.hits ?? 0);
   return (
     <main className="min-h-screen bg-background px-4 py-10 text-foreground sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
@@ -84,7 +106,7 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
         <section aria-label="Redirect summary" className="mt-8 grid gap-4 sm:grid-cols-3">
           <AdminCard className="p-5"><p className="small-caps text-muted-foreground">Active rules</p><p className="mt-2 font-display text-3xl font-black">{activeCount}</p></AdminCard>
           <AdminCard className="p-5"><p className="small-caps text-muted-foreground">Recorded hits</p><p className="mt-2 font-display text-3xl font-black">{totalHits.toLocaleString("en-ZA")}</p></AdminCard>
-          <AdminCard className="p-5"><p className="small-caps text-muted-foreground">Gone rules</p><p className="mt-2 font-display text-3xl font-black">{goneRows.filter(rule => rule.isActive).length}</p></AdminCard>
+          <AdminCard className="p-5"><p className="small-caps text-muted-foreground">Gone rules</p><p className="mt-2 font-display text-3xl font-black">{goneTotals[0]?.active ?? 0}</p></AdminCard>
         </section>
 
         <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.5fr)]">
@@ -117,7 +139,7 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
 
         <section className="mt-8">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-            <div><h2 className="font-display text-3xl font-black">Rules</h2><p className="mt-1 text-sm text-muted-foreground">Showing {rows.length} of {redirectRows.length} rules.</p></div>
+            <div><h2 className="font-display text-3xl font-black">Rules</h2><p className="mt-1 text-sm text-muted-foreground">Showing {rows.length} of {filteredTotal} matching rules ({redirectTotal} total).</p></div>
             <form method="get" className="grid gap-3 sm:grid-cols-[minmax(14rem,1fr)_auto_auto_auto]">
               <input name="q" defaultValue={filters.q} aria-label="Search redirects" placeholder="Search source or destination" className={adminFieldClass} />
               <select name="state" defaultValue={filters.state ?? "all"} aria-label="Filter by state" className={adminFieldClass}><option value="all">All states</option><option value="active">Active</option><option value="disabled">Disabled</option></select>
@@ -148,6 +170,7 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
             ))}
             {!rows.length && <AdminCard className="p-10 text-center"><ShieldCheck className="mx-auto size-8 text-catalyst" aria-hidden="true" /><h3 className="mt-4 font-display text-xl font-black">No matching redirect rules</h3><p className="mt-2 text-muted-foreground">Adjust the filters or create the first rule above.</p></AdminCard>}
           </div>
+          {redirectPages > 1 && <nav aria-label="Redirect pages" className="mt-5 flex items-center justify-between"><Link aria-disabled={page <= 1} href={{ pathname: "/admin/redirects", query: { ...filters, page: Math.max(1, page - 1) } }} className={`rounded-md border border-border px-4 py-2 font-semibold ${page <= 1 ? "pointer-events-none opacity-50" : "hover:border-catalyst"}`}>Previous</Link><span className="text-sm text-muted-foreground">Page {Math.min(page, redirectPages)} of {redirectPages}</span><Link aria-disabled={page >= redirectPages} href={{ pathname: "/admin/redirects", query: { ...filters, page: Math.min(redirectPages, page + 1) } }} className={`rounded-md border border-border px-4 py-2 font-semibold ${page >= redirectPages ? "pointer-events-none opacity-50" : "hover:border-catalyst"}`}>Next</Link></nav>}
         </section>
 
         <section className="mt-10 grid gap-6 lg:grid-cols-2">
@@ -160,6 +183,7 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
               <div className="sm:col-span-2 flex justify-end"><button className={adminPrimaryClass}>Create 410 rule</button></div>
             </form>
             <div className="mt-5 space-y-2">{goneRows.map(rule => <div key={rule.id} className="flex flex-col justify-between gap-3 rounded-md border border-border p-3 text-sm sm:flex-row sm:items-center"><span><span className="block font-mono font-semibold">{rule.sourcePath}</span><span className="mt-1 block text-xs text-muted-foreground">{rule.isActive ? "Active" : "Disabled"} · {rule.hitCount.toLocaleString("en-ZA")} hits</span></span><div className="flex gap-2"><form action={setGoneRuleActiveAction}><input type="hidden" name="id" value={rule.id} /><input type="hidden" name="active" value={String(!rule.isActive)} /><button className="min-h-11 rounded-md border border-border px-3 font-semibold">{rule.isActive ? "Disable" : "Enable"}</button></form><ConfirmActionForm action={deleteGoneRuleAction} fields={{ id: rule.id }} message={`Delete the 410 rule for ${rule.sourcePath}?`} label="Delete" className="min-h-11 rounded-md border border-destructive px-3 font-semibold text-destructive" /></div></div>)}</div>
+            {gonePages > 1 && <nav aria-label="Gone-rule pages" className="mt-5 flex items-center justify-between"><Link aria-disabled={gonePage <= 1} href={{ pathname: "/admin/redirects", query: { ...filters, gonePage: Math.max(1, gonePage - 1) } }} className={`rounded-md border border-border px-3 py-2 font-semibold ${gonePage <= 1 ? "pointer-events-none opacity-50" : "hover:border-catalyst"}`}>Previous</Link><span className="text-xs text-muted-foreground">Page {Math.min(gonePage, gonePages)} of {gonePages}</span><Link aria-disabled={gonePage >= gonePages} href={{ pathname: "/admin/redirects", query: { ...filters, gonePage: Math.min(gonePages, gonePage + 1) } }} className={`rounded-md border border-border px-3 py-2 font-semibold ${gonePage >= gonePages ? "pointer-events-none opacity-50" : "hover:border-catalyst"}`}>Next</Link></nav>}
           </AdminCard>
           <AdminCard as="section" className="p-6">
             <div className="flex items-center gap-3"><History className="size-5 text-catalyst" aria-hidden="true" /><h2 className="font-display text-2xl font-black">Recent audit history</h2></div>

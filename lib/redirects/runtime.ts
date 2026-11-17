@@ -12,12 +12,11 @@ export function databaseRedirectsEnabled(): boolean {
   return process.env.MOGEN_DATABASE_REDIRECTS_ENABLED !== "false";
 }
 
-export async function getRouteSnapshot() {
+export async function getRouteSnapshot(scheduleBackground?: (refresh: Promise<unknown>) => void) {
   if (!databaseRedirectsEnabled()) return null;
-  return redirectCache.get();
+  return redirectCache.get(Date.now(), scheduleBackground);
 }
 
 export function invalidateLocalRedirectCache(): void {
   redirectCache.invalidate();
 }
-

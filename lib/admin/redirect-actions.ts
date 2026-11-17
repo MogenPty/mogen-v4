@@ -18,7 +18,7 @@ import {
 } from "@/db/schema";
 import { requireCatalogueAdmin } from "./access";
 import { assertNoRedirectChains, type RedirectSnapshotRule } from "@/lib/redirects/engine";
-import { parseCsv } from "@/lib/redirects/csv";
+import { csvRecordLine, importedDescription, parseCsv } from "@/lib/redirects/csv";
 import { suggestGscDestination } from "@/lib/redirects/gsc";
 import { normalizeImportedUrl } from "@/lib/redirects/paths";
 import { getAllArticles } from "@/lib/articles/loader";
@@ -42,10 +42,15 @@ const descriptionSchema = z.string().max(1000);
 
 function expiry(input: string): Date | null {
   if (!input) return null;
-  const value = new Date(`${input}+02:00`);
+  const timezoneQualified = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(input);
+  const value = new Date(timezoneQualified ? input : `${input}+02:00`);
   if (Number.isNaN(value.getTime())) throw new Error("Enter a valid expiry date and time.");
   if (value <= new Date()) throw new Error("Expiry must be in the future.");
   return value;
+}
+
+function localExpiryValue(value: Date): string {
+  return new Date(value.getTime() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16);
 }
 
 function statusCode(input: string): RedirectStatusCode {
@@ -81,12 +86,21 @@ async function activeRedirectSnapshot(excludingId?: string): Promise<RedirectSna
   }));
 }
 
-async function assertNoGoneConflict(sourcePath: string, excludingId?: string) {
-  const conditions = [eq(goneResourceRules.sourcePath, sourcePath), eq(goneResourceRules.isActive, true)];
-  if (excludingId) conditions.push(ne(goneResourceRules.id, excludingId));
-  const [conflict] = await getCatalogueDb().select({ id: goneResourceRules.id })
-    .from(goneResourceRules).where(and(...conditions)).limit(1);
-  if (conflict) throw new Error("An active 410 Gone rule already owns this source path.");
+async function assertNoActiveSourceConflict(
+  sourcePath: string,
+  excluding: { redirectId?: string; goneId?: string } = {},
+) {
+  const redirectConditions = [eq(redirectRules.sourcePath, sourcePath), eq(redirectRules.isActive, true)];
+  if (excluding.redirectId) redirectConditions.push(ne(redirectRules.id, excluding.redirectId));
+  const goneConditions = [eq(goneResourceRules.sourcePath, sourcePath), eq(goneResourceRules.isActive, true)];
+  if (excluding.goneId) goneConditions.push(ne(goneResourceRules.id, excluding.goneId));
+  const [redirectConflict, goneConflict] = await Promise.all([
+    getCatalogueDb().select({ id: redirectRules.id }).from(redirectRules).where(and(...redirectConditions)).limit(1),
+    getCatalogueDb().select({ id: goneResourceRules.id }).from(goneResourceRules).where(and(...goneConditions)).limit(1),
+  ]);
+  if (redirectConflict.length || goneConflict.length) {
+    throw new Error("An active redirect or 410 Gone rule already owns this source path.");
+  }
 }
 
 function refreshRedirectAdmin() {
@@ -104,7 +118,7 @@ export async function createRedirectAction(data: FormData) {
   const preserveQuery = data.get("preserveQuery") === "on";
   assertRuleDoesNotOverrideProtectedRoute(source.path, source.matchType);
   assertSafeRedirectDestination(destinationPath.replace(/\/(?:\:segment|\:path\*)$/, "") || "/");
-  await assertNoGoneConflict(source.path);
+  await assertNoActiveSourceConflict(source.path);
 
   const id = randomUUID();
   const candidate: RedirectSnapshotRule = {
@@ -146,12 +160,15 @@ export async function updateRedirectAction(data: FormData) {
   const source = normalizeRulePath(field(data, "sourcePath"));
   const destinationPath = normalizeDestinationPath(field(data, "destinationPath"), source.matchType);
   const code = statusCode(field(data, "statusCode"));
-  const expiresAt = expiry(field(data, "expiresAt"));
+  const expiryInput = field(data, "expiresAt");
+  const expiresAt = current.expiresAt && expiryInput === localExpiryValue(current.expiresAt)
+    ? current.expiresAt
+    : expiry(expiryInput);
   const description = descriptionSchema.parse(field(data, "description"));
   const preserveQuery = data.get("preserveQuery") === "on";
   assertRuleDoesNotOverrideProtectedRoute(source.path, source.matchType);
   assertSafeRedirectDestination(destinationPath.replace(/\/(?:\:segment|\:path\*)$/, "") || "/");
-  await assertNoGoneConflict(source.path);
+  if (current.isActive) await assertNoActiveSourceConflict(source.path, { redirectId });
   if (current.isActive) {
     assertNoRedirectChains([...(await activeRedirectSnapshot(redirectId)), {
       id: redirectId, sourcePath: source.path, destinationPath, matchType: source.matchType,
@@ -181,7 +198,7 @@ export async function setRedirectActiveAction(data: FormData) {
   const [current] = await db.select().from(redirectRules).where(eq(redirectRules.id, redirectId)).limit(1);
   if (!current) throw new Error("Redirect rule not found.");
   if (makeActive) {
-    await assertNoGoneConflict(current.sourcePath);
+    await assertNoActiveSourceConflict(current.sourcePath, { redirectId });
     assertRuleDoesNotOverrideProtectedRoute(current.sourcePath, current.matchType as RedirectMatchType);
     assertNoRedirectChains([...(await activeRedirectSnapshot(redirectId)), {
       id: current.id, sourcePath: current.sourcePath, destinationPath: current.destinationPath,
@@ -220,10 +237,7 @@ export async function createGoneRuleAction(data: FormData) {
   const actor = await requireCatalogueAdmin();
   const source = normalizeRulePath(field(data, "sourcePath"));
   assertRuleDoesNotOverrideProtectedRoute(source.path, source.matchType);
-  const [redirectConflict] = await getCatalogueDb().select({ id: redirectRules.id }).from(redirectRules)
-    .where(and(eq(redirectRules.sourcePath, source.path), eq(redirectRules.isActive, true))).limit(1);
-  if (redirectConflict) throw new Error("An active redirect already owns this source path.");
-  await assertNoGoneConflict(source.path);
+  await assertNoActiveSourceConflict(source.path);
   const goneId = randomUUID();
   const now = new Date();
   const description = descriptionSchema.parse(field(data, "description"));
@@ -250,9 +264,7 @@ export async function setGoneRuleActiveAction(data: FormData) {
   const [current] = await db.select().from(goneResourceRules).where(eq(goneResourceRules.id, goneId)).limit(1);
   if (!current) throw new Error("410 rule not found.");
   if (makeActive) {
-    const [conflict] = await db.select({ id: redirectRules.id }).from(redirectRules)
-      .where(and(eq(redirectRules.sourcePath, current.sourcePath), eq(redirectRules.isActive, true))).limit(1);
-    if (conflict) throw new Error("An active redirect already owns this path.");
+    await assertNoActiveSourceConflict(current.sourcePath, { goneId });
   }
   const now = new Date();
   await db.batch([
@@ -290,29 +302,36 @@ export async function importRedirectCsvAction(data: FormData) {
   if (!records.length) throw new Error("CSV has no redirect rows.");
   if (records.length > 1000) throw new Error("Import at most 1,000 redirects at a time.");
   const existing = await activeRedirectSnapshot();
-  const activeSources = new Set(existing.map(rule => rule.sourcePath));
-  const goneSources = new Set((await getCatalogueDb().select({ sourcePath: goneResourceRules.sourcePath })
-    .from(goneResourceRules).where(eq(goneResourceRules.isActive, true))).map(rule => rule.sourcePath));
+  const [activeRedirectRows, activeGoneRows] = await Promise.all([
+    getCatalogueDb().select({ sourcePath: redirectRules.sourcePath }).from(redirectRules)
+      .where(eq(redirectRules.isActive, true)),
+    getCatalogueDb().select({ sourcePath: goneResourceRules.sourcePath }).from(goneResourceRules)
+      .where(eq(goneResourceRules.isActive, true)),
+  ]);
+  const activeSources = new Set([
+    ...activeRedirectRows.map(rule => rule.sourcePath),
+    ...activeGoneRows.map(rule => rule.sourcePath),
+  ]);
   const imported: Array<RedirectSnapshotRule & { description: string; isActive: boolean }> = [];
   for (const [index, record] of records.entries()) {
     try {
       const source = normalizeRulePath(record.sourcePath ?? record.source ?? "");
       const destinationPath = normalizeDestinationPath(record.destinationPath ?? record.destination ?? "", source.matchType);
+      const isActive = !["false", "0", "no"].includes((record.isActive || "true").toLowerCase());
       assertRuleDoesNotOverrideProtectedRoute(source.path, source.matchType);
       assertSafeRedirectDestination(destinationPath.replace(/\/(?:\:segment|\:path\*)$/, "") || "/");
-      if (activeSources.has(source.path) || goneSources.has(source.path)) throw new Error("source path already has an active rule");
-      activeSources.add(source.path);
+      if (isActive && activeSources.has(source.path)) throw new Error("source path already has an active rule");
+      if (isActive) activeSources.add(source.path);
       const code = statusCode(record.statusCode || "308");
       const preserveQuery = !["false", "0", "no"].includes((record.preserveQuery || "true").toLowerCase());
-      const isActive = !["false", "0", "no"].includes((record.isActive || "true").toLowerCase());
       imported.push({
         id: randomUUID(), sourcePath: source.path, destinationPath, matchType: source.matchType,
         statusCode: code, preserveQuery, expiresAt: record.expiresAt ? expiry(record.expiresAt) : null,
-        description: descriptionSchema.parse(record.description ?? ""), isActive,
+        description: descriptionSchema.parse(importedDescription(record.description ?? "")), isActive,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "invalid row";
-      throw new Error(`CSV row ${index + 2}: ${message}`);
+      throw new Error(`CSV row ${csvRecordLine(record, index + 2)}: ${message}`);
     }
   }
   assertNoRedirectChains([...existing, ...imported.filter(rule => rule.isActive)]);
@@ -357,21 +376,30 @@ export async function importSearchConsoleCsvAction(data: FormData) {
   for (const [index, record] of records.entries()) {
     const normalizedRecord = Object.fromEntries(Object.entries(record).map(([key, value]) => [key.toLowerCase(), value]));
     const value = normalizedRecord.url || normalizedRecord.page || normalizedRecord.path || normalizedRecord["last crawled url"];
-    if (!value) throw new Error(`CSV row ${index + 2}: no URL column was found.`);
+    const rowNumber = csvRecordLine(record, index + 2);
+    if (!value) throw new Error(`CSV row ${rowNumber}: no URL column was found.`);
     try {
       paths.add(normalizeImportedUrl(value));
     } catch (error) {
-      throw new Error(`CSV row ${index + 2}: ${error instanceof Error ? error.message : "invalid URL"}`);
+      throw new Error(`CSV row ${rowNumber}: ${error instanceof Error ? error.message : "invalid URL"}`);
     }
   }
   if (!paths.size) throw new Error("No unique Mogen URLs were found in the report.");
   const db = getCatalogueDb();
   const [ruleRows, promotionRows] = await Promise.all([
-    db.select({ sourcePath: redirectRules.sourcePath, destinationPath: redirectRules.destinationPath }).from(redirectRules)
+    db.select({
+      sourcePath: redirectRules.sourcePath,
+      destinationPath: redirectRules.destinationPath,
+      matchType: redirectRules.matchType,
+    }).from(redirectRules)
       .where(eq(redirectRules.isActive, true)),
     db.select({ slug: webPromotions.slug }).from(webPromotions),
   ]);
-  const existingRedirects = new Map(ruleRows.map(rule => [rule.sourcePath, rule.destinationPath]));
+  const existingRedirects = ruleRows.map(rule => ({
+    sourcePath: rule.sourcePath,
+    destinationPath: rule.destinationPath,
+    matchType: rule.matchType as RedirectMatchType,
+  }));
   const articles = getAllArticles();
   const articleSlugs = new Set(articles.map(article => article.slug));
   const promotionSlugs = new Set(promotionRows.flatMap(row => row.slug ? [row.slug] : []));

@@ -2,6 +2,7 @@ import { normalizeRequestPath, type RedirectMatchType } from "./paths";
 
 const INTERNAL_PREFIXES = [
   "/_next",
+  "/_vercel",
   "/api",
   "/admin",
   "/auth",

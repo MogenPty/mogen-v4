@@ -99,7 +99,7 @@ export default function AdminShell({ children }: Readonly<{ children: React.Reac
         <SidebarFooter className="p-3">
           <div className="flex min-h-11 items-center justify-between gap-2 group-data-[collapsible=icon]:justify-center">
             <span className="small-caps text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">Appearance</span>
-            <ThemeToggle className="h-11 w-11" />
+            <ThemeToggle className="h-11 w-11" menuPlacement="up" menuAlign="left" />
           </div>
           <SidebarMenu>
             <SidebarMenuItem>

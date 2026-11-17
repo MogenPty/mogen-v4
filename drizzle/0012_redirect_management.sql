@@ -88,6 +88,43 @@ CREATE UNIQUE INDEX IF NOT EXISTS gone_rules_active_source_unique
 CREATE INDEX IF NOT EXISTS gone_rules_lookup_idx
   ON public.gone_resource_rules (is_active, source_path, expires_at);
 
+-- Cross-table active-source ownership cannot be expressed by a normal unique
+-- index. Serialize route-rule writes and reject an active redirect/410 clash.
+CREATE OR REPLACE FUNCTION public.enforce_route_rule_source_exclusivity()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtextextended('mogen:route-rule-writes', 0));
+  IF NEW.is_active THEN
+    IF TG_TABLE_NAME = 'redirect_rules' AND EXISTS (
+      SELECT 1 FROM public.gone_resource_rules
+      WHERE source_path = NEW.source_path AND is_active = true
+    ) THEN
+      RAISE EXCEPTION 'active route source % is already owned by a 410 rule', NEW.source_path
+        USING ERRCODE = '23505';
+    ELSIF TG_TABLE_NAME = 'gone_resource_rules' AND EXISTS (
+      SELECT 1 FROM public.redirect_rules
+      WHERE source_path = NEW.source_path AND is_active = true
+    ) THEN
+      RAISE EXCEPTION 'active route source % is already owned by a redirect rule', NEW.source_path
+        USING ERRCODE = '23505';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS redirect_rules_source_exclusivity ON public.redirect_rules;
+CREATE TRIGGER redirect_rules_source_exclusivity
+  BEFORE INSERT OR UPDATE OF source_path, is_active ON public.redirect_rules
+  FOR EACH ROW EXECUTE FUNCTION public.enforce_route_rule_source_exclusivity();
+
+DROP TRIGGER IF EXISTS gone_rules_source_exclusivity ON public.gone_resource_rules;
+CREATE TRIGGER gone_rules_source_exclusivity
+  BEFORE INSERT OR UPDATE OF source_path, is_active ON public.gone_resource_rules
+  FOR EACH ROW EXECUTE FUNCTION public.enforce_route_rule_source_exclusivity();
+
 CREATE TABLE IF NOT EXISTS public.redirect_history (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   redirect_id uuid REFERENCES public.redirect_rules(id) ON DELETE SET NULL,

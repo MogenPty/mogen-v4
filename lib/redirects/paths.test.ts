@@ -13,6 +13,7 @@ describe("redirect path normalization", () => {
     expect(normalizeRequestPath("/old//page/")).toBe("/old/page");
     expect(normalizeRequestPath("/%7euser/%41")).toBe("/~user/A");
     expect(normalizeRequestPath("/caf%c3%a9")).toBe("/caf%C3%A9");
+    expect(normalizeRequestPath("/café/{draft}")).toBe("/caf%C3%A9/%7Bdraft%7D");
   });
 
   it("rejects invalid or ambiguous path input", () => {

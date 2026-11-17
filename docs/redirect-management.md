@@ -41,8 +41,9 @@ pnpm redirects:prod:inspect
 pnpm redirects:prod:migrate -- --apply --confirm=apply-redirects-production
 ```
 
-Production migration is intentionally not run by application startup. Apply it
-as a controlled deployment step before enabling the new build.
+Production migration is intentionally not run by application startup. It was
+applied and independently verified on 2026-11-17 before the reviewed build was
+released. Future schema changes remain controlled pre-deployment steps.
 
 ## Preview verification
 
@@ -89,20 +90,23 @@ suggestion in Redirect Manager and submit it before a rule is created.
 Application rollback does not require deleting data:
 
 1. Set `MOGEN_DATABASE_REDIRECTS_ENABLED=false`.
-2. Uncomment the preserved `next.config.ts` redirect method.
+2. Uncomment the preserved `next.config.ts` redirect method. The feature flag
+   does not restore config redirects by itself.
 3. Redeploy the previous or rollback build.
 
 Do not drop tables during incident response. They are inert when the proxy
 feature flag is false and preserve rules, history and diagnostics for analysis.
 After recovery, inspect the database and re-enable the proxy in preview first.
 
-## Dry-run report (2026-11-16)
+## Rollout report (2026-11-17)
 
 - Found eleven hardcoded redirects; all have one-to-one database equivalents.
 - Permanent Next.js redirects map to 308; the one temporary redirect maps to
   307, matching Next.js method-preserving behavior.
-- Development migration verified seven tables and eleven seeded active rules.
-- No production migration has been performed.
+- Development and production migrations verified seven tables, 62 columns,
+  13 constraints, 14 indexes, two cross-table exclusivity triggers and all
+  eleven seeded active rules.
+- Production migration completed before the reviewed proxy build was released.
 - Existing config rules remain preserved as comments for rollback.
 - Redis/KV is not justified at current scale; generation-polled local snapshots
   avoid a database lookup on ordinary page requests.

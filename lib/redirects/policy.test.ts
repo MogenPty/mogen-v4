@@ -6,7 +6,7 @@ import {
 } from "./policy";
 
 describe("redirect route policy", () => {
-  it.each(["/admin", "/admin/redirects", "/api/contact", "/_next/static/file.js", "/auth/sign-in"])(
+  it.each(["/admin", "/admin/redirects", "/api/contact", "/_next/static/file.js", "/_vercel/insights", "/auth/sign-in"])(
     "protects %s",
     path => expect(isProtectedApplicationPath(path)).toBe(true),
   );

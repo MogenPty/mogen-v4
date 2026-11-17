@@ -21,9 +21,10 @@ const nextConfig: NextConfig = {
    * Next.js config redirects execute before proxy.ts, so leaving this method
    * active would prevent administrators from changing or disabling those rules.
    *
-   * ROLLBACK: uncomment this method and redeploy, then set
-   * MOGEN_DATABASE_REDIRECTS_ENABLED=false. Keep this block until production
-   * HTTP parity and Search Console monitoring have completed.
+   * ROLLBACK: set MOGEN_DATABASE_REDIRECTS_ENABLED=false, uncomment this
+   * method, and redeploy. The feature flag alone does not restore these
+   * config redirects. Keep this block until production HTTP parity and
+   * Search Console monitoring have completed.
    *
   async redirects() {
     return [

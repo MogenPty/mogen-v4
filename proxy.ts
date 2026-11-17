@@ -83,10 +83,7 @@ function shouldSkipPath(pathname: string): boolean {
 }
 
 function shouldSkipRedirectResolution(pathname: string): boolean {
-  if (REDIRECT_SKIP_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
-    return true;
-  }
-  return shouldSkipPath(pathname);
+  return REDIRECT_SKIP_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 /**
@@ -153,7 +150,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   trackPageview(request);
 
   if (!shouldSkipRedirectResolution(request.nextUrl.pathname)) {
-    const snapshot = await getRouteSnapshot();
+    const snapshot = await getRouteSnapshot(refresh => waitUntil(refresh));
     if (snapshot) {
       const resolution = resolveRoute(request.nextUrl.pathname, snapshot);
       const response = responseForRouteResolution(request, resolution);
@@ -164,6 +161,11 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
         return response;
       }
     }
+  }
+  if (request.nextUrl.pathname !== '/' && request.nextUrl.pathname.endsWith('/')) {
+    const location = request.nextUrl.clone();
+    location.pathname = location.pathname.replace(/\/+$/, '') || '/';
+    return NextResponse.redirect(location, 308);
   }
   return NextResponse.next();
 }
@@ -177,6 +179,6 @@ export const config = {
   // and crawler directives (llms.txt, robots.txt, sitemap.xml) reach the
   // function; shouldSkipPath still skips every other .txt/.xml asset.
   matcher: [
-    '/((?!_next/|_vercel/|api/|.*\\.(?:css|js|mjs|map|png|jpg|jpeg|gif|svg|ico|webp|avif|woff|woff2|ttf|otf|eot|json|webmanifest|pdf)$).*)',
+    '/((?!_next/|_vercel/|api/).*)',
   ],
 };

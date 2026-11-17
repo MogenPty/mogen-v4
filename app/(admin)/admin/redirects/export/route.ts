@@ -2,7 +2,7 @@ import { desc } from "drizzle-orm";
 import { getCatalogueDb } from "@/db/client";
 import { redirectRules } from "@/db/schema";
 import { requireCatalogueAdmin } from "@/lib/admin/access";
-import { toCsv } from "@/lib/redirects/csv";
+import { spreadsheetSafeDescription, toCsv } from "@/lib/redirects/csv";
 
 export async function GET() {
   await requireCatalogueAdmin();
@@ -10,6 +10,7 @@ export async function GET() {
   const headers = ["sourcePath", "destinationPath", "statusCode", "isActive", "isAutomatic", "preserveQuery", "description", "expiresAt", "hitCount", "lastHitAt"];
   const body = toCsv(headers, rules.map(rule => ({
     ...rule,
+    description: spreadsheetSafeDescription(rule.description),
     expiresAt: rule.expiresAt?.toISOString() ?? "",
     lastHitAt: rule.lastHitAt?.toISOString() ?? "",
   })));

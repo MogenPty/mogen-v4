@@ -31,7 +31,7 @@ The rollout follows a strangler approach. Database rules run alongside existing 
 ## Repository evidence
 
 1. `proxy.ts` is the only effective Proxy and already performs asynchronous tracking.
-2. `next.config.ts` contains ten permanent or temporary legacy rules, including wildcard paths.
+2. `next.config.ts` contains eleven permanent or temporary legacy rules, including wildcard paths.
 3. `lib/admin/access.ts` is the established administrator guard.
 4. `lib/admin/catalogue-actions.ts` is the established server action and revalidation pattern.
 5. `db/schema.ts` and explicit SQL files in `drizzle/` define the migration convention.

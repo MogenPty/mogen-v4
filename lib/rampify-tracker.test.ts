@@ -13,12 +13,13 @@ function readSource(relativePath: string): string {
  * normal browser traffic, so there is no double-counting.
  */
 describe("rampify tracker — client snippet (all pages)", () => {
-  it("loads tracker.js deferred in the root layout head", () => {
+  it("loads tracker.js after hydration through the root analytics component", () => {
     const layout = readSource("app/layout.tsx");
-    expect(layout).toContain("https://www.rampify.dev/tracker.js");
-    expect(layout).toContain("data-site-id=");
-    // Deferred so it never blocks parsing; static site id only (public).
-    expect(layout).toContain("defer");
+    const component = readSource("components/mogen/rampify-analytics.tsx");
+    expect(layout).toContain("<RampifyAnalytics />");
+    expect(component).toContain("https://www.rampify.dev/tracker.js");
+    expect(component).toContain("data-site-id=");
+    expect(component).toContain('strategy="afterInteractive"');
   });
 
   it("exposes no secret in the client snippet", () => {
@@ -31,7 +32,7 @@ describe("rampify tracker — client snippet (all pages)", () => {
 describe("rampify tracker — server proxy (bots/LLM fetchers)", () => {
   it("lives at the Next.js 16 proxy location with a pass-through handler", () => {
     const proxy = readSource("proxy.ts");
-    expect(proxy).toContain("export function proxy");
+    expect(proxy).toContain("export async function proxy");
     expect(proxy).toContain("NextResponse.next()");
     expect(proxy).toContain("waitUntil");
     expect(proxy).toContain("@vercel/functions");

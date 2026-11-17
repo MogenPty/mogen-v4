@@ -76,9 +76,13 @@ export async function recordNotFound(
     select ${path}, ${now}, ${now}, ${increment}, ${safeReferrer(referrer)},
       ${classifyUserAgent(userAgent)}, 'open', ${retainUntil}
     where not exists (
-      select 1 from redirect_rules where source_path = ${path} and is_active = true
+      select 1 from redirect_rules
+      where source_path = ${path} and is_active = true
+        and (expires_at is null or expires_at > ${now})
     ) and not exists (
-      select 1 from gone_resource_rules where source_path = ${path} and is_active = true
+      select 1 from gone_resource_rules
+      where source_path = ${path} and is_active = true
+        and (expires_at is null or expires_at > ${now})
     )
     on conflict (requested_path) do update set
       last_seen_at = excluded.last_seen_at,

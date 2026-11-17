@@ -21,6 +21,19 @@ function normalizePercentEncoding(value: string): string {
   });
 }
 
+function encodeUnsafePathCharacters(value: string): string {
+  let encoded = "";
+  for (const character of value) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    if (codePoint < 0x20 || codePoint === 0x7f || codePoint > 0x7e || /["<>`{}]/.test(character)) {
+      encoded += encodeURIComponent(character).replace(/%[0-9a-f]{2}/gi, match => match.toUpperCase());
+    } else {
+      encoded += character;
+    }
+  }
+  return encoded;
+}
+
 function normalizePlainPath(value: string): string {
   if (!value.startsWith("/") || value.startsWith("//")) {
     throw new Error("Path must start with one slash.");
@@ -32,7 +45,7 @@ function normalizePlainPath(value: string): string {
   if (CONTROL_CHARACTER.test(value)) throw new Error("Control characters are not allowed in paths.");
   if (value.length > MAX_PATH_LENGTH) throw new Error(`Path cannot exceed ${MAX_PATH_LENGTH} characters.`);
 
-  const normalized = normalizePercentEncoding(value).replace(/\/{2,}/g, "/");
+  const normalized = normalizePercentEncoding(encodeUnsafePathCharacters(value)).replace(/\/{2,}/g, "/");
   const segments = normalized.split("/");
   if (segments.some(segment => segment === "." || segment === "..")) {
     throw new Error("Dot path segments are not allowed.");
@@ -151,4 +164,3 @@ export function normalizeImportedUrl(input: string, allowedHosts = ["mogen.co.za
   if (!allowedHosts.includes(url.hostname.toLowerCase())) throw new Error("Import URL must belong to Mogen.");
   return normalizeRequestPath(url.pathname);
 }
-

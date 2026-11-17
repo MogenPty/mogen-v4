@@ -217,13 +217,16 @@ export async function savePromotionWizardStepAction(
       // new redirect, audit records and cache invalidation all-or-nothing. The
       // optimistic slug predicate also prevents two editors from losing updates.
       const result = await db.execute<{ slug: string }>(sql`
-        with updated as (
+        with route_lock as materialized (
+          select pg_advisory_xact_lock(hashtextextended('mogen:route-rule-writes', 0))
+        ), updated as (
           update web_promotions as promotion
           set slug = ${slug}, name = ${name}, description = ${description},
               location_slug = ${location || null}, maximum_customers = ${maximumCustomers},
               sort_order = ${sortOrder}, presentation = ${presentation}::jsonb,
               updated_at = ${now}
           where promotion.id = ${campaignId}
+            and exists (select 1 from route_lock)
             and promotion.slug is not distinct from ${campaign.slug}
             and not exists (
               select 1 from web_promotions other
@@ -231,13 +234,45 @@ export async function savePromotionWizardStepAction(
             )
             and not exists (
               select 1 from redirect_rules rule
-              where rule.source_path = ${newPath} and rule.is_active = true
-            and ${slug} is distinct from ${campaign.slug}
+              where rule.is_active = true
+                and (rule.expires_at is null or rule.expires_at > ${now})
+                and (
+                  (rule.match_type = 'exact' and rule.source_path = ${newPath})
+                  or (
+                    rule.match_type = 'segment'
+                    and ${newPath}::text like left(rule.source_path, -9) || '/%'
+                    and position('/' in substring(${newPath}::text from char_length(left(rule.source_path, -9)) + 2)) = 0
+                  )
+                  or (
+                    rule.match_type = 'splat'
+                    and (
+                      ${newPath}::text = left(rule.source_path, -7)
+                      or ${newPath}::text like left(rule.source_path, -7) || '/%'
+                    )
+                  )
+                )
+                and ${slug}::text is distinct from ${campaign.slug}::text
             )
             and not exists (
               select 1 from gone_resource_rules gone
-              where gone.source_path = ${newPath} and gone.is_active = true
-            and ${slug} is distinct from ${campaign.slug}
+              where gone.is_active = true
+                and (gone.expires_at is null or gone.expires_at > ${now})
+                and (
+                  (gone.match_type = 'exact' and gone.source_path = ${newPath})
+                  or (
+                    gone.match_type = 'segment'
+                    and ${newPath}::text like left(gone.source_path, -9) || '/%'
+                    and position('/' in substring(${newPath}::text from char_length(left(gone.source_path, -9)) + 2)) = 0
+                  )
+                  or (
+                    gone.match_type = 'splat'
+                    and (
+                      ${newPath}::text = left(gone.source_path, -7)
+                      or ${newPath}::text like left(gone.source_path, -7) || '/%'
+                    )
+                  )
+                )
+                and ${slug}::text is distinct from ${campaign.slug}::text
             )
           returning promotion.id, promotion.slug
         ), historical as materialized (
@@ -246,6 +281,7 @@ export async function savePromotionWizardStepAction(
           where rule.entity_type = 'promotion'
             and rule.entity_id = ${campaignId}
             and rule.destination_path <> ${newPath}
+            and rule.source_path <> ${newPath}
           for update
         ), retargeted as (
           update redirect_rules as rule
@@ -257,7 +293,7 @@ export async function savePromotionWizardStepAction(
           insert into redirect_history (redirect_id, action, actor, before_state, after_state)
           select historical.id, 'automatic', ${actor},
             jsonb_build_object('sourcePath', historical.source_path, 'destinationPath', historical.destination_path),
-            jsonb_build_object('sourcePath', historical.source_path, 'destinationPath', ${newPath})
+            jsonb_build_object('sourcePath', historical.source_path, 'destinationPath', ${newPath}::text)
           from historical join retargeted on retargeted.id = historical.id
         ), new_redirect as (
           insert into redirect_rules (
@@ -269,13 +305,13 @@ export async function savePromotionWizardStepAction(
             'promotion', ${campaignId}, 'Automatic redirect after promotion slug change',
             ${actor}, ${now}, ${now}
           from updated
-          where ${campaign.slug} is not null and ${campaign.slug} <> ${slug}
+          where ${campaign.slug}::text is not null and ${campaign.slug}::text <> ${slug}::text
           returning id, source_path, destination_path
         ), new_history as (
           insert into redirect_history (redirect_id, action, actor, after_state)
           select id, 'automatic', ${actor},
             jsonb_build_object('sourcePath', source_path, 'destinationPath', destination_path,
-              'statusCode', 308, 'entityType', 'promotion', 'entityId', ${campaignId})
+              'statusCode', 308, 'entityType', 'promotion', 'entityId', ${campaignId}::text)
           from new_redirect
         ), invalidated as (
           insert into redirect_cache_state (key, generation, updated_at)

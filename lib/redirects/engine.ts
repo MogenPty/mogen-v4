@@ -27,6 +27,10 @@ export type RouteSnapshot = {
   generation: number;
   redirects: RedirectSnapshotRule[];
   gone: GoneSnapshotRule[];
+  routes: Array<
+    | ({ kind: "redirect" } & RedirectSnapshotRule)
+    | ({ kind: "gone" } & GoneSnapshotRule)
+  >;
 };
 
 export type RouteResolution =
@@ -57,7 +61,17 @@ export function buildRouteSnapshot(
     if (sources.has(rule.sourcePath)) throw new Error(`Conflicting active route rule for ${rule.sourcePath}.`);
     sources.add(rule.sourcePath);
   }
-  return { generation, redirects: sortRules(redirects), gone: sortRules(gone) };
+  const sortedRedirects = sortRules(redirects);
+  const sortedGone = sortRules(gone);
+  return {
+    generation,
+    redirects: sortedRedirects,
+    gone: sortedGone,
+    routes: sortRules([
+      ...sortedRedirects.map(rule => ({ ...rule, kind: "redirect" as const })),
+      ...sortedGone.map(rule => ({ ...rule, kind: "gone" as const })),
+    ]),
+  };
 }
 
 function active(expiresAt: Date | null, now: Date): boolean {
@@ -76,10 +90,11 @@ export function resolveRoute(
     return { kind: "none" };
   }
 
-  for (const rule of snapshot.redirects) {
+  for (const rule of snapshot.routes) {
     if (!active(rule.expiresAt, now)) continue;
     const capture = matchRulePath(normalized, rule.sourcePath, rule.matchType);
     if (capture === null) continue;
+    if (rule.kind === "gone") return { kind: "gone", ruleId: rule.id };
     const destinationPath = applyRuleDestination(rule.destinationPath, rule.matchType, capture);
     if (destinationPath === normalized) return { kind: "none" };
     return {
@@ -91,12 +106,6 @@ export function resolveRoute(
     };
   }
 
-  for (const rule of snapshot.gone) {
-    if (!active(rule.expiresAt, now)) continue;
-    if (matchRulePath(normalized, rule.sourcePath, rule.matchType) !== null) {
-      return { kind: "gone", ruleId: rule.id };
-    }
-  }
   return { kind: "none" };
 }
 
@@ -112,6 +121,35 @@ function representativePath(path: string, matchType: RedirectMatchType): string 
   return path;
 }
 
+function representativePaths(path: string, matchType: RedirectMatchType): string[] {
+  if (matchType === "exact") return [path];
+  const token = matchType === "segment" ? "/:segment" : "/:path*";
+  const prefix = path.slice(0, -token.length) || "/";
+  if (matchType === "segment") return [`${prefix === "/" ? "" : prefix}/example`];
+  return [prefix, `${prefix === "/" ? "" : prefix}/example`, `${prefix === "/" ? "" : prefix}/example/path`];
+}
+
+function destinationPattern(rule: RedirectSnapshotRule): { path: string; matchType: RedirectMatchType } {
+  const token = rule.matchType === "segment" ? "/:segment" : "/:path*";
+  return rule.matchType !== "exact" && rule.destinationPath.endsWith(token)
+    ? { path: rule.destinationPath, matchType: rule.matchType }
+    : { path: rule.destinationPath, matchType: "exact" };
+}
+
+function patternsOverlap(
+  left: { path: string; matchType: RedirectMatchType },
+  right: { path: string; matchType: RedirectMatchType },
+): boolean {
+  const candidates = [
+    ...representativePaths(left.path, left.matchType),
+    ...representativePaths(right.path, right.matchType),
+  ];
+  return candidates.some(path =>
+    matchRulePath(path, left.path, left.matchType) !== null &&
+    matchRulePath(path, right.path, right.matchType) !== null,
+  );
+}
+
 /** Reject every direct loop and redirect chain before a rule is persisted. */
 export function assertNoRedirectChains(rules: RedirectSnapshotRule[]): void {
   const sorted = sortRules(rules);
@@ -120,12 +158,15 @@ export function assertNoRedirectChains(rules: RedirectSnapshotRule[]): void {
     const capture = matchRulePath(sourceExample, rule.sourcePath, rule.matchType);
     if (capture === null) throw new Error(`Could not validate source pattern ${rule.sourcePath}.`);
     const destinationExample = applyRuleDestination(rule.destinationPath, rule.matchType, capture);
+    const output = destinationPattern(rule);
 
     for (const candidate of sorted) {
-      if (matchRulePath(destinationExample, candidate.sourcePath, candidate.matchType) === null) continue;
+      if (
+        matchRulePath(destinationExample, candidate.sourcePath, candidate.matchType) === null &&
+        !patternsOverlap(output, { path: candidate.sourcePath, matchType: candidate.matchType })
+      ) continue;
       if (candidate.id === rule.id) throw new Error(`Redirect loop detected for ${rule.sourcePath}.`);
       throw new Error(`Redirect chain detected: ${rule.sourcePath} points to ${candidate.sourcePath}.`);
     }
   }
 }
-
