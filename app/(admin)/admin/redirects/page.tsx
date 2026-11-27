@@ -109,13 +109,13 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
           <AdminCard className="p-5"><p className="small-caps text-muted-foreground">Gone rules</p><p className="mt-2 font-display text-3xl font-black">{goneTotals[0]?.active ?? 0}</p></AdminCard>
         </section>
 
-        <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.5fr)]">
+        <section id="add-redirect" className="mt-8 scroll-mt-4 grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.5fr)]">
           <AdminCard as="section" className="p-6">
             <div className="flex items-start gap-3"><Route className="mt-1 size-5 text-catalyst" aria-hidden="true" /><div><h2 className="font-display text-2xl font-black">Add a redirect</h2><p className="mt-1 text-sm text-muted-foreground">Use <code>/blog/*</code> for a catch-all or <code>/blog/:slug</code> for one terminal segment.</p></div></div>
             <form action={createRedirectAction} className="mt-6 grid gap-4 md:grid-cols-2">
               <input type="hidden" name="notFoundId" value={filters.notFoundId ?? ""} />
               <input type="hidden" name="gscRowId" value={filters.gscRowId ?? ""} />
-              <div><label htmlFor="new-source" className="text-sm font-semibold">Source path</label><input id="new-source" name="sourcePath" required defaultValue={filters.sourcePath} placeholder="/old-page" className={adminFieldClass} /></div>
+              <div><label htmlFor="new-source" className="text-sm font-semibold">Source path</label><input id="new-source" name="sourcePath" required readOnly={Boolean(filters.gscRowId)} defaultValue={filters.sourcePath} placeholder="/old-page" className={adminFieldClass} /></div>
               <div><label htmlFor="new-destination" className="text-sm font-semibold">Destination path</label><input id="new-destination" name="destinationPath" required defaultValue={filters.destinationPath} placeholder="/new-page" className={adminFieldClass} /></div>
               <div><label htmlFor="new-status" className="text-sm font-semibold">HTTP status</label><select id="new-status" name="statusCode" defaultValue="308" className={adminFieldClass}><option value="301">301 Permanent</option><option value="308">308 Permanent, method preserved</option><option value="302">302 Temporary</option><option value="307">307 Temporary, method preserved</option></select></div>
               <div><label htmlFor="new-expiry" className="text-sm font-semibold">Expires (optional, SAST)</label><input id="new-expiry" name="expiresAt" type="datetime-local" className={adminFieldClass} /></div>

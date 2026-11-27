@@ -132,11 +132,12 @@ describe("conversion bar — page journey variant", () => {
     const bar = readSource("components/mogen/conversation-bar.tsx");
     expect(bar).toContain('variant = "conversion"');
     expect(bar).toContain("Page Journey");
-    expect(bar).toContain("Conversion Readiness");
+    expect(bar).not.toContain("Conversion Readiness");
+    expect(bar).toContain("Ready to");
     expect(bar).toContain('href="#top"');
     expect(bar).toContain("Back to top");
     expect(bar).toContain('"Page journey"');
-    expect(bar).toContain('"Conversion readiness"');
+    expect(bar).toContain('"Quick enquiry"');
   });
 
   it("threads the variant through PageShell with a conversion default", () => {

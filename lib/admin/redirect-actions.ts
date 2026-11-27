@@ -16,7 +16,8 @@ import {
   searchConsoleImports,
 } from "@/db/schema";
 import { requireCatalogueAdmin } from "./access";
-import { assertNoRedirectChains, type RedirectSnapshotRule } from "@/lib/redirects/engine";
+import { assertNoRedirectChains, resolveRoute, type RedirectSnapshotRule } from "@/lib/redirects/engine";
+import { loadRouteSnapshot } from "@/lib/redirects/repository";
 import { csvRecordLine, importedDescription, parseCsv } from "@/lib/redirects/csv";
 import { suggestGscDestination } from "@/lib/redirects/gsc";
 import { normalizeImportedUrl } from "@/lib/redirects/paths";
@@ -106,11 +107,28 @@ async function assertNoActiveSourceConflict(
 function refreshRedirectAdmin() {
   revalidatePath("/admin/redirects");
   revalidatePath("/admin/not-found");
+  revalidatePath("/admin/search-console");
 }
 
 export async function createRedirectAction(data: FormData) {
   const actor = await requireCatalogueAdmin();
+  const db = getCatalogueDb();
+  const linkedRow = field(data, "gscRowId");
+  const gscRowId = linkedRow ? uuid.parse(linkedRow) : undefined;
   const source = normalizeRulePath(field(data, "sourcePath"));
+  let importId: string | undefined;
+  if (gscRowId) {
+    const [row] = await db.select({
+      importId: searchConsoleImportRows.importId,
+      sourcePath: searchConsoleImportRows.sourcePath,
+      status: searchConsoleImportRows.status,
+    })
+      .from(searchConsoleImportRows).where(eq(searchConsoleImportRows.id, gscRowId));
+    if (!row || row.status !== "pending" || source.matchType !== "exact" || source.path !== row.sourcePath) {
+      throw new Error("Use the original source path from a pending Search Console row.");
+    }
+    importId = row.importId;
+  }
   const destinationPath = normalizeDestinationPath(field(data, "destinationPath"), source.matchType);
   const code = statusCode(field(data, "statusCode"));
   const expiresAt = expiry(field(data, "expiresAt"));
@@ -128,9 +146,7 @@ export async function createRedirectAction(data: FormData) {
   assertNoRedirectChains([...(await activeRedirectSnapshot()), candidate]);
   const now = new Date();
   const after = { ...candidate, isActive: true, isAutomatic: false, description, createdBy: actor };
-  const db = getCatalogueDb();
   const notFoundId = field(data, "notFoundId");
-  const gscRowId = field(data, "gscRowId");
   const queries = [
     db.insert(redirectRules).values({
       id, sourcePath: source.path, destinationPath, matchType: source.matchType,
@@ -143,12 +159,12 @@ export async function createRedirectAction(data: FormData) {
     }).where(eq(notFoundPaths.id, uuid.parse(notFoundId)))] : []),
     ...(gscRowId ? [db.update(searchConsoleImportRows).set({
       status: "created", createdRedirectId: id,
-    }).where(eq(searchConsoleImportRows.id, uuid.parse(gscRowId)))] : []),
+    }).where(eq(searchConsoleImportRows.id, gscRowId))] : []),
     invalidation(db, now),
   ];
   await db.batch(queries as unknown as Parameters<typeof db.batch>[0]);
   refreshRedirectAdmin();
-  redirect("/admin/redirects?created=1");
+  redirect(importId ? `/admin/search-console?import=${importId}#review-urls` : "/admin/redirects?created=1");
 }
 
 export async function updateRedirectAction(data: FormData) {
@@ -439,6 +455,25 @@ export async function skipSearchConsoleRowAction(data: FormData) {
   await requireCatalogueAdmin();
   const rowId = uuid.parse(field(data, "id"));
   await getCatalogueDb().update(searchConsoleImportRows).set({ status: "skipped" })
-    .where(eq(searchConsoleImportRows.id, rowId));
+    .where(and(eq(searchConsoleImportRows.id, rowId), eq(searchConsoleImportRows.status, "pending")));
+  revalidatePath("/admin/search-console");
+}
+
+export async function linkSearchConsoleRedirectAction(data: FormData) {
+  await requireCatalogueAdmin();
+  const id = uuid.parse(field(data, "id"));
+  const db = getCatalogueDb();
+  const [row] = await db.select({ sourcePath: searchConsoleImportRows.sourcePath })
+    .from(searchConsoleImportRows)
+    .where(and(eq(searchConsoleImportRows.id, id), eq(searchConsoleImportRows.status, "pending")));
+  if (!row) return;
+
+  const match = resolveRoute(row.sourcePath, await loadRouteSnapshot(0));
+  if (match.kind !== "redirect" || match.ruleId !== field(data, "redirectId")) {
+    throw new Error("The active redirect changed. Refresh the report before linking this URL.");
+  }
+
+  await db.update(searchConsoleImportRows).set({ status: "created", createdRedirectId: match.ruleId })
+    .where(and(eq(searchConsoleImportRows.id, id), eq(searchConsoleImportRows.status, "pending")));
   revalidatePath("/admin/search-console");
 }

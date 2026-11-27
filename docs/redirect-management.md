@@ -86,10 +86,15 @@ Bulk redirect CSV requires `sourcePath,destinationPath`; optional columns are
 validated for protected paths, duplicate sources, loops and chains before an
 atomic batch is attempted.
 
-Search Console exports are staged separately. Existing redirects and current
-published pages produce no redirect proposal. A destination is suggested only
-for an exact known article or promotion slug. An administrator must review the
-suggestion in Redirect Manager and submit it before a rule is created.
+Search Console exports are staged as pending rows. In **Admin → Search Console**,
+open the report and choose an action for each URL:
+
+- **Link existing redirect** records the active rule for the URL without creating a duplicate.
+- **Review suggested redirect** opens Redirect Manager with both paths filled in.
+- **Choose destination** opens Redirect Manager with the source filled in, so you can enter the appropriate replacement path.
+- **No change needed** closes the row without changing redirect rules. Use this for current pages, existing 410 responses or URLs without a relevant replacement.
+
+A new rule only takes effect after you submit **Create redirect** in Redirect Manager.
 
 ## Rollback
 
