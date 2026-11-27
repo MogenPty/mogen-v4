@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { formatPromotionPrice } from "@/data/promotions";
 import { SERVICES } from "@/data/services";
 import { getPackage } from "@/data/packages";
 import type { BillingMode } from "@/lib/catalogue/commercial";
+import { trackConversion } from "@/lib/rampify-tracker";
+import { resolveEnquiryService } from "@/lib/enquiry/enquiry";
 import {
   Dialog,
   DialogContent,
@@ -87,7 +89,7 @@ export default function EnquiryModal({
     : promotion?.relatedService ?? getPackage(packageId)?.serviceSlug;
   const [chosenService, setChosenService] = useState("");
   const service = context.type === "general" ? chosenService
-    : SERVICES.find(({ slug }) => slug === serviceSlug)?.name ?? "Web Development";
+    : resolveEnquiryService(serviceSlug)?.name ?? "Web Development";
   const targetIds = promotion?.targetPriceOptionIds ?? (promotion?.targetPriceOptionId ? [promotion.targetPriceOptionId] : []);
   const options = prices.filter((price) => price.packageId === packageId &&
     (promotion?.source !== "database" || targetIds.includes(price.id)));
@@ -100,11 +102,12 @@ export default function EnquiryModal({
     email: "",
     phone: "",
     businessName: "",
+    otherServiceDetail: "",
     message: initialMessage ?? "",
   });
   const [token, setToken] = useState("");
 
-  function renderWidget() {
+  const renderWidget = useCallback(() => {
     if (!TURNSTILE_SITE_KEY || !open || !widgetNode.current || !window.turnstile || widgetId.current) return;
     widgetId.current = window.turnstile.render(widgetNode.current, {
       sitekey: TURNSTILE_SITE_KEY,
@@ -114,21 +117,17 @@ export default function EnquiryModal({
       "expired-callback": () => setToken(""),
       "error-callback": () => setToken(""),
     });
-  }
+  }, [open]);
 
   useEffect(() => {
-    if (open) {
-      renderWidget();
-    } else if (widgetId.current) {
-      window.turnstile?.reset(widgetId.current);
-      widgetId.current = null;
-    }
+    renderWidget();
     return () => {
       if (widgetId.current) {
-        window.turnstile?.reset(widgetId.current);
+        window.turnstile?.remove(widgetId.current);
+        widgetId.current = null;
       }
     };
-  }, [open]);
+  }, [renderWidget]);
 
   function handleChange(field: keyof typeof formData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -139,6 +138,10 @@ export default function EnquiryModal({
     if (sending || offerUnavailable) return;
     if (!service) {
       setError("Choose a service to continue.");
+      return;
+    }
+    if (service === "Other" && !formData.otherServiceDetail.trim()) {
+      setError("Please specify your service.");
       return;
     }
     if (options.length > 0 && !priceOption) {
@@ -186,7 +189,8 @@ export default function EnquiryModal({
         return;
       }
 
-      if (onSubmit) onSubmit();
+      trackConversion("contact");
+      onSubmit?.();
       onClose();
     } catch {
       setError("Unable to send your enquiry. Please try again or email info@mogen.co.za.");
@@ -270,6 +274,7 @@ export default function EnquiryModal({
                 </SelectTrigger>
                 <SelectContent>
                   {SERVICES.map(({ slug, name }) => <SelectItem key={slug} value={name}>{name}</SelectItem>)}
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -278,6 +283,19 @@ export default function EnquiryModal({
               <div><dt className="text-muted-foreground">Service</dt><dd className="font-semibold">{service}</dd></div>
               {packageId && <div><dt className="text-muted-foreground">Package</dt><dd className="font-semibold">{packageName ?? packageId}</dd></div>}
             </dl>
+          )}
+
+          {service === "Other" && (
+            <div>
+              <Label htmlFor="enquiry-other-service">Specify your service *</Label>
+              <Input
+                id="enquiry-other-service"
+                value={formData.otherServiceDetail}
+                onChange={(e) => handleChange("otherServiceDetail", e.target.value)}
+                maxLength={200}
+                required
+              />
+            </div>
           )}
 
           {options.length > 0 ? (

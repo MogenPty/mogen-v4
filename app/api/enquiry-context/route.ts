@@ -11,7 +11,13 @@ export async function GET(request: Request) {
   const input = parseEnquiryContext(params);
   const details = resolveEnquiryDetails({ ...input, promotion: undefined });
   const candidate = input.promotion ? await loadPromotionBySlug(input.promotion) : undefined;
-  const promotion = candidate && getEffectiveStatus(candidate) === "active" ? candidate : undefined;
+  const requestedPriceOption = params.get("priceOption");
+  const promotion = candidate &&
+    getEffectiveStatus(candidate) === "active" &&
+    (!input.package || input.package === candidate.relatedPackage) &&
+    (requestedPriceOption === null ||
+      (candidate.targetPriceOptionIds ?? [candidate.targetPriceOptionId]).includes(requestedPriceOption))
+    ? candidate : undefined;
   const packageId = promotion?.relatedPackage ?? input.package;
   const catalogueEnabled = databaseCatalogueEnabled();
   const dbPackage = catalogueEnabled && packageId &&
@@ -35,7 +41,7 @@ export async function GET(request: Request) {
     packageName: selectedPackage?.name,
     prices,
     attribution: details.attribution,
-    initialPriceOptionId: params.get("priceOption") ?? promotion?.targetPriceOptionId,
+    initialPriceOptionId: requestedPriceOption ?? promotion?.targetPriceOptionId,
     initialMessage: promotion ? undefined : buildAuditEnquiryMessage(details.website),
   };
   return Response.json(payload, { headers: { "Cache-Control": "no-store" } });

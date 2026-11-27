@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { loadFeaturedPromotion } from "@/lib/catalogue/promotions-server";
+import { loadActivePromotions, loadFeaturedPromotion } from "@/lib/catalogue/promotions-server";
 import { loadPublishedWebCatalogue, loadPublicWebPriceOptions } from "@/lib/catalogue/server";
 import { parseEnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { pageMetadata } from "@/lib/seo";
@@ -13,6 +13,7 @@ import JsonLd from "@/components/mogen/json-ld";
 import ConversionBar from "@/components/mogen/conversation-bar";
 import HomepageOffers from "@/components/mogen/homepage-offers";
 import ServicesTrio from "@/components/mogen/services-trio";
+import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
 
 // Homepage metadata via Next.js API — canonical + OG/Twitter derive from configured site URL.
 const homeSeo = pageMetadata({
@@ -50,6 +51,7 @@ export default async function Home({ searchParams }: Readonly<HomeProps>) {
 
   // Carry allowlisted attribution (utm_*) from the homepage URL into CTAs.
   const attribution = parseEnquiryAttribution((await searchParams) ?? {});
+  const fallbackPromotions = webPackages === null ? await loadActivePromotions() : [];
 
   // Build package tier data for the grid (7 web development tiers).
   // All packages from the DB catalogue are web development packages.
@@ -117,10 +119,13 @@ export default async function Home({ searchParams }: Readonly<HomeProps>) {
 
         <HomepageOffers
           promotion={promotion}
-          packages={packagesForGrid}
+          packages={webPackages === null ? null : packagesForGrid}
           prices={webPrices}
           attribution={attribution}
         />
+        {webPackages === null && (
+          <WebsiteQuestionnaire numbering={3} initialAttribution={attribution} promotions={fallbackPromotions} />
+        )}
 
         <ServicesTrio featuredServiceSlug="web-development" />
         <WhyMogen numbering={5} />

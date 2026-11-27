@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import BlueprintGrid, { SectionLabel } from "./blueprint-grid";
 import PackageTierCard, { PackageTierCardProps } from "./package-tier-card";
@@ -32,7 +33,7 @@ export default function PackageTierGrid({
           Select a package to see what it includes and check its starting price.
         </p>
         {packages.length === 0 && (
-          <p className="mt-6 text-ink/70">Package pricing is currently unavailable. <a href="/contact" className="underline">Contact us for a quote.</a></p>
+          <p className="mt-6 text-ink/70">Package pricing is currently unavailable. <Link href="/contact" data-enquiry="" className="underline">Contact us for a quote.</Link></p>
         )}
 
         <div className="mt-10 flex flex-col gap-2 lg:min-h-125 lg:flex-row">

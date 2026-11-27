@@ -425,7 +425,7 @@ export default function ServiceDetail({
       {enquiry && (
         <EnquiryModal
           open
-          onClose={() => setEnquiry(null)}
+          onClose={() => setEnquiry((current) => current === enquiry ? null : current)}
           context={enquiry.context}
           packageName={enquiryPackageName}
           initialPriceOptionId={enquiry.priceOptionId}

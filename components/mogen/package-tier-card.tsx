@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Check } from "lucide-react";
+import { withAttribution } from "@/lib/enquiry/enquiry";
 import MagneticButton from "./magnet-button";
 
 export interface PackageTierCardProps {
@@ -49,6 +50,7 @@ export default function PackageTierCard({
   exclusions,
   featured,
   slug,
+  attribution,
   onEnquireClick,
 }: Readonly<PackageTierCardProps>) {
   const groups = [
@@ -113,7 +115,7 @@ export default function PackageTierCard({
         </MagneticButton>
         <MagneticButton
           as="a"
-          href={`/services/web-development#${slug}`}
+          href={withAttribution(`/services/web-development#${slug}`, attribution)}
           variant="outline-on-dark"
           className="flex-1"
         >

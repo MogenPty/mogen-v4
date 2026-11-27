@@ -45,10 +45,16 @@ Production migration is intentionally not run by application startup. It was
 applied and independently verified on 2026-11-17 before the reviewed build was
 released. Future schema changes remain controlled pre-deployment steps.
 
+Re-run the migration on development and production databases that already
+applied 0012 to add the Brits location catch-all, legacy mobile app service
+redirect, and legacy web development article redirect. Verify each added rule
+over HTTP before relying on it. The seed refreshes the cache generation when
+it changes a rule.
+
 ## Preview verification
 
 1. Apply migration 0012 to the preview/development Neon branch.
-2. Confirm seven redirect-management tables and at least eleven seeded rules.
+2. Confirm seven redirect-management tables and all fourteen seeded rules.
 3. Deploy with `MOGEN_DATABASE_REDIRECTS_ENABLED=true` (or omit it; enabled is
    the default) and a valid direct application `DATABASE_URL`.
 4. Verify every seeded URL with `curl -I`, checking the exact status and

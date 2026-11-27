@@ -25,27 +25,6 @@ const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const TURNSTILE_ACTION = "contact";
 
 type TurnstileWidgetId = string;
-interface TurnstileApi {
-  render: (
-    container: HTMLElement,
-    options: {
-      sitekey: string;
-      action: string;
-      theme: "light" | "dark" | "auto";
-      callback: (token: string) => void;
-      "expired-callback"?: () => void;
-      "error-callback"?: () => void;
-    },
-  ) => TurnstileWidgetId;
-  reset: (widgetId: TurnstileWidgetId) => void;
-}
-
-declare global {
-  interface Window {
-    turnstile?: TurnstileApi;
-  }
-}
-
 interface ContactFormProps {
   /**
    * Preselected service display name resolved server-side from

@@ -11,7 +11,7 @@ type OfferContext = Extract<EnquiryContext, { type: "package" | "promotion" }>;
 
 interface HomepageOffersProps {
   promotion?: Promotion;
-  packages: PackageTierGridProps["packages"];
+  packages: PackageTierGridProps["packages"] | null;
   prices: EnquiryPaymentOption[];
   attribution?: EnquiryAttribution;
 }
@@ -33,17 +33,19 @@ export default function HomepageOffers({
           onEnquireClick={(offer) => setContext({ type: "promotion", promotion: offer })}
         />
       )}
-      <PackageTierGrid
-        packages={packages}
-        attribution={attribution}
-        onEnquireClick={(packageId) => setContext({ type: "package", packageId })}
-      />
+      {packages && (
+        <PackageTierGrid
+          packages={packages}
+          attribution={attribution}
+          onEnquireClick={(packageId) => setContext({ type: "package", packageId })}
+        />
+      )}
       {context && (
         <EnquiryModal
           open
-          onClose={() => setContext(null)}
+          onClose={() => setContext((current) => current === context ? null : current)}
           context={context}
-          packageName={packages.find((pkg) => pkg.id === (context.type === "package" ? context.packageId : context.promotion.relatedPackage))?.name}
+          packageName={packages?.find((pkg) => pkg.id === (context.type === "package" ? context.packageId : context.promotion.relatedPackage))?.name}
           prices={prices}
           attribution={attribution}
         />

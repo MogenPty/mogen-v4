@@ -39,7 +39,7 @@ export default function WebCataloguePricing({ packages, prices = [], promotions 
             const recommended = item.id === recommendedPackageId;
             const highlighted = primaryPromotion || recommended;
             return (
-              <article key={item.id} className={`rounded-lg border p-7 ${highlighted
+              <article key={item.id} id={item.id} className={`scroll-mt-24 rounded-lg border p-7 ${highlighted
                 ? "border-catalyst bg-ink text-bone shadow-[0_18px_50px_rgba(0,0,0,0.16)]"
                 : promotion ? "border-catalyst/60 bg-catalyst/[0.04]" : "border-ink/15 bg-bone"}`}>
                 {(promotion || recommended) && (
@@ -82,7 +82,7 @@ export default function WebCataloguePricing({ packages, prices = [], promotions 
         </div>
       )}
       {seed && (
-        <div className="mt-8 rounded-lg border border-ink/15 bg-secondary p-6">
+        <div id={seed.id} className="mt-8 scroll-mt-24 rounded-lg border border-ink/15 bg-secondary p-6">
           <h3 className="font-display text-xl font-bold text-ink">Seed — Not ready for a website?</h3>
           {promotionFor(seed.id) && <p className="small-caps mt-2 text-catalyst">Promotion available</p>}
           <p className="mt-2 text-ink/70">{seed.summary}. Google Business Profile requires an eligible business and verification.</p>

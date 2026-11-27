@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import EnquiryModal, { type EnquiryContext, type EnquiryPaymentOption } from "./enquiry-modal";
 import { ATTRIBUTION_KEYS, type EnquiryAttribution } from "@/lib/enquiry/enquiry";
@@ -19,13 +19,19 @@ const contextKeys = ["service", "package", "promotion", "priceOption", "website"
 
 export default function EnquiryPopupHost() {
   const pathname = usePathname();
-  const request = useRef<AbortController | null>(null);
-  const [selection, setSelection] = useState<{ path: string; payload: PopupEnquiry | null } | null>(null);
-  const current = selection?.path === pathname ? selection : null;
+  return <PageEnquiryPopup key={pathname} pathname={pathname} />;
+}
 
-  function close() {
-    request.current?.abort();
-    setSelection(null);
+function PageEnquiryPopup({ pathname }: Readonly<{ pathname: string }>) {
+  const router = useRouter();
+  const request = useRef<AbortController | null>(null);
+  const [selection, setSelection] = useState<{ controller: AbortController; payload: PopupEnquiry | null } | null>(null);
+
+  function close(controller: AbortController) {
+    if (request.current !== controller) return;
+    controller.abort();
+    request.current = null;
+    setSelection((current) => current?.controller === controller ? null : current);
   }
 
   useEffect(() => {
@@ -55,29 +61,34 @@ export default function EnquiryPopupHost() {
       request.current?.abort();
       const controller = new AbortController();
       request.current = controller;
-      setSelection({ path: pathname, payload: null });
+      setSelection({ controller, payload: null });
 
       try {
         const response = await fetch(`/api/enquiry-context?${params}`, { signal: controller.signal });
         if (!response.ok) throw new Error("Unable to load enquiry context");
         const payload: PopupEnquiry = await response.json();
-        if (!controller.signal.aborted) setSelection({ path: pathname, payload });
+        if (!controller.signal.aborted) setSelection({ controller, payload });
       } catch {
-        if (!controller.signal.aborted) window.location.assign(`/contact?${params}`);
+        if (!controller.signal.aborted) {
+          close(controller);
+          router.push(`/contact?${params}`);
+        }
       }
     }
 
     document.addEventListener("click", openEnquiry, true);
     return () => {
       request.current?.abort();
+      request.current = null;
       document.removeEventListener("click", openEnquiry, true);
     };
-  }, [pathname]);
+  }, [pathname, router]);
 
-  if (!current) return null;
-  if (current.payload) return <EnquiryModal open onClose={close} {...current.payload} />;
+  if (!selection) return null;
+  const dismiss = () => close(selection.controller);
+  if (selection.payload) return <EnquiryModal open onClose={dismiss} {...selection.payload} />;
   return (
-    <Dialog open onOpenChange={close}>
+    <Dialog open onOpenChange={dismiss}>
       <DialogContent>
         <DialogTitle>Start Your Enquiry</DialogTitle>
         <DialogDescription>Loading enquiry details…</DialogDescription>

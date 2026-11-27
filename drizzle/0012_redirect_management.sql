@@ -210,6 +210,24 @@ CREATE UNIQUE INDEX IF NOT EXISTS search_console_rows_import_source_unique
 CREATE INDEX IF NOT EXISTS search_console_rows_status_idx
   ON public.search_console_import_rows (import_id, status);
 
+-- Repair the earlier mobile-app seed if it was applied with a trailing slash.
+WITH normalized AS (
+  UPDATE public.redirect_rules AS legacy
+  SET source_path = '/services/mobile-app-development', updated_at = now()
+  WHERE legacy.id = '10000000-0000-4000-8000-000000000013'::uuid
+    AND legacy.source_path = '/services/mobile-app-development/'
+    AND legacy.created_by = 'system:migration'
+    AND legacy.is_active = true
+    AND NOT EXISTS (
+      SELECT 1 FROM public.redirect_rules existing
+      WHERE existing.source_path = '/services/mobile-app-development' AND existing.is_active = true
+    )
+  RETURNING id
+)
+UPDATE public.redirect_cache_state
+SET generation = generation + 1, updated_at = now()
+WHERE key = 'redirects' AND EXISTS (SELECT 1 FROM normalized);
+
 -- Canonical forms of all fourteen redirects previously configured in Next.js.
 WITH seed(id, source_path, destination_path, match_type, status_code, description) AS (
   VALUES
@@ -221,24 +239,30 @@ WITH seed(id, source_path, destination_path, match_type, status_code, descriptio
     ('10000000-0000-4000-8000-000000000006'::uuid, '/services/mobile-development', '/services', 'exact', 307, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000007'::uuid, '/locations/brits', '/locations', 'exact', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000012'::uuid, '/locations/brits/:path*', '/locations', 'splat', 308, 'Imported from next.config.ts'),
-    ('10000000-0000-4000-8000-000000000013'::uuid, '/services/mobile-app-development/', '/services/web-development', 'exact', 308, 'Imported from next.config.ts'),
+    ('10000000-0000-4000-8000-000000000013'::uuid, '/services/mobile-app-development', '/services/web-development', 'exact', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000014'::uuid, '/blog/the-future-of-web-development-in-south-africa', '/articles', 'exact', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000008'::uuid, '/portfolio', '/success-stories', 'exact', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000009'::uuid, '/portfolio/:segment', '/success-stories', 'segment', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000010'::uuid, '/terms-conditions', '/terms-of-service', 'exact', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000011'::uuid, '/terms-conditions/:segment', '/terms-of-service', 'segment', 308, 'Imported from next.config.ts')
+), inserted AS (
+  INSERT INTO public.redirect_rules (
+    id, source_path, destination_path, match_type, status_code,
+    is_active, is_automatic, preserve_query, description, created_by
+  )
+  SELECT
+    seed.id, seed.source_path, seed.destination_path, seed.match_type, seed.status_code,
+    true, false, true, seed.description, 'system:migration'
+  FROM seed
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.redirect_rules existing
+    WHERE existing.source_path = seed.source_path AND existing.is_active = true
+  )
+  ON CONFLICT (id) DO NOTHING
+  RETURNING id
 )
-INSERT INTO public.redirect_rules (
-  id, source_path, destination_path, match_type, status_code,
-  is_active, is_automatic, preserve_query, description, created_by
-)
-SELECT
-  seed.id, seed.source_path, seed.destination_path, seed.match_type, seed.status_code,
-  true, false, true, seed.description, 'system:migration'
-FROM seed
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.redirect_rules existing
-  WHERE existing.source_path = seed.source_path AND existing.is_active = true
-);
+UPDATE public.redirect_cache_state
+SET generation = generation + 1, updated_at = now()
+WHERE key = 'redirects' AND EXISTS (SELECT 1 FROM inserted);
 
 COMMIT;

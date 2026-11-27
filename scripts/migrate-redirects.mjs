@@ -32,7 +32,7 @@ const expectedSeeds = [
   ["10000000-0000-4000-8000-000000000006", "/services/mobile-development", "/services", "exact", 307],
   ["10000000-0000-4000-8000-000000000007", "/locations/brits", "/locations", "exact", 308],
   ["10000000-0000-4000-8000-000000000012", "/locations/brits/:path*", "/locations", "splat", 308],
-  ["10000000-0000-4000-8000-000000000013", "/services/mobile-app-development/", "/services/web-development", "exact", 308],
+  ["10000000-0000-4000-8000-000000000013", "/services/mobile-app-development", "/services/web-development", "exact", 308],
   ["10000000-0000-4000-8000-000000000014", "/blog/the-future-of-web-development-in-south-africa", "/articles", "exact", 308],
   ["10000000-0000-4000-8000-000000000008", "/portfolio", "/success-stories", "exact", 308],
   ["10000000-0000-4000-8000-000000000009", "/portfolio/:segment", "/success-stories", "segment", 308],
