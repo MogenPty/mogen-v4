@@ -72,7 +72,7 @@ export default function LocationsPreview({ numbering = 1 }: Readonly<Props>) {
         </div>
 
         <div className="mt-12">
-          <MagneticButton as="a" href="/contact" variant="outline">
+          <MagneticButton as="a" href="/contact" data-enquiry="" variant="outline">
             Talk about your area →
           </MagneticButton>
         </div>

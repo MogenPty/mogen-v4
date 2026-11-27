@@ -1,13 +1,15 @@
 import Link from "next/link";
 import type { Promotion } from "@/data/promotions";
 import type { CatalogueWebPackage } from "@/lib/catalogue/location-offer";
-import WebPriceOptions, { type PublicWebPriceChoice } from "@/components/mogen/web-price-options";
+import WebPriceOptions, { type OpenWebEnquiry, type PublicWebPriceChoice } from "@/components/mogen/web-price-options";
 
-export default function WebCataloguePricing({ packages, prices = [], promotions = [], recommendedPackageId }: Readonly<{
+export default function WebCataloguePricing({ packages, prices = [], promotions = [], recommendedPackageId, onEnquire, onGeneralEnquire }: Readonly<{
   packages: CatalogueWebPackage[];
   prices?: PublicWebPriceChoice[];
   promotions?: Promotion[];
   recommendedPackageId?: string;
+  onEnquire?: OpenWebEnquiry;
+  onGeneralEnquire?: () => void;
 }>) {
   const promotionFor = (packageId: string) => promotions.find(promotion => promotion.relatedPackage === packageId);
   const websites = packages.filter((item) => item.websiteIncluded).sort((left, right) => {
@@ -59,6 +61,7 @@ export default function WebCataloguePricing({ packages, prices = [], promotions 
                 )}
                 <WebPriceOptions packageId={item.id} options={prices.filter(price => price.packageId === item.id)}
                   promotions={promotions.filter(activePromotion => activePromotion.relatedPackage === item.id)}
+                  onEnquire={onEnquire}
                   tone={highlighted ? "inverse" : "mogen"} />
               </article>
             );
@@ -67,9 +70,15 @@ export default function WebCataloguePricing({ packages, prices = [], promotions 
       ) : (
         <div className="rounded-lg border border-ink/15 bg-secondary p-8">
           <p className="font-semibold text-ink">Our updated website packages are being finalised.</p>
-          <Link className="mt-4 inline-block text-catalyst underline" href="/contact?service=web-development">
-            Discuss your requirements with Mogen
-          </Link>
+          {onGeneralEnquire ? (
+            <button type="button" className="mt-4 cursor-pointer text-catalyst underline" onClick={onGeneralEnquire}>
+              Discuss your requirements with Mogen
+            </button>
+          ) : (
+            <Link className="mt-4 inline-block text-catalyst underline" href="/contact?service=web-development">
+              Discuss your requirements with Mogen
+            </Link>
+          )}
         </div>
       )}
       {seed && (
@@ -78,6 +87,7 @@ export default function WebCataloguePricing({ packages, prices = [], promotions 
           {promotionFor(seed.id) && <p className="small-caps mt-2 text-catalyst">Promotion available</p>}
           <p className="mt-2 text-ink/70">{seed.summary}. Google Business Profile requires an eligible business and verification.</p>
           <WebPriceOptions packageId={seed.id} options={prices.filter(price => price.packageId === seed.id)}
+            onEnquire={onEnquire}
             promotions={promotions.filter(promotion => promotion.relatedPackage === seed.id)} />
         </div>
       )}

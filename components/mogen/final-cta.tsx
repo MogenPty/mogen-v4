@@ -36,6 +36,7 @@ export default function FinalCTA({
             <MagneticButton
               as="a"
               href="/contact"
+              data-enquiry=""
               variant="solid"
               className="bg-ink text-bone hover:bg-bone hover:text-ink"
             >

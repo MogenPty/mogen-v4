@@ -18,6 +18,8 @@ export interface PublicWebPriceChoice {
   handoverPolicy: string;
 }
 
+export type OpenWebEnquiry = (packageId: string, priceOptionId?: string, promotion?: Promotion) => void;
+
 const labels: Record<BillingMode, string> = {
   managed_monthly: "Managed Monthly",
   managed_annual: "Managed Annually",
@@ -41,20 +43,26 @@ export default function WebPriceOptions({
   options,
   promotions = [],
   tone = "mogen",
+  onEnquire,
 }: Readonly<{
   packageId: string;
   options: PublicWebPriceChoice[];
   promotions?: Promotion[];
   tone?: "mogen" | "inverse";
+  onEnquire?: OpenWebEnquiry;
 }>) {
   const inverse = tone === "inverse";
   const sortedOptions = [...options].sort((a, b) => priority[a.billingMode] - priority[b.billingMode]);
   const [selectedId, setSelectedId] = useState("");
   const selected = sortedOptions.find(option => option.id === selectedId);
+  const enquiryClass = "block w-full cursor-pointer rounded bg-catalyst px-5 py-3 text-center font-semibold !text-white hover:bg-catalyst-hover hover:!text-white";
   if (!sortedOptions.length) {
-    return (
-      <Link href={`/contact?service=web-development&package=${encodeURIComponent(packageId)}`}
-        className="mt-7 block rounded bg-catalyst px-5 py-3 text-center font-semibold !text-white hover:bg-catalyst-hover hover:!text-white">
+    return onEnquire ? (
+      <button type="button" onClick={() => onEnquire(packageId)} className={`mt-7 ${enquiryClass}`}>
+        Request a quote
+      </button>
+    ) : (
+      <Link href={`/contact?service=web-development&package=${encodeURIComponent(packageId)}`} className={`mt-7 ${enquiryClass}`}>
         Request a quote
       </Link>
     );
@@ -101,9 +109,15 @@ export default function WebPriceOptions({
           {selected.billingMode === "managed_annual" && selected.initialHostingMonths !== null && <p className={`text-sm ${inverse ? "text-bone/70" : "text-ink/70"}`}>Initial hosting: {selected.initialHostingMonths} months</p>}
           <p className={`text-sm ${inverse ? "text-bone/70" : "text-ink/70"}`}>{descriptions[selected.billingMode]}</p>
           <p className={`text-xs ${inverse ? "text-bone/60" : "text-ink/60"}`}>{selected.handoverPolicy}</p>
-          <Link href={href} className="mt-3 block rounded bg-catalyst px-5 py-3 text-center font-semibold !text-white hover:bg-catalyst-hover hover:!text-white">
-            Enquire about {labels[selected.billingMode]}
-          </Link>
+          {onEnquire ? (
+            <button type="button" onClick={() => onEnquire(packageId, selected.id, selectedPromotion)} className={`mt-3 ${enquiryClass}`}>
+              Enquire about {labels[selected.billingMode]}
+            </button>
+          ) : (
+            <Link href={href} className={`mt-3 ${enquiryClass}`}>
+              Enquire about {labels[selected.billingMode]}
+            </Link>
+          )}
         </div>
       ) : (
         <p className={`mt-3 text-sm ${inverse ? "text-bone/60" : "text-ink/60"}`}>Select a payment option to see its price, terms and enquiry button.</p>

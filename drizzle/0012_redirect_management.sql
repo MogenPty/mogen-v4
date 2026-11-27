@@ -210,7 +210,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS search_console_rows_import_source_unique
 CREATE INDEX IF NOT EXISTS search_console_rows_status_idx
   ON public.search_console_import_rows (import_id, status);
 
--- Canonical forms of all eleven redirects previously configured in Next.js.
+-- Canonical forms of all fourteen redirects previously configured in Next.js.
 WITH seed(id, source_path, destination_path, match_type, status_code, description) AS (
   VALUES
     ('10000000-0000-4000-8000-000000000001'::uuid, '/blog', '/articles', 'exact', 308, 'Imported from next.config.ts'),
@@ -220,6 +220,9 @@ WITH seed(id, source_path, destination_path, match_type, status_code, descriptio
     ('10000000-0000-4000-8000-000000000005'::uuid, '/services/seo-services', '/services/seo', 'exact', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000006'::uuid, '/services/mobile-development', '/services', 'exact', 307, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000007'::uuid, '/locations/brits', '/locations', 'exact', 308, 'Imported from next.config.ts'),
+    ('10000000-0000-4000-8000-000000000012'::uuid, '/locations/brits/:path*', '/locations', 'splat', 308, 'Imported from next.config.ts'),
+    ('10000000-0000-4000-8000-000000000013'::uuid, '/services/mobile-app-development/', '/services/web-development', 'exact', 308, 'Imported from next.config.ts'),
+    ('10000000-0000-4000-8000-000000000014'::uuid, '/blog/the-future-of-web-development-in-south-africa', '/articles', 'exact', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000008'::uuid, '/portfolio', '/success-stories', 'exact', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000009'::uuid, '/portfolio/:segment', '/success-stories', 'segment', 308, 'Imported from next.config.ts'),
     ('10000000-0000-4000-8000-000000000010'::uuid, '/terms-conditions', '/terms-of-service', 'exact', 308, 'Imported from next.config.ts'),

@@ -1,0 +1,191 @@
+.stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: clamp(14rem, 42vw, 30rem);
+  perspective: 68rem;
+  isolation: isolate;
+}
+
+.field {
+  position: absolute;
+  inset: 5% 0;
+  background:
+    radial-gradient(ellipse, hsl(var(--accent) / .17), transparent 66%),
+    linear-gradient(hsl(var(--ink) / .08) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--ink) / .08) 1px, transparent 1px);
+  background-size: auto, 1.75rem 1.75rem, 1.75rem 1.75rem;
+  mask-image: radial-gradient(ellipse, black 25%, transparent 73%);
+  pointer-events: none;
+}
+
+.rig {
+  position: relative;
+  width: min(71%, 27rem);
+  aspect-ratio: 1.46;
+  transform-style: preserve-3d;
+  transform: rotateX(25deg) rotateY(-28deg) rotateZ(-9deg);
+  transition: transform 800ms cubic-bezier(.2,.75,.2,1);
+}
+
+.stack {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: assemble 1.25s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.pane {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid hsl(var(--accent) / .55);
+  border-radius: .9rem;
+  box-shadow: 0 1rem 2rem hsl(var(--accent) / .13);
+  backface-visibility: hidden;
+}
+
+.foundation {
+  transform: translate3d(
+    calc(-11% - 17% * var(--pane-spread, 0)),
+    calc(30% + 24% * var(--pane-spread, 0)),
+    calc(-4rem - 4rem * var(--pane-spread, 0))
+  );
+  background: hsl(var(--bone));
+}
+
+.structure {
+  transform: translate3d(
+    -6%,
+    calc(15% + 4% * var(--pane-spread, 0)),
+    -2rem
+  );
+  background: hsl(var(--bone));
+}
+
+.interface {
+  transform: translate3d(
+    calc(14% * var(--pane-spread, 0)),
+    calc(-20% * var(--pane-spread, 0)),
+    calc(.25rem + 4rem * var(--pane-spread, 0))
+  );
+  background: hsl(var(--bone));
+  box-shadow: 0 1.2rem 3rem hsl(var(--accent) / .2), inset 0 0 0 .2rem hsl(var(--accent) / .08);
+}
+
+.blueprint {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(hsl(var(--accent) / .26) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--accent) / .26) 1px, transparent 1px);
+  background-size: .875rem .875rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 3%;
+  padding-inline: 6%;
+  height: 15%;
+  border-bottom: 1px solid hsl(var(--accent) / .24);
+}
+
+.toolbar i {
+  width: .28rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: hsl(var(--accent) / .65);
+}
+
+.composition, .wireframe {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  grid-template-rows: 1fr .4fr;
+  gap: 8%;
+  height: 85%;
+  padding: 7%;
+}
+
+.wireframe i {
+  border: 1px solid hsl(var(--accent) / .5);
+  border-radius: .3rem;
+}
+
+.copy {
+  display: grid;
+  align-content: center;
+  gap: .4rem;
+}
+
+.copy i {
+  width: 100%;
+  height: .25rem;
+  border-radius: .5rem;
+  background: hsl(var(--ink) / .29);
+}
+
+.copy i:first-child {
+  height: .48rem;
+  background: hsl(var(--ink) / .78);
+}
+
+.copy i:nth-child(3) { width: 72%; }
+
+.copy i:last-child {
+  width: 52%;
+  height: .65rem;
+  margin-top: .2rem;
+  background: hsl(var(--accent));
+}
+
+.graphic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: .36rem;
+  background: hsl(var(--accent) / .16);
+}
+
+.graphic div {
+  position: absolute;
+  width: 61%;
+  aspect-ratio: 1;
+  border: 1px solid hsl(var(--accent) / .8);
+  border-radius: 45% 55% 58% 42%;
+  transform: rotate(-28deg);
+}
+
+.graphic div:nth-child(2) { transform: rotate(18deg) scale(.77); }
+.graphic div:nth-child(3) { transform: rotate(70deg) scale(.5); background: hsl(var(--accent) / .35); }
+
+.tiles {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5%;
+}
+
+.tiles i {
+  border-radius: .24rem;
+  background: hsl(var(--accent) / .11);
+  border: 1px solid hsl(var(--accent) / .23);
+}
+
+@keyframes assemble {
+  from { transform: translate3d(0, 10%, -3rem) rotateY(17deg); }
+  to { transform: translate3d(0, 0, 0) rotateY(0); }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .stage:hover .rig {
+    transform: rotateX(16deg) rotateY(-15deg) rotateZ(-5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack { animation: none; }
+  .foundation, .structure, .interface { --pane-spread: 0; }
+  .rig { transition: none; }
+}

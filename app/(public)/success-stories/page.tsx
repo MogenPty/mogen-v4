@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import type { Metadata } from "next";
 import BlueprintGrid from "@/components/mogen/blueprint-grid";
 import MagneticButton from "@/components/mogen/magnet-button";
@@ -64,6 +65,23 @@ export default function SuccessStories() {
     >
       <BlueprintGrid className="bg-bone pb-24">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-10">
+          <article className="mb-12 overflow-hidden border border-border bg-card">
+            <Image
+              src="/images/bodyframe.png"
+              alt="Bodyframe website concept shown on a phone, laptop and tablet"
+              width={1840}
+              height={874}
+              sizes="(max-width: 1024px) 100vw, min(95vw, 1520px)"
+              className="h-auto w-full"
+            />
+            <div className="px-6 py-8 lg:px-10">
+              <p className="text-sm font-semibold text-catalyst">Design concept</p>
+              <h2 className="mt-2 font-display text-3xl font-black text-ink lg:text-4xl">Bodyframe</h2>
+              <p className="mt-3 max-w-2xl text-ink/70">
+                A responsive website concept that gives prospective students and spa visitors separate paths to explore courses and treatments.
+              </p>
+            </div>
+          </article>
           <div className="space-y-px bg-ink/10">
             {STORIES.map((s) => (
               <article key={s.client} className="bg-bone p-8 lg:p-12">

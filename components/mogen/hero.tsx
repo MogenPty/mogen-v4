@@ -5,7 +5,7 @@ import type { Promotion } from "@/data/promotions";
 import type { EnquiryAttribution } from "@/lib/enquiry/enquiry";
 import { useConversionCta } from "@/lib/conversion/use-conversion-cta";
 import { DEFAULT_HERO_SERVICE_SLUG, heroMicrocopy } from "@/lib/hero";
-import DriftingMetrics from "./drifting-metrics";
+import HeroSculpture from "./hero-sculpture";
 import MagneticButton from "./magnet-button";
 
 interface HeroProps {
@@ -43,11 +43,8 @@ export default function Hero({
       id={"top"}
       className="relative min-h-screen w-full overflow-hidden bg-bone pt-24"
     >
-      {/* parallax drifting metric numbers */}
-      <DriftingMetrics />
-
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-6rem)] max-w-[1600px] flex-col justify-center px-6 py-12 lg:px-12 lg:py-20">
-        <div className="mx-auto w-full max-w-4xl">
+      <div className="relative z-10 mx-auto grid min-h-[calc(100svh-9rem)] max-w-[1600px] items-center gap-4 px-6 py-12 lg:grid-cols-[1.15fr_1fr] lg:gap-8 lg:px-12 lg:py-16">
+        <div className="relative z-10 w-full min-w-0">
           <div className="mb-6 flex min-w-0 flex-wrap items-center gap-3">
             <span
               className="h-2 w-2 bg-catalyst animate-pulse"
@@ -58,7 +55,7 @@ export default function Hero({
             </span>
           </div>
 
-          <h1 className="font-display text-[11vw] leading-[0.95] font-black tracking-tight text-ink lg:text-[5vw]">
+          <h1 className="font-display text-[clamp(2.5rem,9vw,5rem)] leading-[0.95] font-black tracking-tight text-ink lg:text-[clamp(3.25rem,4.9vw,5.25rem)]">
             Professional {service.name}
             <br />
             <span className="text-catalyst">for South African Businesses.</span>
@@ -72,6 +69,7 @@ export default function Hero({
             <MagneticButton
               as="a"
               href={cta.href}
+              data-enquiry-service={cta.effectiveServiceSlug}
               variant="catalyst"
               aria-label={cta.ariaLabel}
             >
@@ -85,11 +83,12 @@ export default function Hero({
             >
               Explore Services
             </MagneticButton>
-            <p className="text-ink/70 italic">
-              {heroMicrocopy(service.slug)}
-            </p>
           </div>
+          <p className="mt-4 text-sm leading-relaxed text-ink/70">
+            {heroMicrocopy(service.slug)}
+          </p>
         </div>
+        <HeroSculpture />
       </div>
 
       <div className="relative z-10 flex justify-center pb-10">

@@ -165,6 +165,7 @@ export default function BlogBlock({
             <MagneticButton
               as="a"
               href="/contact"
+              data-enquiry=""
               variant="outline"
               className="border-white/60 text-white hover:bg-white hover:text-ink dark:hover:text-black"
             >

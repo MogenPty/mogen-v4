@@ -73,6 +73,7 @@ export default async function PromotionsIndexPage({
             <MagneticButton
               as="a"
               href={buildEnquiryHref({ attribution })}
+              data-enquiry=""
               variant="solid"
               className="bg-ink text-bone hover:bg-bone hover:text-ink"
             >

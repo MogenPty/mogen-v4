@@ -8,7 +8,7 @@ import ConversionBar from "@/components/mogen/conversation-bar";
 import Footer from "@/components/mogen/footer";
 import MagneticButton from "@/components/mogen/magnet-button";
 import Nav from "@/components/mogen/nav";
-import { PromotionStatusBadge } from "@/components/mogen/promotion-card";
+import { PromotionStatusBadge } from "@/components/mogen/promotion-status-badge";
 import PromotionCarousel from "@/components/mogen/promotion-carousel";
 import PromotionEnquiryCta from "@/components/mogen/promotion-enquiry-cta";
 import ServiceFAQ from "@/components/mogen/service-faq";
@@ -322,6 +322,7 @@ export default async function PromotionDetailPage({
                 <MagneticButton
                   as="a"
                   href={buildEnquiryHref({ attribution })}
+                  data-enquiry=""
                   variant="catalyst"
                 >
                   Contact Mogen
@@ -508,6 +509,7 @@ export default async function PromotionDetailPage({
                   <MagneticButton
                     as="a"
                     href={buildEnquiryHref({ attribution })}
+                    data-enquiry=""
                     variant="catalyst"
                     className="w-fit"
                   >

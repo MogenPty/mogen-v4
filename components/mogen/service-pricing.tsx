@@ -16,11 +16,13 @@ interface Props {
    * never rendered as copy.
    */
   attribution?: EnquiryAttribution;
+  onEnquire?: (packageId?: string) => void;
 }
 
 export default function ServicePricing({
   pricing,
   attribution,
+  onEnquire,
 }: Readonly<Props>) {
   return (
     <div className="grid grid-cols-1 gap-px bg-ink/10 lg:grid-cols-3">
@@ -65,8 +67,10 @@ export default function ServicePricing({
             ))}
           </ul>
           <MagneticButton
-            as="a"
-            href={buildEnquiryHref({
+            as={onEnquire ? "button" : "a"}
+            type={onEnquire ? "button" : undefined}
+            onClick={onEnquire ? () => onEnquire(t.packageId) : undefined}
+            href={onEnquire ? undefined : buildEnquiryHref({
               package: t.packageId,
               attribution,
             })}

@@ -180,6 +180,7 @@ export default function Nav({
           <MagneticButton
             as="a"
             href={cta.href}
+            data-enquiry-service={cta.effectiveServiceSlug}
             variant="catalyst"
             aria-label={cta.ariaLabel}
           >
@@ -269,6 +270,7 @@ export default function Nav({
             <MagneticButton
               as="a"
               href={cta.href}
+              data-enquiry-service={cta.effectiveServiceSlug}
               variant="catalyst"
               className="mt-4 w-full"
               aria-label={cta.ariaLabel}

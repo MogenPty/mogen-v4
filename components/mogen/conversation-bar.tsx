@@ -127,6 +127,7 @@ export default function ConversionBar({
           ) : (
             <Link
               href={cta.href}
+              data-enquiry-service={cta.effectiveServiceSlug}
               className="small-caps shrink-0 whitespace-nowrap bg-catalyst px-4 py-2 text-white transition-colors hover:bg-ink sm:px-5 dark:hover:text-black"
               aria-label={cta.ariaLabel}
             >
