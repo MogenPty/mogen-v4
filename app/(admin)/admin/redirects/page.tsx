@@ -36,7 +36,7 @@ const formatDate = (value: Date | null) => value
   : "Never";
 
 export default async function RedirectManagerPage({ searchParams }: Readonly<{
-  searchParams: Promise<{ q?: string; state?: string; kind?: string; page?: string; gonePage?: string; testPath?: string; sourcePath?: string; destinationPath?: string; notFoundId?: string; gscRowId?: string }>;
+  searchParams: Promise<{ q?: string; state?: string; kind?: string; page?: string; gonePage?: string; goneSource?: string; testPath?: string; sourcePath?: string; destinationPath?: string; notFoundId?: string; gscRowId?: string }>;
 }>) {
   await requireCatalogueAdmin();
   const filters = await searchParams;
@@ -44,6 +44,8 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
   const query = filters.q?.trim() ?? "";
   const page = pageNumber(filters.page);
   const gonePage = pageNumber(filters.gonePage);
+  const goneWhere = filters.goneSource ? eq(goneResourceRules.sourcePath, filters.goneSource) : undefined;
+  const now = new Date();
   const redirectWhere = and(
     query ? or(
       ilike(redirectRules.sourcePath, `%${query}%`),
@@ -55,18 +57,19 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
     filters.kind === "automatic" ? eq(redirectRules.isAutomatic, true) : undefined,
     filters.kind === "manual" ? eq(redirectRules.isAutomatic, false) : undefined,
   );
-  const [redirectRows, goneRows, historyRows, redirectTotals, filteredTotals, goneTotals] = await Promise.all([
+  const [redirectRows, goneRows, historyRows, redirectTotals, filteredTotals, goneTotals, filteredGoneTotals] = await Promise.all([
     db.select().from(redirectRules).where(redirectWhere).orderBy(desc(redirectRules.updatedAt)).limit(REDIRECT_PAGE_SIZE).offset((page - 1) * REDIRECT_PAGE_SIZE),
-    db.select().from(goneResourceRules).orderBy(desc(goneResourceRules.updatedAt)).limit(GONE_PAGE_SIZE).offset((gonePage - 1) * GONE_PAGE_SIZE),
+    db.select().from(goneResourceRules).where(goneWhere).orderBy(desc(goneResourceRules.updatedAt)).limit(GONE_PAGE_SIZE).offset((gonePage - 1) * GONE_PAGE_SIZE),
     db.select().from(redirectHistory).orderBy(desc(redirectHistory.createdAt)).limit(20),
     db.select({ total: count(), active: sql<number>`count(*) filter (where ${redirectRules.isActive} = true)::integer`, hits: sql<number>`coalesce(sum(${redirectRules.hitCount}), 0)::bigint` }).from(redirectRules),
     db.select({ total: count() }).from(redirectRules).where(redirectWhere),
     db.select({ total: count(), active: sql<number>`count(*) filter (where ${goneResourceRules.isActive} = true)::integer` }).from(goneResourceRules),
+    goneWhere ? db.select({ total: count() }).from(goneResourceRules).where(goneWhere) : Promise.resolve([]),
   ]);
   const rows = redirectRows;
   const redirectTotal = redirectTotals[0]?.total ?? 0;
   const filteredTotal = filteredTotals[0]?.total ?? 0;
-  const goneTotal = goneTotals[0]?.total ?? 0;
+  const goneTotal = filteredGoneTotals[0]?.total ?? goneTotals[0]?.total ?? 0;
   const redirectPages = Math.max(1, Math.ceil(filteredTotal / REDIRECT_PAGE_SIZE));
   const gonePages = Math.max(1, Math.ceil(goneTotal / GONE_PAGE_SIZE));
 
@@ -175,14 +178,16 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
 
         <section className="mt-10 grid gap-6 lg:grid-cols-2">
           <AdminCard as="section" className="p-6">
-            <h2 className="font-display text-2xl font-black">Return 410 Gone</h2><p className="mt-2 text-sm text-muted-foreground">Use only when content was intentionally removed and has no suitable replacement.</p>
+            <h2 id="gone-rules" className="scroll-mt-4 font-display text-2xl font-black">Return 410 Gone</h2><p className="mt-2 text-sm text-muted-foreground">Use only when content was intentionally removed and has no suitable replacement.</p>
             <form action={createGoneRuleAction} className="mt-5 grid gap-4 sm:grid-cols-2">
               <div><label htmlFor="gone-source" className="text-sm font-semibold">Source path</label><input id="gone-source" name="sourcePath" required placeholder="/retired-resource" className={adminFieldClass} /></div>
               <div><label htmlFor="gone-expiry" className="text-sm font-semibold">Expires (optional)</label><input id="gone-expiry" name="expiresAt" type="datetime-local" className={adminFieldClass} /></div>
               <div className="sm:col-span-2"><label htmlFor="gone-description" className="text-sm font-semibold">Description</label><input id="gone-description" name="description" className={adminFieldClass} /></div>
               <div className="sm:col-span-2 flex justify-end"><button className={adminPrimaryClass}>Create 410 rule</button></div>
             </form>
-            <div className="mt-5 space-y-2">{goneRows.map(rule => <div key={rule.id} className="flex flex-col justify-between gap-3 rounded-md border border-border p-3 text-sm sm:flex-row sm:items-center"><span><span className="block font-mono font-semibold">{rule.sourcePath}</span><span className="mt-1 block text-xs text-muted-foreground">{rule.isActive ? "Active" : "Disabled"} · {rule.hitCount.toLocaleString("en-ZA")} hits</span></span><div className="flex gap-2"><form action={setGoneRuleActiveAction}><input type="hidden" name="id" value={rule.id} /><input type="hidden" name="active" value={String(!rule.isActive)} /><button className="min-h-11 rounded-md border border-border px-3 font-semibold">{rule.isActive ? "Disable" : "Enable"}</button></form><ConfirmActionForm action={deleteGoneRuleAction} fields={{ id: rule.id }} message={`Delete the 410 rule for ${rule.sourcePath}?`} label="Delete" className="min-h-11 rounded-md border border-destructive px-3 font-semibold text-destructive" /></div></div>)}</div>
+            {filters.goneSource && <Link href="/admin/redirects#gone-rules" className="mt-5 inline-block text-sm font-semibold underline">Show all 410 rules</Link>}
+            <div className="mt-5 space-y-2">{goneRows.map(rule => <div key={rule.id} className="flex flex-col justify-between gap-3 rounded-md border border-border p-3 text-sm sm:flex-row sm:items-center"><span><span className="block font-mono font-semibold">{rule.sourcePath}</span><span className="mt-1 block text-xs text-muted-foreground">{!rule.isActive ? "Disabled" : rule.expiresAt && rule.expiresAt <= now ? "Expired" : "Active"} · {rule.hitCount.toLocaleString("en-ZA")} hits</span></span><div className="flex gap-2"><form action={setGoneRuleActiveAction}><input type="hidden" name="id" value={rule.id} /><input type="hidden" name="active" value={String(!rule.isActive)} /><button className="min-h-11 rounded-md border border-border px-3 font-semibold">{rule.isActive ? "Disable" : "Enable"}</button></form><ConfirmActionForm action={deleteGoneRuleAction} fields={{ id: rule.id }} message={`Delete the 410 rule for ${rule.sourcePath}?`} label="Delete" className="min-h-11 rounded-md border border-destructive px-3 font-semibold text-destructive" /></div></div>)}</div>
+            {filters.goneSource && goneRows.length === 0 && <p className="mt-3 text-sm text-muted-foreground">No 410 rule found for this URL.</p>}
             {gonePages > 1 && <nav aria-label="Gone-rule pages" className="mt-5 flex items-center justify-between"><Link aria-disabled={gonePage <= 1} href={{ pathname: "/admin/redirects", query: { ...filters, gonePage: Math.max(1, gonePage - 1) } }} className={`rounded-md border border-border px-3 py-2 font-semibold ${gonePage <= 1 ? "pointer-events-none opacity-50" : "hover:border-catalyst"}`}>Previous</Link><span className="text-xs text-muted-foreground">Page {Math.min(gonePage, gonePages)} of {gonePages}</span><Link aria-disabled={gonePage >= gonePages} href={{ pathname: "/admin/redirects", query: { ...filters, gonePage: Math.min(gonePages, gonePage + 1) } }} className={`rounded-md border border-border px-3 py-2 font-semibold ${gonePage >= gonePages ? "pointer-events-none opacity-50" : "hover:border-catalyst"}`}>Next</Link></nav>}
           </AdminCard>
           <AdminCard as="section" className="p-6">

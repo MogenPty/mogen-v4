@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, lte } from "drizzle-orm";
 import { SearchCheck, Upload } from "lucide-react";
 import AdminCard, { adminFieldClass, adminPrimaryClass } from "@/components/mogen/admin-card";
 import ConfirmActionForm from "@/components/mogen/confirm-action-form";
 import { getCatalogueDb } from "@/db/client";
-import { searchConsoleImportRows, searchConsoleImports } from "@/db/schema";
+import { goneResourceRules, redirectRules, searchConsoleImportRows, searchConsoleImports } from "@/db/schema";
 import { requireCatalogueAdmin } from "@/lib/admin/access";
 import { importSearchConsoleCsvAction, linkSearchConsoleRedirectAction, skipSearchConsoleRowAction } from "@/lib/admin/redirect-actions";
 import { resolveRoute } from "@/lib/redirects/engine";
@@ -25,8 +25,20 @@ export default async function SearchConsolePage({ searchParams }: Readonly<{
     ? await db.select().from(searchConsoleImportRows).where(eq(searchConsoleImportRows.importId, selectedId)).orderBy(desc(searchConsoleImportRows.createdAt))
     : [];
   const pendingCount = rows.filter((row) => row.status === "pending").length;
-  const snapshot = pendingCount > 0 ? await loadRouteSnapshot(0) : null;
+  const now = new Date();
+  // Expiry stops public routing. Enabled exact rules still reserve their source.
+  const [snapshot, expiredRedirects, expiredGoneRules] = pendingCount > 0 ? await Promise.all([
+    loadRouteSnapshot(0, now),
+    db.select({ id: redirectRules.id, sourcePath: redirectRules.sourcePath }).from(redirectRules).where(and(
+      eq(redirectRules.isActive, true), eq(redirectRules.matchType, "exact"), lte(redirectRules.expiresAt, now),
+    )),
+    db.select({ sourcePath: goneResourceRules.sourcePath }).from(goneResourceRules).where(and(
+      eq(goneResourceRules.isActive, true), eq(goneResourceRules.matchType, "exact"), lte(goneResourceRules.expiresAt, now),
+    )),
+  ]) : [null, [], []] as const;
   const activeRules = new Map(snapshot?.redirects.map((rule) => [rule.id, rule]));
+  const expiredRedirectIds = new Map(expiredRedirects.map((rule) => [rule.sourcePath, rule.id]));
+  const expiredGoneSources = new Set(expiredGoneRules.map((rule) => rule.sourcePath));
   return (
     <main className="min-h-screen bg-background px-4 py-10 text-foreground sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
@@ -49,8 +61,10 @@ export default async function SearchConsolePage({ searchParams }: Readonly<{
             <div className="mt-5 grid gap-3">
               {rows.map((row) => {
                 const pending = row.status === "pending";
-                const match = pending && snapshot ? resolveRoute(row.sourcePath, snapshot) : null;
+                const match = pending && snapshot ? resolveRoute(row.sourcePath, snapshot, now) : null;
                 const matchedRule = match?.kind === "redirect" ? activeRules.get(match.ruleId) : undefined;
+                const expiredRedirectId = expiredRedirectIds.get(row.sourcePath);
+                const hasExpiredGoneRule = expiredGoneSources.has(row.sourcePath);
                 const params = new URLSearchParams({ sourcePath: row.sourcePath, gscRowId: row.id });
                 if (row.suggestedDestination) params.set("destinationPath", row.suggestedDestination);
                 return (
@@ -71,6 +85,11 @@ export default async function SearchConsolePage({ searchParams }: Readonly<{
                             <p className="mt-2 text-sm text-muted-foreground">{row.suggestionReason}</p>
                           </>
                         )}
+                        {pending && (expiredRedirectId || hasExpiredGoneRule) && (
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            An expired {expiredRedirectId ? "redirect" : "410 rule"} still reserves this URL. Manage that rule before creating a replacement.
+                          </p>
+                        )}
                       </div>
                       {row.createdRedirectId && (
                         <Link href={`/admin/redirects/${row.createdRedirectId}`} className="inline-flex min-h-11 w-fit items-center rounded-md border border-border px-4 font-semibold hover:border-catalyst">
@@ -88,12 +107,17 @@ export default async function SearchConsolePage({ searchParams }: Readonly<{
                               className={adminPrimaryClass}
                             />
                           ) : null}
-                          {matchedRule?.matchType === "exact" && (
-                            <Link href={`/admin/redirects/${matchedRule.id}`} className="inline-flex min-h-11 items-center rounded-md border border-border px-4 font-semibold hover:border-catalyst">
-                              Edit existing redirect
+                          {(expiredRedirectId || matchedRule?.matchType === "exact") && (
+                            <Link href={`/admin/redirects/${expiredRedirectId ?? matchedRule?.id}`} className="inline-flex min-h-11 items-center rounded-md border border-border px-4 font-semibold hover:border-catalyst">
+                              {expiredRedirectId ? "Manage expired redirect" : "Edit existing redirect"}
                             </Link>
                           )}
-                          {match?.kind !== "gone" && matchedRule?.matchType !== "exact" && (
+                          {hasExpiredGoneRule && (
+                            <Link href={`/admin/redirects?goneSource=${encodeURIComponent(row.sourcePath)}#gone-rules`} className={adminPrimaryClass}>
+                              Manage expired 410 rule
+                            </Link>
+                          )}
+                          {!expiredRedirectId && !hasExpiredGoneRule && match?.kind !== "gone" && matchedRule?.matchType !== "exact" && (
                             <Link href={`/admin/redirects?${params}#add-redirect`} className={adminPrimaryClass}>
                               {matchedRule ? "Choose a different destination"
                                 : row.suggestedDestination ? "Review suggested redirect" : "Choose destination"}
