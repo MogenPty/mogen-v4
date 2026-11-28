@@ -29,19 +29,19 @@ describe("GrowthAudit relocation", () => {
   });
 
   it("removes the homepage GrowthAudit instance", () => {
-    const home = read("app/page.tsx");
+    const home = read("app/(public)/page.tsx");
     expect(home).not.toMatch(/GrowthAudit/);
     expect(home).not.toMatch(/id=.audit.|href="#audit"/);
   });
 
-  it("embeds the website questionnaire on the homepage instead", () => {
-    const home = read("app/page.tsx");
-    expect(home).toMatch(/WebsiteQuestionnaire/);
+  it("renders the package offer section on the homepage", () => {
+    const home = read("app/(public)/page.tsx");
+    expect(home).toMatch(/<HomepageOffers/);
   });
 
   it("keeps a single primary GrowthAudit placement", () => {
     const detail = read("components/mogen/service-detail.tsx");
-    const home = read("app/page.tsx");
+    const home = read("app/(public)/page.tsx");
     expect(detail.match(/<GrowthAudit/g)?.length ?? 0).toBe(1);
     expect(home.match(/<GrowthAudit/g)?.length ?? 0).toBe(0);
   });

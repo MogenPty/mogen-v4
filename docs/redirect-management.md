@@ -45,10 +45,16 @@ Production migration is intentionally not run by application startup. It was
 applied and independently verified on 2026-11-17 before the reviewed build was
 released. Future schema changes remain controlled pre-deployment steps.
 
+Re-run the migration on development and production databases that already
+applied 0012 to add the Brits location catch-all, legacy mobile app service
+redirect, and legacy web development article redirect. Verify each added rule
+over HTTP before relying on it. The seed refreshes the cache generation when
+it changes a rule.
+
 ## Preview verification
 
 1. Apply migration 0012 to the preview/development Neon branch.
-2. Confirm seven redirect-management tables and at least eleven seeded rules.
+2. Confirm seven redirect-management tables and all fourteen seeded rules.
 3. Deploy with `MOGEN_DATABASE_REDIRECTS_ENABLED=true` (or omit it; enabled is
    the default) and a valid direct application `DATABASE_URL`.
 4. Verify every seeded URL with `curl -I`, checking the exact status and
@@ -80,10 +86,15 @@ Bulk redirect CSV requires `sourcePath,destinationPath`; optional columns are
 validated for protected paths, duplicate sources, loops and chains before an
 atomic batch is attempted.
 
-Search Console exports are staged separately. Existing redirects and current
-published pages produce no redirect proposal. A destination is suggested only
-for an exact known article or promotion slug. An administrator must review the
-suggestion in Redirect Manager and submit it before a rule is created.
+Search Console exports are staged as pending rows. In **Admin → Search Console**,
+open the report and choose an action for each URL:
+
+- **Link existing redirect** records the active rule for the URL without creating a duplicate.
+- **Review suggested redirect** opens Redirect Manager with both paths filled in.
+- **Choose destination** opens Redirect Manager with the source filled in, so you can enter the appropriate replacement path.
+- **No change needed** closes the row without changing redirect rules. Use this for current pages, existing 410 responses or URLs without a relevant replacement.
+
+A new rule only takes effect after you submit **Create redirect** in Redirect Manager.
 
 ## Rollback
 

@@ -1,3 +1,4 @@
+import RedirectRuleForm from "@/components/mogen/redirect-rule-form";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
@@ -25,7 +26,7 @@ export default async function EditRedirectPage({ params }: Readonly<{ params: Pr
         <h1 className="mt-3 font-display text-4xl font-black">Edit redirect</h1>
         <p className="mt-3 text-muted-foreground">Changes are validated for protected routes, chains and loops before the cache is invalidated.</p>
         <AdminCard className="mt-8 p-6 sm:p-8">
-          <form action={updateRedirectAction} className="grid gap-5 sm:grid-cols-2">
+          <RedirectRuleForm action={updateRedirectAction} className="grid gap-5 sm:grid-cols-2">
             <input type="hidden" name="id" value={rule.id} />
             <div><label htmlFor="edit-source" className="text-sm font-semibold">Source path</label><input id="edit-source" name="sourcePath" defaultValue={rule.sourcePath} required className={adminFieldClass} /></div>
             <div><label htmlFor="edit-destination" className="text-sm font-semibold">Destination path</label><input id="edit-destination" name="destinationPath" defaultValue={rule.destinationPath} required className={adminFieldClass} /></div>
@@ -34,7 +35,7 @@ export default async function EditRedirectPage({ params }: Readonly<{ params: Pr
             <div className="sm:col-span-2"><label htmlFor="edit-description" className="text-sm font-semibold">Description</label><textarea id="edit-description" name="description" rows={4} defaultValue={rule.description} className={adminFieldClass} /></div>
             <label className="flex min-h-11 items-center gap-3 text-sm font-semibold"><input type="checkbox" name="preserveQuery" defaultChecked={rule.preserveQuery} /> Preserve query string</label>
             <div className="flex justify-end"><button className={adminPrimaryClass}>Save redirect</button></div>
-          </form>
+          </RedirectRuleForm>
         </AdminCard>
       </div>
     </main>

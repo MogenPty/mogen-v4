@@ -2,10 +2,12 @@
 
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import ArticleCard from "@/components/mogen/article-card";
 import BlueprintGrid, { SectionLabel } from "@/components/mogen/blueprint-grid";
 import ContactForm from "@/components/mogen/contact-form";
 import ConversionBar from "@/components/mogen/conversation-bar";
+import EnquiryModal, { type EnquiryContext } from "@/components/mogen/enquiry-modal";
 import Footer from "@/components/mogen/footer";
 import GrowthAudit from "@/components/mogen/growth-audit";
 import MagneticButton from "@/components/mogen/magnet-button";
@@ -18,10 +20,10 @@ import WebCatalogueFinder from "@/components/mogen/web-catalogue-finder";
 import type { CatalogueWebPackage } from "@/lib/catalogue/location-offer";
 import WebsiteQuestionnaire from "@/components/mogen/website-questionnaire";
 import { getService, SERVICES } from "@/data/services";
+import { getPackage } from "@/data/packages";
 import type { Promotion } from "@/data/promotions";
 import type { ArticleSummary } from "@/lib/articles/types";
 import {
-  buildEnquiryHref,
   type EnquiryAttribution,
   withAttribution,
 } from "@/lib/enquiry/enquiry";
@@ -72,6 +74,7 @@ export default function ServiceDetail({
   webPackages,
   webPrices,
 }: Readonly<Props>) {
+  const [enquiry, setEnquiry] = useState<{ context: EnquiryContext; priceOptionId?: string } | null>(null);
   const service = getService(serviceSlug);
 
   if (!service) {
@@ -90,6 +93,28 @@ export default function ServiceDetail({
 
   const Icon = service.icon;
   const related = SERVICES.filter((s) => s.slug !== service.slug);
+
+  function openServiceEnquiry() {
+    setEnquiry({ context: { type: "service", serviceSlug } });
+  }
+
+  function openPackageEnquiry(packageId?: string, priceOptionId?: string, promotion?: Promotion) {
+    if (!packageId) {
+      openServiceEnquiry();
+      return;
+    }
+
+    setEnquiry({
+      context: promotion ? { type: "promotion", promotion } : { type: "package", packageId },
+      priceOptionId,
+    });
+  }
+
+  const enquiryPackageId = enquiry?.context.type === "promotion"
+    ? enquiry.context.promotion.relatedPackage
+    : enquiry?.context.type === "package" ? enquiry.context.packageId : undefined;
+  const enquiryPackageName = webPackages?.find(({ id }) => id === enquiryPackageId)?.name
+    ?? getPackage(enquiryPackageId)?.name;
 
   return (
     <div className="bg-bone">
@@ -130,11 +155,8 @@ export default function ServiceDetail({
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
               <MagneticButton
-                as="a"
-                href={buildEnquiryHref({
-                  service: service.slug,
-                  attribution,
-                })}
+                type="button"
+                onClick={openServiceEnquiry}
                 variant="catalyst"
               >
                 Get a Quote
@@ -214,9 +236,12 @@ export default function ServiceDetail({
               </div>
               {webPackages !== null && webPackages !== undefined ? (
                 <WebCataloguePricing packages={webPackages} prices={webPrices} promotions={activePromotions}
+                  onEnquire={openPackageEnquiry}
+                  onGeneralEnquire={openServiceEnquiry}
                   recommendedPackageId={service.pricing?.find(tier => tier.featured)?.packageId} />
               ) : service.pricing ? (
-                <ServicePricing pricing={service.pricing} attribution={attribution} />
+                <ServicePricing pricing={service.pricing} attribution={attribution}
+                  onEnquire={openPackageEnquiry} />
               ) : null}
             </div>
           </BlueprintGrid>
@@ -397,6 +422,17 @@ export default function ServiceDetail({
         attribution={attribution}
         featuredPromotion={featuredPromotion}
       />
+      {enquiry && (
+        <EnquiryModal
+          open
+          onClose={() => setEnquiry((current) => current === enquiry ? null : current)}
+          context={enquiry.context}
+          packageName={enquiryPackageName}
+          initialPriceOptionId={enquiry.priceOptionId}
+          prices={webPrices ?? []}
+          attribution={attribution}
+        />
+      )}
     </div>
   );
 }

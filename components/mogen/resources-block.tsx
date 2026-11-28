@@ -214,7 +214,7 @@ export default function ResourcesBlock({ numbering = 1 }: Readonly<Props>) {
           <h2 className="font-display text-3xl font-black lg:text-4xl text-balance">
             Want the full growth engine?
           </h2>
-          <MagneticButton as="a" href="/contact" variant="catalyst">
+          <MagneticButton as="a" href="/contact" data-enquiry="" variant="catalyst">
             Talk to a Strategist <ArrowRight className="h-4 w-4" />
           </MagneticButton>
         </div>

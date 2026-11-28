@@ -108,9 +108,9 @@ describe("homepage hero — rotating office locations", () => {
     const hero = readSource("components/mogen/hero.tsx");
     expect(hero).toContain("useConversionCta");
     expect(hero).not.toContain('href="#assessment"');
-    const home = readSource("app/page.tsx");
+    const home = readSource("app/(public)/page.tsx");
     // Primary homepage positioning is stable even while promotion CTAs vary.
-    expect(home).toContain('const heroServiceSlug = "web-development"');
+    expect(home).toContain('serviceSlug="web-development"');
     expect(home).not.toContain("resolveHeroServiceSlug(promotion)");
     expect(home).toContain("<Hero");
     expect(home).toContain("featuredPromotion={promotion}");
@@ -132,11 +132,12 @@ describe("conversion bar — page journey variant", () => {
     const bar = readSource("components/mogen/conversation-bar.tsx");
     expect(bar).toContain('variant = "conversion"');
     expect(bar).toContain("Page Journey");
-    expect(bar).toContain("Conversion Readiness");
+    expect(bar).not.toContain("Conversion Readiness");
+    expect(bar).toContain("Ready to");
     expect(bar).toContain('href="#top"');
     expect(bar).toContain("Back to top");
     expect(bar).toContain('"Page journey"');
-    expect(bar).toContain('"Conversion readiness"');
+    expect(bar).toContain('"Quick enquiry"');
   });
 
   it("threads the variant through PageShell with a conversion default", () => {
@@ -178,7 +179,7 @@ describe("conversion bar — page journey variant", () => {
     // No journey opt-in on these routes: homepage, services, promotions,
     // contact, FAQ, articles, locations.
     for (const file of [
-      "app/page.tsx",
+      "app/(public)/page.tsx",
       "app/(public)/services/page.tsx",
       "app/(public)/faq/page.tsx",
       "app/(public)/locations/page.tsx",

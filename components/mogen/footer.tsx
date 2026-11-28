@@ -28,7 +28,6 @@ const COLS: Column[] = [
       { label: "Growth Audit", href: "/services/seo#audit" },
       { label: "Promotions", href: "/promotions" },
       // { label: "Our Work", href: "/#work" },
-      { label: "Articles", href: "/articles" },
       { label: "FAQ", href: "/faq" },
       { label: "Contact", href: "/contact" },
     ],
@@ -59,8 +58,7 @@ const COLS: Column[] = [
 ];
 
 /**
- * Locations and Ecosystem share a single footer column, with Locations
- * above Ecosystem — on every breakpoint, including tablet.
+ * Locations and Directory Listings share a single footer column.
  */
 const LOCATIONS_COL: Column = {
   title: "Locations",
@@ -83,6 +81,22 @@ const ECOSYSTEM_COL: Column = {
     { label: "Mogen SEO", href: "https://seo.mogen.co.za", external: true },
   ],
 };
+
+const DIRECTORY_LISTINGS_COL: Column = {
+  title: "Directory Listings",
+  links: [
+    {
+      label: "DesignRush",
+      href: "https://www.designrush.com/agency/website-design-development",
+      external: true,
+    },
+  ],
+};
+
+const FOOTER_LINK_COLUMNS = [
+  ...COLS.map((column) => column.title === "Company" ? [column, ECOSYSTEM_COL] : [column]),
+  [LOCATIONS_COL, DIRECTORY_LISTINGS_COL],
+];
 
 export default function Footer({
   serviceSlug,
@@ -144,64 +158,40 @@ export default function Footer({
           </div>
 
           {/* Link columns: stacked on mobile, 2-up on small screens,
-              3-across plus the stacked Locations/Ecosystem column below the
+              3-across plus the stacked links column below the
               brand/contact row on tablet, and individual cells of the
               6-column grid on desktop (lg:contents dissolves the wrapper).
-              Locations and Ecosystem always share one column, Locations
-              above Ecosystem. */}
+              Sections within each column stay stacked at every breakpoint. */}
           <div className="order-2 grid grid-cols-1 gap-12 sm:order-3 sm:col-span-2 sm:grid-cols-2 md:grid-cols-4 md:gap-8 lg:contents">
-            {COLS.map((c) => (
-              <div key={c.title}>
-                <h3 className="small-caps text-foreground/50">{c.title}</h3>
-                <ul className="mt-4 space-y-2">
-                  {c.links.map((l) => (
-                    <li key={l.label}>
-                      <Link
-                        href={anchorHref(l.href)}
-                        target={l.external ? "_blank" : undefined}
-                        rel={l.external ? "noopener noreferrer" : undefined}
-                        className="flex items-center gap-1 text-sm text-foreground/80 hover:text-catalyst"
-                      >
-                        {l.label}
-                        {l.external && (
-                          <ArrowUpRight
-                            className="h-3 w-3"
-                            aria-hidden="true"
-                          />
-                        )}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+            {FOOTER_LINK_COLUMNS.map((sections) => (
+              <div key={sections[0].title} className="space-y-12">
+                {sections.map((c) => (
+                  <div key={c.title}>
+                    <h3 className="small-caps text-foreground/50">{c.title}</h3>
+                    <ul className="mt-4 space-y-2">
+                      {c.links.map((l) => (
+                        <li key={l.label}>
+                          <Link
+                            href={anchorHref(l.href)}
+                            target={l.external ? "_blank" : undefined}
+                            rel={l.external ? "noopener noreferrer" : undefined}
+                            className="flex items-center gap-1 text-sm text-foreground/80 hover:text-catalyst"
+                          >
+                            {l.label}
+                            {l.external && (
+                              <ArrowUpRight
+                                className="h-3 w-3"
+                                aria-hidden="true"
+                              />
+                            )}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             ))}
-            <div className="space-y-12">
-              {[LOCATIONS_COL, ECOSYSTEM_COL].map((c) => (
-                <div key={c.title}>
-                  <h3 className="small-caps text-foreground/50">{c.title}</h3>
-                  <ul className="mt-4 space-y-2">
-                    {c.links.map((l) => (
-                      <li key={l.label}>
-                        <Link
-                          href={anchorHref(l.href)}
-                          target={l.external ? "_blank" : undefined}
-                          rel={l.external ? "noopener noreferrer" : undefined}
-                          className="flex items-center gap-1 text-sm text-foreground/80 hover:text-catalyst"
-                        >
-                          {l.label}
-                          {l.external && (
-                            <ArrowUpRight
-                              className="h-3 w-3"
-                              aria-hidden="true"
-                            />
-                          )}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="order-3 sm:order-2 sm:justify-self-end lg:order-none lg:justify-self-auto">
@@ -255,6 +245,7 @@ export default function Footer({
             </Link>
             <Link
               href={cta.href}
+              data-enquiry-service={cta.effectiveServiceSlug}
               className="small-caps text-catalyst"
               aria-label={cta.ariaLabel}
             >

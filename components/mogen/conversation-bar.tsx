@@ -11,17 +11,13 @@ import { cn } from "@/lib/utils";
  * ConversionBar — floating quick-action bar.
  *
  * Two variants:
- * - `conversion` (default): tracks the visitor's "Conversion Readiness"
- *   as they scroll, with the page's conversion CTA beside it. For demand
+ * - `conversion` (default): shows the page's conversion CTA after scrolling. For demand
  *   and discovery pages (homepage, services, promotions, contact, FAQ,
  *   articles, locations).
  * - `journey`: a "Page Journey" progress indicator (how far down the page
  *   the visitor is) with a back-to-top action instead of an enquiry CTA.
  *   For informational/company/legal pages (about, pricing index, process,
  *   resources, partners, success stories, privacy, terms).
- *
- * The "Conversion Readiness" label is UI chrome with no SEO value; the
- * variant choice is a conversion/UX decision, not an SEO one.
  *
  * CTA copy comes from `data/services.ts` (`Service.conversionBar`);
  * destinations target the effective service's conversion component
@@ -63,18 +59,21 @@ export default function ConversionBar({
 }: Readonly<ConversionBarProps>) {
   const [ready, setReady] = useState(0);
   const [visible, setVisible] = useState(false);
+  const isJourney = variant === "journey";
 
   useEffect(() => {
     const onScroll = () => {
-      const max = document.body.scrollHeight - window.innerHeight;
-      const pct = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-      setReady(Math.round(pct * 100));
+      if (isJourney) {
+        const max = document.body.scrollHeight - window.innerHeight;
+        const pct = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+        setReady(Math.round(pct * 100));
+      }
       setVisible(window.scrollY > 600);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isJourney]);
 
   // CTA resolution is shared with the header and footer CTAs via
   // useConversionCta — identical inputs on a page resolve to the
@@ -85,38 +84,56 @@ export default function ConversionBar({
     attribution,
     featuredPromotion,
   });
+  const action = cta.effectiveServiceSlug === "seo"
+    ? "Get a Free Audit"
+    : cta.label.replace(/\s*→\s*$/, "");
+  const ctaQuestion = `${action}?`;
 
   return (
     <section
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 transition-transform duration-300",
         visible ? "translate-y-0" : "translate-y-full",
+        !isJourney && "pointer-events-none",
       )}
-      aria-label={variant === "journey" ? "Page journey" : "Conversion readiness"}
+      aria-label={isJourney ? "Page journey" : "Quick enquiry"}
+      inert={!visible}
     >
-      <div className="mx-auto max-w-[1600px] px-3 pb-3 sm:px-4 sm:pb-4">
-        <div className="flex items-center justify-between gap-3 border border-ink/15 bg-bone/90 px-3 py-3 backdrop-blur-md sm:px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <span className="small-caps shrink-0 truncate text-muted-foreground max-[380px]:hidden">
-              {variant === "journey" ? "Page Journey" : "Conversion Readiness"}
-            </span>
-            <span className="small-caps shrink-0 text-muted-foreground min-[381px]:hidden">
-              {variant === "journey" ? "Journey" : "Ready"}
-            </span>
-            <div
-              className="hidden h-2 w-32 bg-ink/10 sm:block"
-              aria-hidden="true"
-            >
+      <div className={cn(
+        "mx-auto max-w-[1600px] px-3 pb-3 sm:px-4 sm:pb-4",
+        !isJourney && "flex justify-end",
+      )}>
+        <div className={cn(
+          "flex items-center gap-3 border border-ink/15 bg-bone/90 px-3 py-3 backdrop-blur-md sm:px-6",
+          isJourney ? "justify-between" : "pointer-events-auto max-w-full shadow-lg",
+        )}>
+          {isJourney ? (
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <span className="small-caps shrink-0 truncate text-muted-foreground max-[380px]:hidden">
+                Page Journey
+              </span>
+              <span className="small-caps shrink-0 text-muted-foreground min-[381px]:hidden">
+                Journey
+              </span>
               <div
-                className="h-full bg-catalyst transition-all duration-300"
-                style={{ width: `${ready}%` }}
-              />
+                className="hidden h-2 w-32 bg-ink/10 sm:block"
+                aria-hidden="true"
+              >
+                <div
+                  className="h-full bg-catalyst transition-all duration-300"
+                  style={{ width: `${ready}%` }}
+                />
+              </div>
+              <span className="font-display shrink-0 text-sm font-black text-ink">
+                {ready}%
+              </span>
             </div>
-            <span className="font-display shrink-0 text-sm font-black text-ink">
-              {ready}%
+          ) : (
+            <span aria-hidden="true" className="shrink-0 font-display text-base font-bold text-ink sm:text-lg">
+              Ready to
             </span>
-          </div>
-          {variant === "journey" ? (
+          )}
+          {isJourney ? (
             <a
               href="#top"
               className="small-caps shrink-0 whitespace-nowrap bg-catalyst px-4 py-2 text-white transition-colors hover:bg-ink sm:px-5 dark:hover:text-black"
@@ -127,10 +144,11 @@ export default function ConversionBar({
           ) : (
             <Link
               href={cta.href}
-              className="small-caps shrink-0 whitespace-nowrap bg-catalyst px-4 py-2 text-white transition-colors hover:bg-ink sm:px-5 dark:hover:text-black"
-              aria-label={cta.ariaLabel}
+              data-enquiry-service={cta.effectiveServiceSlug}
+              className="inline-flex min-h-11 items-center gap-2 bg-catalyst px-3 py-2 text-left text-sm font-bold text-white transition-colors hover:bg-ink sm:px-5 dark:hover:text-black"
+              aria-label={`Ready to ${ctaQuestion}`}
             >
-              {cta.label}
+              {ctaQuestion} <span aria-hidden="true">→</span>
             </Link>
           )}
         </div>

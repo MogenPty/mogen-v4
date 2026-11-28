@@ -173,7 +173,7 @@ export default function LocationDetail({
                 )}
               </p>
               <div className="mt-8">
-                <MagneticButton as="a" href="/contact" variant="catalyst">
+                <MagneticButton as="a" href="/contact" data-enquiry="" variant="catalyst">
                   Contact Mogen
                 </MagneticButton>
               </div>

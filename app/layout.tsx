@@ -66,8 +66,12 @@ export const metadata: Metadata = {
     images: [siteConfig.ogImage],
   },
   icons: {
-    icon: [{ url: siteConfig.icon, type: "image/png" }],
-    apple: [{ url: siteConfig.appleIcon, type: "image/png" }],
+    icon: [
+      { url: siteConfig.icon, type: "image/png", sizes: "32x32" },
+      { url: "/images/mogen/mogen-192x192.png", type: "image/png", sizes: "192x192" },
+      { url: "/images/mogen/mogen-512x512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: siteConfig.appleIcon, type: "image/png", sizes: "180x180" }],
   },
   category: "business",
 };

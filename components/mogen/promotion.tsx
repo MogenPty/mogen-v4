@@ -123,6 +123,7 @@ export default function Promotion({
               <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
                 <Link
                   href={withAttribution("/contact", attribution)}
+                  data-enquiry=""
                   className="inline-flex small-caps text-catalyst hover:text-bone"
                 >
                   Questions? Contact us →

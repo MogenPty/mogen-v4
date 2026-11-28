@@ -65,7 +65,7 @@ describe("header CTA — shared resolution with the Conversion Bar", () => {
       expect(shell).toContain(marker);
     }
     // Homepage: identical promotion + attribution on all three surfaces.
-    const home = readSource("app/page.tsx");
+    const home = readSource("app/(public)/page.tsx");
     expect(home).toContain("featuredPromotion={promotion}");
     expect(home).toContain("attribution={attribution}");
     // Service pages: the page service wins on all three surfaces.

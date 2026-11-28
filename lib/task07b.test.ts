@@ -222,7 +222,7 @@ describe("task 7B — environment-driven public URL", () => {
     // Homepage and shared pages derive URLs via the lib/seo.ts helper,
     // which itself reads the environment-driven site URL at call time.
     expect(readSource("lib/seo.ts")).toContain("getSiteUrl");
-    expect(readSource("app/page.tsx")).toContain("pageMetadata");
+    expect(readSource("app/(public)/page.tsx")).toContain("pageMetadata");
     // No reusable SEO infrastructure hardcodes the production host.
     for (const file of [
       "app/robots.ts",

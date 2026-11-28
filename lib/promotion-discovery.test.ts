@@ -94,10 +94,10 @@ describe("promotion discovery — featured promotion", () => {
   });
 
   it("homepage omits the featured section when there is no featured promotion", () => {
-    const homeSource = readSource("app/page.tsx");
+    const homeSource = readSource("app/(public)/page.tsx");
     // Conditional render driven by the central selector result.
     expect(homeSource).toContain("loadFeaturedPromotion()");
-    expect(homeSource).toMatch(/\{promotion && \(/);
+    expect(readSource("components/mogen/homepage-offers.tsx")).toMatch(/\{promotion && \(/);
     const promotionSource = readSource("components/mogen/promotion.tsx");
     // Component renders nothing (no empty container / broken CTA) when none qualifies.
     expect(promotionSource).toMatch(/if\s*\(!promo\)\s*return null/);
@@ -106,7 +106,7 @@ describe("promotion discovery — featured promotion", () => {
 
 describe("promotion discovery — homepage CTA and detail link", () => {
   it("homepage passes the featured promotion object into the section", () => {
-    const homeSource = readSource("app/page.tsx");
+    const homeSource = readSource("app/(public)/page.tsx");
     expect(homeSource).toContain("promotion={promotion}");
   });
 

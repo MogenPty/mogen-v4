@@ -226,7 +226,7 @@ describe("task 8 — no stale subsidiary claim in source", () => {
   it("contains no 'Mogen Subsidiary Proj' wording", () => {
     for (const file of [
       "components/mogen/portfolio.tsx",
-      "app/page.tsx",
+      "app/(public)/page.tsx",
       "data/site.ts",
     ]) {
       expect(readSource(file)).not.toContain("Mogen Subsidiary Proj");

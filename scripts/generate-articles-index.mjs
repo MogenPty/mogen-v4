@@ -50,7 +50,7 @@ const files = readdirSync(articlesDir)
 
 const entries = files.map((fileName) => ({
   fileName,
-  raw: readFileSync(join(articlesDir, fileName), "utf8"),
+  raw: readFileSync(join(articlesDir, fileName), "utf8").replace(/\r\n?/g, "\n"),
 }));
 
 writeFileSync(outFile, `${JSON.stringify(entries, null, 2)}\n`);

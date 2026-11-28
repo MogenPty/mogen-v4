@@ -69,6 +69,24 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        // Brits legacy sub-paths (e.g. /locations/brits/brand-identity) → directory.
+        source: "/locations/brits/:path*",
+        destination: "/locations",
+        permanent: true,
+      },
+      {
+        // Legacy mobile app dev service page → web development.
+        source: "/services/mobile-app-development/",
+        destination: "/services/web-development",
+        permanent: true,
+      },
+      {
+        // Legacy blog article → articles hub.
+        source: "/blog/the-future-of-web-development-in-south-africa",
+        destination: "/articles",
+        permanent: true,
+      },
+      {
         // Legacy work showcase → the v4 approach/success-stories surface.
         source: "/portfolio",
         destination: "/success-stories",
