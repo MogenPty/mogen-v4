@@ -87,10 +87,15 @@ async function activeRedirectSnapshot(excludingId?: string): Promise<RedirectSna
   }));
 }
 
-async function assertNoActiveSourceConflict(
+export type RedirectSourceConflict = {
+  sourcePath: string;
+  owner: { kind: "redirect"; id: string } | { kind: "gone" };
+};
+
+async function findActiveSourceConflict(
   sourcePath: string,
   excluding: { redirectId?: string; goneId?: string } = {},
-) {
+): Promise<RedirectSourceConflict | null> {
   const redirectConditions = [eq(redirectRules.sourcePath, sourcePath), eq(redirectRules.isActive, true)];
   if (excluding.redirectId) redirectConditions.push(ne(redirectRules.id, excluding.redirectId));
   const goneConditions = [eq(goneResourceRules.sourcePath, sourcePath), eq(goneResourceRules.isActive, true)];
@@ -99,9 +104,9 @@ async function assertNoActiveSourceConflict(
     getCatalogueDb().select({ id: redirectRules.id }).from(redirectRules).where(and(...redirectConditions)).limit(1),
     getCatalogueDb().select({ id: goneResourceRules.id }).from(goneResourceRules).where(and(...goneConditions)).limit(1),
   ]);
-  if (redirectConflict.length || goneConflict.length) {
-    throw new Error("An active redirect or 410 Gone rule already owns this source path.");
-  }
+  if (redirectConflict[0]) return { sourcePath, owner: { kind: "redirect", id: redirectConflict[0].id } };
+  if (goneConflict.length) return { sourcePath, owner: { kind: "gone" } };
+  return null;
 }
 
 function refreshRedirectAdmin() {
@@ -110,7 +115,7 @@ function refreshRedirectAdmin() {
   revalidatePath("/admin/search-console");
 }
 
-export async function createRedirectAction(data: FormData) {
+export async function createRedirectAction(_previous: RedirectSourceConflict | null, data: FormData) {
   const actor = await requireCatalogueAdmin();
   const db = getCatalogueDb();
   const linkedRow = field(data, "gscRowId");
@@ -136,7 +141,8 @@ export async function createRedirectAction(data: FormData) {
   const preserveQuery = data.get("preserveQuery") === "on";
   assertRuleDoesNotOverrideProtectedRoute(source.path, source.matchType);
   assertSafeRedirectDestination(destinationPath.replace(/\/(?:\:segment|\:path\*)$/, "") || "/");
-  await assertNoActiveSourceConflict(source.path);
+  const conflict = await findActiveSourceConflict(source.path);
+  if (conflict) return conflict;
 
   const id = randomUUID();
   const candidate: RedirectSnapshotRule = {
@@ -162,12 +168,22 @@ export async function createRedirectAction(data: FormData) {
     }).where(eq(searchConsoleImportRows.id, gscRowId))] : []),
     invalidation(db, now),
   ];
-  await db.batch(queries as unknown as Parameters<typeof db.batch>[0]);
+  try {
+    await db.batch(queries as unknown as Parameters<typeof db.batch>[0]);
+  } catch (error) {
+    // The database may reject a concurrent submission after the first check.
+    const databaseError = error instanceof Error ? error.cause ?? error : error;
+    if (databaseError && typeof databaseError === "object" && "code" in databaseError && databaseError.code === "23505") {
+      const conflict = await findActiveSourceConflict(source.path);
+      if (conflict) return conflict;
+    }
+    throw error;
+  }
   refreshRedirectAdmin();
   redirect(importId ? `/admin/search-console?import=${importId}#review-urls` : "/admin/redirects?created=1");
 }
 
-export async function updateRedirectAction(data: FormData) {
+export async function updateRedirectAction(_previous: RedirectSourceConflict | null, data: FormData) {
   const actor = await requireCatalogueAdmin();
   const redirectId = uuid.parse(field(data, "id"));
   const db = getCatalogueDb();
@@ -184,8 +200,9 @@ export async function updateRedirectAction(data: FormData) {
   const preserveQuery = data.get("preserveQuery") === "on";
   assertRuleDoesNotOverrideProtectedRoute(source.path, source.matchType);
   assertSafeRedirectDestination(destinationPath.replace(/\/(?:\:segment|\:path\*)$/, "") || "/");
-  if (current.isActive) await assertNoActiveSourceConflict(source.path, { redirectId });
   if (current.isActive) {
+    const conflict = await findActiveSourceConflict(source.path, { redirectId });
+    if (conflict) return conflict;
     assertNoRedirectChains([...(await activeRedirectSnapshot(redirectId)), {
       id: redirectId, sourcePath: source.path, destinationPath, matchType: source.matchType,
       statusCode: code, preserveQuery, expiresAt,
@@ -206,7 +223,7 @@ export async function updateRedirectAction(data: FormData) {
   redirect("/admin/redirects?saved=1");
 }
 
-export async function setRedirectActiveAction(data: FormData) {
+export async function setRedirectActiveAction(_previous: RedirectSourceConflict | null, data: FormData) {
   const actor = await requireCatalogueAdmin();
   const redirectId = uuid.parse(field(data, "id"));
   const makeActive = field(data, "active") === "true";
@@ -214,7 +231,8 @@ export async function setRedirectActiveAction(data: FormData) {
   const [current] = await db.select().from(redirectRules).where(eq(redirectRules.id, redirectId)).limit(1);
   if (!current) throw new Error("Redirect rule not found.");
   if (makeActive) {
-    await assertNoActiveSourceConflict(current.sourcePath, { redirectId });
+    const conflict = await findActiveSourceConflict(current.sourcePath, { redirectId });
+    if (conflict) return conflict;
     assertRuleDoesNotOverrideProtectedRoute(current.sourcePath, current.matchType as RedirectMatchType);
     assertNoRedirectChains([...(await activeRedirectSnapshot(redirectId)), {
       id: current.id, sourcePath: current.sourcePath, destinationPath: current.destinationPath,
@@ -232,6 +250,7 @@ export async function setRedirectActiveAction(data: FormData) {
     invalidation(db, now),
   ]);
   refreshRedirectAdmin();
+  return null;
 }
 
 export async function deleteRedirectAction(data: FormData) {
@@ -249,11 +268,12 @@ export async function deleteRedirectAction(data: FormData) {
   refreshRedirectAdmin();
 }
 
-export async function createGoneRuleAction(data: FormData) {
+export async function createGoneRuleAction(_previous: RedirectSourceConflict | null, data: FormData) {
   const actor = await requireCatalogueAdmin();
   const source = normalizeRulePath(field(data, "sourcePath"));
   assertRuleDoesNotOverrideProtectedRoute(source.path, source.matchType);
-  await assertNoActiveSourceConflict(source.path);
+  const conflict = await findActiveSourceConflict(source.path);
+  if (conflict) return conflict;
   const goneId = randomUUID();
   const now = new Date();
   const description = descriptionSchema.parse(field(data, "description"));
@@ -272,7 +292,7 @@ export async function createGoneRuleAction(data: FormData) {
   redirect("/admin/redirects?goneCreated=1");
 }
 
-export async function setGoneRuleActiveAction(data: FormData) {
+export async function setGoneRuleActiveAction(_previous: RedirectSourceConflict | null, data: FormData) {
   const actor = await requireCatalogueAdmin();
   const goneId = uuid.parse(field(data, "id"));
   const makeActive = field(data, "active") === "true";
@@ -280,7 +300,8 @@ export async function setGoneRuleActiveAction(data: FormData) {
   const [current] = await db.select().from(goneResourceRules).where(eq(goneResourceRules.id, goneId)).limit(1);
   if (!current) throw new Error("410 rule not found.");
   if (makeActive) {
-    await assertNoActiveSourceConflict(current.sourcePath, { goneId });
+    const conflict = await findActiveSourceConflict(current.sourcePath, { goneId });
+    if (conflict) return conflict;
   }
   const now = new Date();
   await db.batch([
@@ -292,6 +313,7 @@ export async function setGoneRuleActiveAction(data: FormData) {
     invalidation(db, now),
   ]);
   refreshRedirectAdmin();
+  return null;
 }
 
 export async function deleteGoneRuleAction(data: FormData) {

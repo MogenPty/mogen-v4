@@ -1,3 +1,4 @@
+import RedirectRuleForm from "@/components/mogen/redirect-rule-form";
 import Link from "next/link";
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { ArrowRight, Download, History, Route, ShieldCheck } from "lucide-react";
@@ -115,7 +116,7 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
         <section id="add-redirect" className="mt-8 scroll-mt-4 grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.5fr)]">
           <AdminCard as="section" className="p-6">
             <div className="flex items-start gap-3"><Route className="mt-1 size-5 text-catalyst" aria-hidden="true" /><div><h2 className="font-display text-2xl font-black">Add a redirect</h2><p className="mt-1 text-sm text-muted-foreground">Use <code>/blog/*</code> for a catch-all or <code>/blog/:slug</code> for one terminal segment.</p></div></div>
-            <form action={createRedirectAction} className="mt-6 grid gap-4 md:grid-cols-2">
+            <RedirectRuleForm action={createRedirectAction} className="mt-6 grid gap-4 md:grid-cols-2">
               <input type="hidden" name="notFoundId" value={filters.notFoundId ?? ""} />
               <input type="hidden" name="gscRowId" value={filters.gscRowId ?? ""} />
               <div><label htmlFor="new-source" className="text-sm font-semibold">Source path</label><input id="new-source" name="sourcePath" required readOnly={Boolean(filters.gscRowId)} defaultValue={filters.sourcePath} placeholder="/old-page" className={adminFieldClass} /></div>
@@ -125,7 +126,7 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
               <div className="md:col-span-2"><label htmlFor="new-description" className="text-sm font-semibold">Description</label><input id="new-description" name="description" maxLength={1000} placeholder="Why this route exists" className={adminFieldClass} /></div>
               <label className="flex min-h-11 items-center gap-3 text-sm font-semibold"><input type="checkbox" name="preserveQuery" defaultChecked /> Preserve query string</label>
               <div className="flex justify-end"><button className={adminPrimaryClass}>Create redirect</button></div>
-            </form>
+            </RedirectRuleForm>
           </AdminCard>
 
           <AdminCard as="section" className="p-6">
@@ -165,7 +166,7 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Link href={`/admin/redirects/${rule.id}`} className="inline-flex min-h-11 items-center rounded-md border border-border px-4 font-semibold hover:border-catalyst">Edit</Link>
-                    <form action={setRedirectActiveAction}><input type="hidden" name="id" value={rule.id} /><input type="hidden" name="active" value={String(!rule.isActive)} /><button className="min-h-11 rounded-md border border-border px-4 font-semibold hover:border-catalyst">{rule.isActive ? "Disable" : "Enable"}</button></form>
+                    <RedirectRuleForm action={setRedirectActiveAction}><input type="hidden" name="id" value={rule.id} /><input type="hidden" name="active" value={String(!rule.isActive)} /><button className="min-h-11 rounded-md border border-border px-4 font-semibold hover:border-catalyst">{rule.isActive ? "Disable" : "Enable"}</button></RedirectRuleForm>
                     <ConfirmActionForm action={deleteRedirectAction} fields={{ id: rule.id }} message={`Delete the redirect from ${rule.sourcePath}? This cannot be undone.`} label="Delete" className="min-h-11 rounded-md border border-destructive px-4 font-semibold text-destructive hover:bg-destructive hover:text-destructive-foreground" />
                   </div>
                 </div>
@@ -179,14 +180,14 @@ export default async function RedirectManagerPage({ searchParams }: Readonly<{
         <section className="mt-10 grid gap-6 lg:grid-cols-2">
           <AdminCard as="section" className="p-6">
             <h2 id="gone-rules" className="scroll-mt-4 font-display text-2xl font-black">Return 410 Gone</h2><p className="mt-2 text-sm text-muted-foreground">Use only when content was intentionally removed and has no suitable replacement.</p>
-            <form action={createGoneRuleAction} className="mt-5 grid gap-4 sm:grid-cols-2">
+            <RedirectRuleForm action={createGoneRuleAction} className="mt-5 grid gap-4 sm:grid-cols-2">
               <div><label htmlFor="gone-source" className="text-sm font-semibold">Source path</label><input id="gone-source" name="sourcePath" required placeholder="/retired-resource" className={adminFieldClass} /></div>
               <div><label htmlFor="gone-expiry" className="text-sm font-semibold">Expires (optional)</label><input id="gone-expiry" name="expiresAt" type="datetime-local" className={adminFieldClass} /></div>
               <div className="sm:col-span-2"><label htmlFor="gone-description" className="text-sm font-semibold">Description</label><input id="gone-description" name="description" className={adminFieldClass} /></div>
               <div className="sm:col-span-2 flex justify-end"><button className={adminPrimaryClass}>Create 410 rule</button></div>
-            </form>
+            </RedirectRuleForm>
             {filters.goneSource && <Link href="/admin/redirects#gone-rules" className="mt-5 inline-block text-sm font-semibold underline">Show all 410 rules</Link>}
-            <div className="mt-5 space-y-2">{goneRows.map(rule => <div key={rule.id} className="flex flex-col justify-between gap-3 rounded-md border border-border p-3 text-sm sm:flex-row sm:items-center"><span><span className="block font-mono font-semibold">{rule.sourcePath}</span><span className="mt-1 block text-xs text-muted-foreground">{!rule.isActive ? "Disabled" : rule.expiresAt && rule.expiresAt <= now ? "Expired" : "Active"} · {rule.hitCount.toLocaleString("en-ZA")} hits</span></span><div className="flex gap-2"><form action={setGoneRuleActiveAction}><input type="hidden" name="id" value={rule.id} /><input type="hidden" name="active" value={String(!rule.isActive)} /><button className="min-h-11 rounded-md border border-border px-3 font-semibold">{rule.isActive ? "Disable" : "Enable"}</button></form><ConfirmActionForm action={deleteGoneRuleAction} fields={{ id: rule.id }} message={`Delete the 410 rule for ${rule.sourcePath}?`} label="Delete" className="min-h-11 rounded-md border border-destructive px-3 font-semibold text-destructive" /></div></div>)}</div>
+            <div className="mt-5 space-y-2">{goneRows.map(rule => <div key={rule.id} className="flex flex-col justify-between gap-3 rounded-md border border-border p-3 text-sm sm:flex-row sm:items-center"><span><span className="block font-mono font-semibold">{rule.sourcePath}</span><span className="mt-1 block text-xs text-muted-foreground">{!rule.isActive ? "Disabled" : rule.expiresAt && rule.expiresAt <= now ? "Expired" : "Active"} · {rule.hitCount.toLocaleString("en-ZA")} hits</span></span><div className="flex gap-2"><RedirectRuleForm action={setGoneRuleActiveAction}><input type="hidden" name="id" value={rule.id} /><input type="hidden" name="active" value={String(!rule.isActive)} /><button className="min-h-11 rounded-md border border-border px-3 font-semibold">{rule.isActive ? "Disable" : "Enable"}</button></RedirectRuleForm><ConfirmActionForm action={deleteGoneRuleAction} fields={{ id: rule.id }} message={`Delete the 410 rule for ${rule.sourcePath}?`} label="Delete" className="min-h-11 rounded-md border border-destructive px-3 font-semibold text-destructive" /></div></div>)}</div>
             {filters.goneSource && goneRows.length === 0 && <p className="mt-3 text-sm text-muted-foreground">No 410 rule found for this URL.</p>}
             {gonePages > 1 && <nav aria-label="Gone-rule pages" className="mt-5 flex items-center justify-between"><Link aria-disabled={gonePage <= 1} href={{ pathname: "/admin/redirects", query: { ...filters, gonePage: Math.max(1, gonePage - 1) } }} className={`rounded-md border border-border px-3 py-2 font-semibold ${gonePage <= 1 ? "pointer-events-none opacity-50" : "hover:border-catalyst"}`}>Previous</Link><span className="text-xs text-muted-foreground">Page {Math.min(gonePage, gonePages)} of {gonePages}</span><Link aria-disabled={gonePage >= gonePages} href={{ pathname: "/admin/redirects", query: { ...filters, gonePage: Math.min(gonePages, gonePage + 1) } }} className={`rounded-md border border-border px-3 py-2 font-semibold ${gonePage >= gonePages ? "pointer-events-none opacity-50" : "hover:border-catalyst"}`}>Next</Link></nav>}
           </AdminCard>
